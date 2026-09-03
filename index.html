@@ -13,22 +13,34 @@
         #setupScreen {
             position: fixed; inset: 0; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #1a0505 0%, #000000 85%);
+            background: radial-gradient(circle, #240507 0%, #000000 85%);
             text-align: center; padding: 20px;
         }
-        h1 { font-size: 34px; letter-spacing: 12px; margin-bottom: 8px; color: #ff2233; text-shadow: 0 0 15px #ff2233; }
-        p { color: #887777; font-size: 11px; letter-spacing: 3px; margin-bottom: 24px; }
+        h1 { 
+            font-size: 38px; letter-spacing: 14px; margin-bottom: 8px; 
+            color: #ff1a35; text-shadow: 0 0 20px rgba(255, 26, 53, 0.8); 
+            font-weight: 900;
+        }
+        p { color: #998888; font-size: 11px; letter-spacing: 3px; margin-bottom: 24px; }
+        .config-box {
+            display: flex; flex-direction: column; gap: 12px; width: min(440px, 90%);
+            margin-bottom: 20px;
+        }
         input {
-            width: min(420px, 90%); padding: 14px; margin-bottom: 18px;
-            background: rgba(10, 0, 0, 0.85); border: 2px solid #ff2233; color: #fff;
+            width: 100%; padding: 14px 18px;
+            background: rgba(15, 2, 4, 0.85); border: 2px solid #ff1a35; color: #fff;
             text-align: center; outline: none; font-size: 14px;
+            box-shadow: inset 0 0 10px rgba(255, 26, 53, 0.3);
         }
         button {
-            padding: 14px 32px; background: rgba(255, 34, 51, 0.2);
-            border: 2px solid #ff2233; color: #ff2233; font-weight: bold;
-            font-size: 13px; letter-spacing: 3px; cursor: pointer; transition: 0.2s all;
+            padding: 15px 36px; background: rgba(255, 26, 53, 0.15);
+            border: 2px solid #ff1a35; color: #ff1a35; font-weight: bold;
+            font-size: 13px; letter-spacing: 3px; cursor: pointer; transition: 0.25s all;
         }
-        button:hover { background: #ff2233; color: #000; box-shadow: 0 0 20px #ff2233; }
+        button:hover { 
+            background: #ff1a35; color: #000; 
+            box-shadow: 0 0 25px rgba(255, 26, 53, 0.9); 
+        }
         #canvasXR { position: fixed; inset: 0; width: 100%; height: 100%; }
     </style>
 </head>
@@ -36,20 +48,29 @@
 
 <div id="setupScreen">
     <h1>STARK EYES</h1>
-    <p>SUIT VISION // PROTOCOL K.A.R.E.N.</p>
-    <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key">
-    <button id="btnInit">INITIALIZE EYE SYSTEM</button>
+    <p>HOMECOMING OPTICAL SYSTEM // K.A.R.E.N.</p>
+    <div class="config-box">
+        <input type="password" id="apiKeyInput" placeholder="OPTIONAL: ENTER LOCAL GEMINI API KEY">
+        <input type="text" id="proxyUrlInput" placeholder="OR: SERVERLESS PROXY URL (e.g. /api/chat)">
+    </div>
+    <button id="btnInit">ACTIVATE SUIT OPTICS</button>
 </div>
 
 <canvas id="canvasXR"></canvas>
 
 <script>
+// Retrieve keys saved locally on device; never pushed to GitHub
 let apiKey = localStorage.getItem("stark_edith_key") || "";
-const apiKeyInput = document.getElementById("apiKeyInput");
-apiKeyInput.value = apiKey;
+let proxyUrl = localStorage.getItem("stark_proxy_url") || "";
 
-let systemStatus = "STANDBY";
-let karenResponse = "Eyes adjusted. Audio stream active.";
+const apiKeyInput = document.getElementById("apiKeyInput");
+const proxyUrlInput = document.getElementById("proxyUrlInput");
+
+apiKeyInput.value = apiKey;
+proxyUrlInput.value = proxyUrl;
+
+let systemStatus = "ONLINE";
+let karenResponse = "Suit diagnostics nominal. Listening for directive.";
 let micStream = null;
 let audioContext = null;
 let mediaRecorder = null;
@@ -58,194 +79,208 @@ let voiceDetected = false;
 let silenceTimer = null;
 let voiceEnergy = 0;
 
-// Dynamic tracked objects in environment (like the bin tracker in the screenshot)
+// Dynamic environment targets (Homage to the movie's blue dumpster targeting node)
 const trackedTargets = [
-    { x: 395, y: 560, radius: 14, label: "CONTAINER_01", distance: "2.4M", type: "SOLID" },
-    { x: 575, y: 720, radius: 10, label: "GROUND_REF", distance: "1.1M", type: "SURFACE" }
+    { x: 380, y: 580, r: 16, label: "REF_CONTAINER_01", dist: "2.8M", color: "#00e5ff" },
+    { x: 670, y: 460, r: 11, label: "OBSTACLE_WALL", dist: "4.2M", color: "#00e5ff" }
 ];
 
 /* =================================================================
-   EXACT HOMECOMING HUD RENDERING
+   ACCURATE HOMECOMING HUD ENGINE
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
 hudCanvas.height = 1024;
 const ctx = hudCanvas.getContext("2d");
 
-const CYAN_HUD = "rgba(0, 229, 255, 0.85)";
-const CYAN_FAINT = "rgba(0, 229, 255, 0.3)";
-const RED_MASK = "rgba(220, 20, 40, 0.75)";
-const RED_GLOW = "rgba(255, 30, 50, 0.4)";
+const CYAN = "rgba(0, 229, 255, 0.85)";
+const CYAN_GLOW = "rgba(0, 229, 255, 0.4)";
+const CRIMSON = "rgba(235, 20, 45, 0.9)";
+const CRIMSON_SHADOW = "rgba(180, 10, 30, 0.5)";
 
-function drawHomecomingExact(time) {
+function renderHomecomingDisplay(time) {
     ctx.clearRect(0, 0, 1024, 1024);
     const cx = 512, cy = 512;
-    const pulse = Math.sin(time * 0.003) * 4;
+    const pulse = Math.sin(time * 0.003);
 
     /* -------------------------------------------------------------
-       1. EYE APERTURE VIGNETTE (Mask Edge Frame from Screenshot)
+       1. EYE MASK VIGNETTE (Scaled to full field of view)
     ------------------------------------------------------------- */
     ctx.save();
-    // Left eye red shell contour
-    ctx.strokeStyle = RED_MASK;
-    ctx.lineWidth = 14;
-    ctx.shadowColor = RED_GLOW;
-    ctx.shadowBlur = 18;
+    ctx.strokeStyle = CRIMSON;
+    ctx.shadowColor = CRIMSON_SHADOW;
+    ctx.shadowBlur = 24;
+
+    // Outer Left Mask Segment
+    ctx.lineWidth = 18;
     ctx.beginPath();
-    ctx.moveTo(70, 60);
-    ctx.bezierCurveTo(40, 300, 40, 724, 70, 964);
+    ctx.moveTo(80, 20);
+    ctx.bezierCurveTo(5, 260, 5, 764, 80, 1004);
     ctx.stroke();
 
+    // Left Secondary Bevels & Notches
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(90, 100);
-    ctx.lineTo(60, 220);
-    ctx.lineTo(60, 804);
-    ctx.lineTo(90, 924);
+    ctx.moveTo(110, 70);
+    ctx.lineTo(45, 220);
+    ctx.lineTo(45, 804);
+    ctx.lineTo(110, 954);
     ctx.stroke();
 
-    // Right eye red shell contour
+    // Outer Right Mask Segment
+    ctx.lineWidth = 18;
     ctx.beginPath();
-    ctx.moveTo(954, 60);
-    ctx.bezierCurveTo(984, 300, 984, 724, 954, 964);
+    ctx.moveTo(944, 20);
+    ctx.bezierCurveTo(1019, 260, 1019, 764, 944, 1004);
     ctx.stroke();
 
+    // Right Secondary Bevels & Notches
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(934, 100);
-    ctx.lineTo(964, 220);
-    ctx.lineTo(964, 804);
-    ctx.lineTo(934, 924);
+    ctx.moveTo(914, 70);
+    ctx.lineTo(979, 220);
+    ctx.lineTo(979, 804);
+    ctx.lineTo(914, 954);
     ctx.stroke();
+
     ctx.restore();
 
     /* -------------------------------------------------------------
-       2. TOP FLIGHT ATTITUDE / PITCH LADDER (Directly from Movie)
+       2. TOP FLIGHT ATTITUDE / PITCH LADDER
     ------------------------------------------------------------- */
     ctx.save();
-    const ladderY = 120;
-    ctx.strokeStyle = CYAN_HUD;
+    const ladderCenterY = 125;
+    ctx.strokeStyle = CYAN;
     ctx.lineWidth = 2;
-    ctx.fillStyle = CYAN_HUD;
-    ctx.font = "9px monospace";
+    ctx.fillStyle = CYAN;
+    ctx.font = "bold 9px monospace";
     ctx.textAlign = "center";
 
-    // Center vertical index line
+    // Center vertical attitude index
     ctx.beginPath();
-    ctx.moveTo(cx, ladderY - 70);
-    ctx.lineTo(cx, ladderY + 60);
+    ctx.moveTo(cx, ladderCenterY - 75);
+    ctx.lineTo(cx, ladderCenterY + 65);
     ctx.stroke();
 
-    // Horizontal graduated pitch ticks
+    // Ladder horizontal gradient steps
     for (let i = -4; i <= 4; i++) {
-        const y = ladderY + (i * 14);
-        const w = (i === 0) ? 36 : 18 - Math.abs(i * 2);
+        const y = ladderCenterY + (i * 14);
+        const w = (i === 0) ? 42 : 22 - Math.abs(i * 3);
+
         ctx.beginPath();
         ctx.moveTo(cx - w, y);
         ctx.lineTo(cx + w, y);
         ctx.stroke();
 
-        // Tick marks at the edges
         if (i !== 0) {
+            const tickH = i > 0 ? -4 : 4;
             ctx.beginPath();
             ctx.moveTo(cx - w, y);
-            ctx.lineTo(cx - w, y + (i > 0 ? -3 : 3));
+            ctx.lineTo(cx - w, y + tickH);
             ctx.moveTo(cx + w, y);
-            ctx.lineTo(cx + w, y + (i > 0 ? -3 : 3));
+            ctx.lineTo(cx + w, y + tickH);
             ctx.stroke();
         }
     }
 
-    // Small red alignment indicator dots at ladder base
-    ctx.fillStyle = "#ff2233";
+    // Alignment Indicator Dots
+    ctx.fillStyle = "#ff1a35";
     ctx.beginPath();
-    ctx.arc(cx - 10, ladderY + 68, 2, 0, Math.PI * 2);
-    ctx.arc(cx + 10, ladderY + 68, 2, 0, Math.PI * 2);
+    ctx.arc(cx - 12, ladderCenterY + 75, 2.5, 0, Math.PI * 2);
+    ctx.arc(cx + 12, ladderCenterY + 75, 2.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     /* -------------------------------------------------------------
-       3. TOP CURVED DOTTED TARGETING ARC
+       3. TOP TARGETING HEADING ARC
     ------------------------------------------------------------- */
     ctx.save();
-    ctx.strokeStyle = CYAN_FAINT;
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.35)";
     ctx.lineWidth = 2;
-    ctx.setLineDash([4, 6]);
+    ctx.setLineDash([5, 8]);
     ctx.beginPath();
-    ctx.arc(cx, cy - 220, 280, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.arc(cx, cy - 200, 310, Math.PI * 1.18, Math.PI * 1.82);
     ctx.stroke();
     ctx.restore();
 
     /* -------------------------------------------------------------
-       4. BLUE HOLOGRAPHIC OBJECT TRACKERS (Dumpster Target)
+       4. BLUE HOLOGRAPHIC TRACKERS (Movie Screenshot Style)
     ------------------------------------------------------------- */
     trackedTargets.forEach(tgt => {
         ctx.save();
-        // Inner glowing solid node
-        ctx.fillStyle = "#00e5ff";
-        ctx.shadowColor = "#00e5ff";
-        ctx.shadowBlur = 10;
+        ctx.fillStyle = tgt.color;
+        ctx.shadowColor = tgt.color;
+        ctx.shadowBlur = 12;
         ctx.beginPath();
-        ctx.arc(tgt.x, tgt.y, tgt.radius, 0, Math.PI * 2);
+        ctx.arc(tgt.x, tgt.y, tgt.r, 0, Math.PI * 2);
         ctx.fill();
 
-        // Concentric tracking ring
-        ctx.strokeStyle = CYAN_HUD;
+        ctx.strokeStyle = CYAN;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(tgt.x, tgt.y, tgt.radius + 8 + (pulse * 0.5), 0, Math.PI * 2);
+        ctx.arc(tgt.x, tgt.y, tgt.r + 9 + (pulse * 2), 0, Math.PI * 2);
         ctx.stroke();
 
-        // Range line and tag
         ctx.beginPath();
-        ctx.moveTo(tgt.x + tgt.radius + 10, tgt.y);
-        ctx.lineTo(tgt.x + tgt.radius + 35, tgt.y - 12);
-        ctx.lineTo(tgt.x + tgt.radius + 80, tgt.y - 12);
+        ctx.moveTo(tgt.x + tgt.r + 10, tgt.y);
+        ctx.lineTo(tgt.x + tgt.r + 35, tgt.y - 12);
+        ctx.lineTo(tgt.x + tgt.r + 95, tgt.y - 12);
         ctx.stroke();
 
-        ctx.fillStyle = "#00e5ff";
+        ctx.fillStyle = tgt.color;
         ctx.font = "bold 10px monospace";
-        ctx.fillText(`${tgt.label} [${tgt.distance}]`, tgt.x + tgt.radius + 20, tgt.y - 16);
+        ctx.fillText(`${tgt.label} [${tgt.dist}]`, tgt.x + tgt.r + 20, tgt.y - 16);
         ctx.restore();
     });
 
     /* -------------------------------------------------------------
-       5. MYOPIA COMFORT CLUSTER (Voice + Dialogue Centered)
+       5. CENTRAL ERGONOMIC RETICLE & SPEECH CLUSTER
     ------------------------------------------------------------- */
-    // Central Aim Reticle
     ctx.save();
-    const reticleColor = voiceDetected ? "#ff3344" : CYAN_HUD;
+    const reticleColor = voiceDetected ? "#ff1a35" : CYAN;
     ctx.strokeStyle = reticleColor;
     ctx.lineWidth = 2;
+    ctx.shadowColor = reticleColor;
+    ctx.shadowBlur = 8;
 
+    const dynamicRadius = 34 + (voiceEnergy * 28);
     ctx.beginPath();
-    ctx.arc(cx, cy, 32 + (voiceEnergy * 25), 0, Math.PI * 2);
+    ctx.arc(cx, cy, dynamicRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Center Cross-hairs
     ctx.beginPath();
-    ctx.moveTo(cx - 14, cy); ctx.lineTo(cx - 5, cy);
-    ctx.moveTo(cx + 5, cy); ctx.lineTo(cx + 14, cy);
-    ctx.moveTo(cx, cy - 14); ctx.lineTo(cx, cy - 5);
-    ctx.moveTo(cx, cy + 5); ctx.lineTo(cx, cy + 14);
+    ctx.moveTo(cx - 16, cy); ctx.lineTo(cx - 6, cy);
+    ctx.moveTo(cx + 6, cy); ctx.lineTo(cx + 16, cy);
+    ctx.moveTo(cx, cy - 16); ctx.lineTo(cx - 6, cy);
+    ctx.moveTo(cx, cy + 6); ctx.lineTo(cx, cy + 16);
     ctx.stroke();
 
-    // K.A.R.E.N. Audio / System Status
-    ctx.fillStyle = voiceDetected ? "#ff3344" : (systemStatus === "LISTENING" ? "#00ff88" : CYAN_HUD);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 0.0008);
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.4)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 18]);
+    ctx.beginPath();
+    ctx.arc(0, 0, 52, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = voiceDetected ? "#ff1a35" : (systemStatus === "TRANSMITTING" ? "#ffaa00" : CYAN);
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "center";
-    ctx.fillText(voiceDetected ? "● AUDIO DETECTED // STREAMING" : `● K.A.R.E.N. // ${systemStatus}`, cx, cy + 62);
+    ctx.fillText(voiceDetected ? "● AUDIO DETECTED // STREAMING" : `● K.A.R.E.N. // ${systemStatus}`, cx, cy + 74);
 
-    // AI Response (Comfortably right in central eyesight)
     ctx.fillStyle = "#ffffff";
     ctx.font = "18px 'Courier New', monospace";
-    ctx.shadowColor = "#00e5ff";
-    ctx.shadowBlur = 6;
-    wrapText(ctx, karenResponse, cx, cy + 96, 480, 22);
+    ctx.shadowColor = CYAN;
+    ctx.shadowBlur = 4;
+    wrapCenteredText(ctx, karenResponse, cx, cy + 110, 480, 24);
+
     ctx.restore();
 }
 
-function wrapText(context, text, x, y, maxWidth, lineHeight) {
+function wrapCenteredText(context, text, x, y, maxWidth, lineHeight) {
     const words = text.split(' ');
     let line = '';
     for (let n = 0; n < words.length; n++) {
@@ -263,9 +298,9 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   HANDS-FREE AUDIO CAPTURE SYSTEM (VAD)
+   HANDS-FREE AMBIENT VOICE PIPELINE
 ================================================================= */
-async function setupVoiceEngine() {
+async function setupVAD() {
     micStream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
@@ -287,7 +322,7 @@ async function setupVoiceEngine() {
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-    function trackVoiceActivity() {
+    function pollMicEnergy() {
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
@@ -306,13 +341,13 @@ async function setupVoiceEngine() {
                 if (voiceDetected && mediaRecorder.state === "recording") {
                     mediaRecorder.stop();
                     voiceDetected = false;
-                    systemStatus = "PROCESSING";
+                    systemStatus = "TRANSMITTING";
                 }
             }, 1100);
         }
-        requestAnimationFrame(trackVoiceActivity);
+        requestAnimationFrame(pollMicEnergy);
     }
-    trackVoiceActivity();
+    pollMicEnergy();
 }
 
 async function sendVocalData() {
@@ -322,26 +357,44 @@ async function sendVocalData() {
     reader.readAsDataURL(audioBlob);
     reader.onloadend = async () => {
         const base64Audio = reader.result.split(',')[1];
+        
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: "You are Karen, Peter Parker's suit AI from Spider-Man: Homecoming. Answer tactically, supportively, and in 1-2 brief sentences." },
-                            { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
-                        ]
-                    }]
-                })
-            });
+            let res;
+            if (proxyUrl) {
+                // Route through private proxy without exposing keys
+                res = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        audio: base64Audio,
+                        mimeType: mediaRecorder.mimeType.split(';')[0]
+                    })
+                });
+            } else if (apiKey) {
+                // Direct call using key saved locally on headset
+                res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "You are Karen, Peter Parker's suit AI from Spider-Man: Homecoming. Answer tactically, warmly, and concisely in 1 to 2 short sentences." },
+                                { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
+                            ]
+                        }]
+                    })
+                });
+            } else {
+                throw new Error("No API Key or Proxy configured");
+            }
+
             const data = await res.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Target locked. No comment necessary.";
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || data.reply || "Signal resolved. No verbal advisory.";
             karenResponse = reply;
             systemStatus = "ONLINE";
             speak(reply);
         } catch (err) {
-            karenResponse = "Network disconnected. Check API Key.";
+            karenResponse = "Network interruption. Check API Key configuration.";
             systemStatus = "ERROR";
         }
     };
@@ -358,7 +411,7 @@ function speak(text) {
 }
 
 /* =================================================================
-   WEBGL STEREOSCOPIC IMMERSIVE ENGINE
+   WEBGL STEREOSCOPIC FULL-SCREEN ENGINE
 ================================================================= */
 const canvas = document.getElementById("canvasXR");
 const gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
@@ -369,8 +422,8 @@ const vsSrc = `
     uniform mat4 uProj;
     varying vec2 vTex;
     void main() {
-        // Positioned 1.4m away directly in front of the viewer
-        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.4, 1.0);
+        // Positioned 1.1m away to span the user's field of view
+        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.1, 1.0);
         gl_Position = uProj * pos;
         vTex = aTex;
     }
@@ -398,14 +451,14 @@ gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vsSrc));
 gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fsSrc));
 gl.linkProgram(prog);
 
-// 1.5m wide x 1.5m tall quad
+// Quad expanded to 1.8m x 1.8m for peripheral coverage
 const vertices = new Float32Array([
-    -0.75, -0.75, 0.0,   0.0, 1.0,
-     0.75, -0.75, 0.0,   1.0, 1.0,
-    -0.75,  0.75, 0.0,   0.0, 0.0,
-    -0.75,  0.75, 0.0,   0.0, 0.0,
-     0.75, -0.75, 0.0,   1.0, 1.0,
-     0.75,  0.75, 0.0,   1.0, 0.0
+    -0.9, -0.9, 0.0,   0.0, 1.0,
+     0.9, -0.9, 0.0,   1.0, 1.0,
+    -0.9,  0.9, 0.0,   0.0, 0.0,
+    -0.9,  0.9, 0.0,   0.0, 0.0,
+     0.9, -0.9, 0.0,   1.0, 1.0,
+     0.9,  0.9, 0.0,   1.0, 0.0
 ]);
 
 const vbo = gl.createBuffer();
@@ -428,17 +481,21 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 ================================================================= */
 document.getElementById("btnInit").onclick = async () => {
     apiKey = apiKeyInput.value.trim();
+    proxyUrl = proxyUrlInput.value.trim();
+
     localStorage.setItem("stark_edith_key", apiKey);
-    if (!apiKey) {
-        alert("Enter your Gemini API key.");
+    localStorage.setItem("stark_proxy_url", proxyUrl);
+
+    if (!apiKey && !proxyUrl) {
+        alert("Please provide either a local API key or a Serverless Proxy URL.");
         return;
     }
 
     document.getElementById("setupScreen").style.display = "none";
-    await setupVoiceEngine();
+    await setupVAD();
 
     if (!navigator.xr) {
-        alert("Run inside the Meta Quest Browser using HTTPS.");
+        alert("Launch inside Meta Quest Browser over HTTPS.");
         return;
     }
 
@@ -456,13 +513,12 @@ document.getElementById("btnInit").onclick = async () => {
         const pose = frame.getViewerPose(refSpace);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-        // Alpha 0.0 is critical so passthrough remains visible
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (!pose) return;
 
-        drawHomecomingExact(time);
+        renderHomecomingDisplay(time);
 
         gl.bindTexture(gl.TEXTURE_2D, hudTex);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
