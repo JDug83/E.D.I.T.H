@@ -2,50 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E.D.I.T.H. Headset System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>E.D.I.T.H. Tactical XR</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background: #020609; color: #00d9ff; font-family: 'Segoe UI', monospace, sans-serif;
+            background: #000; color: #00d9ff; font-family: 'Segoe UI', monospace, sans-serif;
             overflow: hidden; width: 100vw; height: 100vh;
         }
         #setupScreen {
             position: fixed; inset: 0; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #051a29 0%, #010408 80%);
+            background: radial-gradient(circle, #051a29 0%, #010408 85%);
             text-align: center; padding: 20px;
         }
-        h1 { font-size: 42px; letter-spacing: 12px; margin-bottom: 8px; text-shadow: 0 0 15px #00d9ff; }
-        p { color: #789; font-size: 13px; letter-spacing: 2px; margin-bottom: 24px; }
+        h1 { font-size: 40px; letter-spacing: 10px; margin-bottom: 8px; text-shadow: 0 0 15px #00d9ff; }
+        p { color: #8899aa; font-size: 13px; letter-spacing: 2px; margin-bottom: 24px; }
         input {
             width: min(400px, 90%); padding: 12px; margin-bottom: 16px;
-            background: rgba(0,0,0,0.7); border: 1px solid #00d9ff; color: #fff;
+            background: rgba(0,0,0,0.8); border: 1px solid #00d9ff; color: #fff;
             text-align: center; outline: none; font-size: 14px;
         }
         button {
-            padding: 12px 28px; background: rgba(0, 217, 255, 0.15);
+            padding: 14px 28px; background: rgba(0, 217, 255, 0.2);
             border: 1px solid #00d9ff; color: #00d9ff; font-weight: bold;
-            font-size: 14px; letter-spacing: 2px; cursor: pointer; transition: 0.2s all;
+            font-size: 14px; letter-spacing: 2px; cursor: pointer;
         }
         button:hover { background: #00d9ff; color: #000; }
         #canvasXR { position: fixed; inset: 0; width: 100%; height: 100%; }
-        #desktopNotice {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            font-size: 11px; color: #567; letter-spacing: 1px;
-        }
     </style>
 </head>
 <body>
 
 <div id="setupScreen">
     <h1>E.D.I.T.H.</h1>
-    <p>TACTICAL HEAD-MOUNTED SYSTEM</p>
+    <p>AUGMENTED THREAT SYSTEM</p>
     <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key">
-    <button id="btnInit">START E.D.I.T.H. PASSTHROUGH</button>
+    <button id="btnInit">ENTER PASSTHROUGH</button>
 </div>
 
-<div id="desktopNotice">PRESS CONTROLLER TRIGGER OR SCREEN TO ACTIVATE VOICE QUERY</div>
 <canvas id="canvasXR"></canvas>
 
 <script>
@@ -54,15 +49,14 @@ const apiKeyInput = document.getElementById("apiKeyInput");
 apiKeyInput.value = apiKey;
 
 let statusMsg = "STANDBY";
-let responseText = "E.D.I.T.H. ONLINE. TAP TRIGGER TO SPEAK.";
+let responseText = "E.D.I.T.H. ONLINE. PULL TRIGGER TO SPEAK.";
 let isRecording = false;
-let audioContext = null;
-let micStream = null;
-let audioProcessor = null;
+let mediaRecorder = null;
 let audioChunks = [];
+let micStream = null;
 
 /* =================================================================
-   2D HUD ENGINE (Pre-rendered to Canvas Texture for 3D Projection)
+   2D HUD ENGINE (Drawn to Offscreen Texture)
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
@@ -72,33 +66,33 @@ const ctx = hudCanvas.getContext("2d");
 function drawHUD(time) {
     ctx.clearRect(0, 0, 1024, 1024);
     const cx = 512, cy = 512;
-    const pulse = Math.sin(time * 0.003) * 6;
+    const pulse = Math.sin(time * 0.003) * 8;
 
     // Outer Target Reticle
-    ctx.strokeStyle = isRecording ? "rgba(255, 60, 80, 0.9)" : "rgba(0, 217, 255, 0.85)";
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = isRecording ? "rgba(255, 60, 80, 0.95)" : "rgba(0, 217, 255, 0.9)";
+    ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.arc(cx, cy, 140 + pulse, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Inner Circle
-    ctx.strokeStyle = "rgba(0, 217, 255, 0.4)";
-    ctx.lineWidth = 2;
+    // Inner Aim Circle
+    ctx.strokeStyle = "rgba(0, 217, 255, 0.5)";
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 85, 0, Math.PI * 2);
     ctx.stroke();
 
     // Crosshairs
     ctx.strokeStyle = "#00d9ff";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(cx - 180, cy); ctx.lineTo(cx + 180, cy);
-    ctx.moveTo(cx, cy - 180); ctx.lineTo(cx, cy + 180);
+    ctx.moveTo(cx - 200, cy); ctx.lineTo(cx + 200, cy);
+    ctx.moveTo(cx, cy - 200); ctx.lineTo(cx, cy + 200);
     ctx.stroke();
 
-    // Corner Brackets
-    const b = 240, len = 40;
-    ctx.lineWidth = 5;
+    // HUD Corner Accents
+    const b = 250, len = 45;
+    ctx.lineWidth = 6;
     ctx.strokeStyle = "#00d9ff";
     // TL
     ctx.beginPath(); ctx.moveTo(cx - b, cy - b + len); ctx.lineTo(cx - b, cy - b); ctx.lineTo(cx - b + len, cy - b); ctx.stroke();
@@ -109,32 +103,21 @@ function drawHUD(time) {
     // BR
     ctx.beginPath(); ctx.moveTo(cx + b - len, cy + b); ctx.lineTo(cx + b, cy + b); ctx.lineTo(cx + b, cy + b - len); ctx.stroke();
 
-    // Rotating Radar Element
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(time * 0.001);
-    ctx.strokeStyle = "#00ff88";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(0, 0, 160, 0, 0.7);
-    ctx.stroke();
-    ctx.restore();
-
-    // Top Status Header
+    // Top Header
     ctx.fillStyle = "#00d9ff";
-    ctx.font = "bold 32px monospace";
+    ctx.font = "bold 34px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("E.D.I.T.H. SYSTEM", cx, cy - 280);
+    ctx.fillText("E.D.I.T.H.", cx, cy - 300);
 
     ctx.fillStyle = isRecording ? "#ff4050" : (statusMsg === "THINKING" ? "#ffbb00" : "#00ff88");
-    ctx.font = "20px monospace";
-    ctx.fillText(`STATUS: ${statusMsg}`, cx, cy - 245);
+    ctx.font = "bold 22px monospace";
+    ctx.fillText(isRecording ? "● TRANSMITTING..." : `● STATUS: ${statusMsg}`, cx, cy - 260);
 
-    // AI Response Text Box
+    // AI Response Box
     ctx.fillStyle = "#ffffff";
-    ctx.font = "24px sans-serif";
+    ctx.font = "26px sans-serif";
     ctx.textAlign = "center";
-    wrapText(ctx, responseText, cx, cy + 220, 800, 32);
+    wrapText(ctx, responseText, cx, cy + 220, 850, 36);
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {
@@ -155,105 +138,73 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   WEB AUDIO RECORDER (Native Quest Microphone Solution)
+   DIRECT MICROPHONE RECORDING (Bypasses missing SpeechRecognition)
 ================================================================= */
 async function initMic() {
-    micStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }
-    });
-    audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-    const source = audioContext.createMediaStreamSource(micStream);
-    audioProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+    try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Pick optimal mimeType supported by Meta Quest
+        let mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/mp4';
 
-    source.connect(audioProcessor);
-    audioProcessor.connect(audioContext.destination);
-
-    audioProcessor.onaudioprocess = (e) => {
-        if (!isRecording) return;
-        const inputData = e.inputBuffer.getChannelData(0);
-        audioChunks.push(new Float32Array(inputData));
-    };
+        mediaRecorder = new MediaRecorder(micStream, { mimeType });
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) audioChunks.push(e.data);
+        };
+        mediaRecorder.onstop = sendAudioToGemini;
+        statusMsg = "READY";
+    } catch(err) {
+        statusMsg = "MIC BLOCKED";
+        responseText = "Allow microphone permissions in Quest Browser settings.";
+    }
 }
 
-function toggleVoiceRecord() {
+function toggleVoice() {
+    if (!mediaRecorder) return;
     if (!isRecording) {
         audioChunks = [];
+        mediaRecorder.start();
         isRecording = true;
-        statusMsg = "LISTENING...";
+        statusMsg = "LISTENING";
         responseText = "Listening to vocal directive...";
     } else {
         isRecording = false;
+        mediaRecorder.stop();
         statusMsg = "THINKING";
-        sendAudioToGemini();
+        responseText = "Processing command with Gemini...";
     }
-}
-
-function encodeWAV(samples) {
-    let totalLength = samples.reduce((acc, cur) => acc + cur.length, 0);
-    let buffer = new ArrayBuffer(44 + totalLength * 2);
-    let view = new DataView(buffer);
-
-    const writeString = (view, offset, string) => {
-        for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
-    };
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + totalLength * 2, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, 16000, true);
-    view.setUint32(28, 32000, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, totalLength * 2, true);
-
-    let offset = 44;
-    for (let i = 0; i < samples.length; i++) {
-        for (let j = 0; j < samples[i].length; j++) {
-            let s = Math.max(-1, Math.min(1, samples[i][j]));
-            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-            offset += 2;
-        }
-    }
-    return new Uint8Array(buffer);
 }
 
 async function sendAudioToGemini() {
-    if (!audioChunks.length) {
-        statusMsg = "IDLE";
-        return;
-    }
-    const wavBytes = encodeWAV(audioChunks);
-    let binary = '';
-    for (let i = 0; i < wavBytes.byteLength; i++) binary += String.fromCharCode(wavBytes[i]);
-    const base64Audio = btoa(binary);
-
-    try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Answer concisely in under 2 sentences." },
-                        { inline_data: { mime_type: "audio/wav", data: base64Audio } }
-                    ]
-                }]
-            })
-        });
-        const data = await res.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Directive received, no output.";
-        responseText = reply;
-        statusMsg = "ONLINE";
-        speak(reply);
-    } catch (err) {
-        responseText = "Comm link failure. Check API key.";
-        statusMsg = "ERROR";
-    }
+    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = async () => {
+        const base64Audio = reader.result.split(',')[1];
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: "You are E.D.I.T.H. from Spider-Man / Iron Man. Give a short, tactical 1-2 sentence response." },
+                            { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
+                        ]
+                    }]
+                })
+            });
+            const data = await res.json();
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No actionable data.";
+            responseText = reply;
+            statusMsg = "ONLINE";
+            speak(reply);
+        } catch (err) {
+            responseText = "Connection failure. Verify API Key.";
+            statusMsg = "ERROR";
+        }
+    };
 }
 
 function speak(text) {
@@ -266,7 +217,7 @@ function speak(text) {
 }
 
 /* =================================================================
-   WEBGL STEREO PROJECTION ENGINE (True Quest AR View-Locked Plane)
+   WEBGL STEREOSCOPIC VIEWPORT ENGINE
 ================================================================= */
 const canvas = document.getElementById("canvasXR");
 const gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
@@ -274,10 +225,13 @@ const gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
 const vsSrc = `
     attribute vec3 aPos;
     attribute vec2 aTex;
-    uniform mat4 uMatrix;
+    uniform mat4 uProj;
+    uniform mat4 uView;
     varying vec2 vTex;
     void main() {
-        gl_Position = uMatrix * vec4(aPos, 1.0);
+        // Offset quad 1.5 meters directly forward into your field of view
+        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.5, 1.0);
+        gl_Position = uProj * pos;
         vTex = aTex;
     }
 `;
@@ -304,14 +258,14 @@ gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vsSrc));
 gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fsSrc));
 gl.linkProgram(prog);
 
-// 3D Quad positioned directly forward in meters
+// 1.2m x 1.2m Quad centered at Z = 0
 const vertices = new Float32Array([
-    -0.8, -0.8, -1.2,   0.0, 1.0,
-     0.8, -0.8, -1.2,   1.0, 1.0,
-    -0.8,  0.8, -1.2,   0.0, 0.0,
-    -0.8,  0.8, -1.2,   0.0, 0.0,
-     0.8, -0.8, -1.2,   1.0, 1.0,
-     0.8,  0.8, -1.2,   1.0, 0.0
+    -0.6, -0.6, 0.0,   0.0, 1.0,
+     0.6, -0.6, 0.0,   1.0, 1.0,
+    -0.6,  0.6, 0.0,   0.0, 0.0,
+    -0.6,  0.6, 0.0,   0.0, 0.0,
+     0.6, -0.6, 0.0,   1.0, 1.0,
+     0.6,  0.6, 0.0,   1.0, 0.0
 ]);
 
 const vbo = gl.createBuffer();
@@ -320,7 +274,7 @@ gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
 const posLoc = gl.getAttribLocation(prog, "aPos");
 const texLoc = gl.getAttribLocation(prog, "aTex");
-const matLoc = gl.getUniformLocation(prog, "uMatrix");
+const projLoc = gl.getUniformLocation(prog, "uProj");
 
 const hudTex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, hudTex);
@@ -344,7 +298,7 @@ document.getElementById("btnInit").onclick = async () => {
     await initMic();
 
     if (!navigator.xr) {
-        alert("WebXR is unavailable on this device.");
+        alert("WebXR unavailable. Launch inside Meta Quest Browser.");
         return;
     }
 
@@ -357,16 +311,16 @@ document.getElementById("btnInit").onclick = async () => {
     session.updateRenderState({ baseLayer: xrLayer });
     const refSpace = await session.requestReferenceSpace("viewer");
 
-    // Quest Controller Trigger or Screen Tap activates the microphone
-    session.addEventListener("select", () => toggleVoiceRecord());
-    window.addEventListener("pointerdown", () => toggleVoiceRecord());
+    // Pull controller trigger or click screen to toggle mic
+    session.addEventListener("select", toggleVoice);
+    window.addEventListener("pointerdown", toggleVoice);
 
     session.requestAnimationFrame(function onFrame(time, frame) {
         session.requestAnimationFrame(onFrame);
         const pose = frame.getViewerPose(refSpace);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-        // Alpha must be 0 for Passthrough to shine through
+        // Alpha 0.0 is MANDATORY to allow Quest passthrough through
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -374,7 +328,6 @@ document.getElementById("btnInit").onclick = async () => {
 
         drawHUD(time);
 
-        // Upload HUD 2D Canvas into the WebGL texture
         gl.bindTexture(gl.TEXTURE_2D, hudTex);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hudCanvas);
@@ -389,11 +342,11 @@ document.getElementById("btnInit").onclick = async () => {
         gl.enableVertexAttribArray(texLoc);
         gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 20, 12);
 
-        // Render for Left Eye and Right Eye stereoscopically
+        // Draw quad in both stereoscopic eyes
         for (const view of pose.views) {
-            const viewport = xrLayer.getViewport(view);
-            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
-            gl.uniformMatrix4fv(matLoc, false, view.projectionMatrix);
+            const vp = xrLayer.getViewport(view);
+            gl.viewport(vp.x, vp.y, vp.width, vp.height);
+            gl.uniformMatrix4fv(projLoc, false, view.projectionMatrix);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
     });
