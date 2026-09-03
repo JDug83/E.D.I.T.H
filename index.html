@@ -25,16 +25,12 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* Ensure passthrough is completely unblocked during XR session */
 :xr-overlay,
 :xr-overlay body {
     background: transparent !important;
     background-color: rgba(0, 0, 0, 0) !important;
 }
 
-/*
- * HUD container remains transparent
- */
 #hud {
     position: fixed;
     inset: 0;
@@ -44,7 +40,7 @@ body {
 }
 
 /* ==============================
-   CAMERA PREVIEW
+   CAMERA PREVIEW (NON-XR MODE)
 ============================== */
 #camera {
     position: fixed;
@@ -57,7 +53,7 @@ body {
 }
 
 /* ==============================
-   E.D.I.T.H. LOGO
+   E.D.I.T.H. LOGO & TARGET
 ============================== */
 .logo {
     position: absolute;
@@ -83,9 +79,6 @@ body {
     color: #00ff88;
 }
 
-/* ==============================
-   TARGET
-============================== */
 .target {
     position: absolute;
     left: 50%;
@@ -132,6 +125,7 @@ body {
     background: rgba(0,10,18,.72);
     border-left: 2px solid #00d9ff;
     backdrop-filter: blur(10px);
+    pointer-events: auto;
 }
 
 .status h2 {
@@ -156,15 +150,57 @@ body {
 #response {
     position: absolute;
     left: 50%;
-    bottom: 35px;
+    bottom: 90px;
     transform: translateX(-50%);
-    width: 60%;
-    max-width: 700px;
+    width: 70%;
+    max-width: 750px;
     text-align: center;
     color: white;
     font-size: 18px;
     line-height: 1.5;
     text-shadow: 0 0 10px #00d9ff;
+    pointer-events: auto;
+}
+
+/* ==============================
+   MANUAL PROMPT BAR (VR & DESKTOP)
+============================== */
+#manualInputContainer {
+    position: absolute;
+    left: 50%;
+    bottom: 25px;
+    transform: translateX(-50%);
+    width: 60%;
+    max-width: 600px;
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+#manualText {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(0, 10, 18, 0.85);
+    border: 1px solid #00d9ff;
+    color: white;
+    font-size: 14px;
+    border-radius: 4px;
+    outline: none;
+}
+
+#manualSubmit {
+    padding: 10px 18px;
+    background: rgba(0, 217, 255, 0.2);
+    border: 1px solid #00d9ff;
+    color: #00d9ff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#manualSubmit:hover {
+    background: #00d9ff;
+    color: #001018;
 }
 
 /* ==============================
@@ -211,7 +247,7 @@ button:hover {
 }
 
 /* ==============================
-   VR BUTTON
+   BUTTONS
 ============================== */
 #vrButton {
     position: fixed;
@@ -222,9 +258,6 @@ button:hover {
     pointer-events: auto;
 }
 
-/* ==============================
-   SETTINGS
-============================== */
 #settingsButton {
     position: fixed;
     right: 20px;
@@ -277,7 +310,7 @@ button:hover {
     </p>
     <button id="startButton">INITIALIZE E.D.I.T.H.</button>
     <p style="font-size:11px;color:#555">
-        Say "E.D.I.T.H." once to begin.
+        Say "E.D.I.T.H." or use the command line below.
     </p>
 </div>
 
@@ -296,10 +329,14 @@ button:hover {
     </div>
 
     <div id="response">E.D.I.T.H. is ready.</div>
+
+    <div id="manualInputContainer">
+        <input id="manualText" type="text" placeholder="Direct terminal command to E.D.I.T.H...">
+        <button id="manualSubmit">TRANSMIT</button>
+    </div>
 </div>
 
 <button id="vrButton">ENTER E.D.I.T.H. AR</button>
-
 <button id="settingsButton">⚙ SETTINGS</button>
 
 <div id="settings">
@@ -333,8 +370,11 @@ const saveKey = document.getElementById("saveKey");
 const apiKeyInput = document.getElementById("apiKey");
 const errorBox = document.getElementById("error");
 
+const manualText = document.getElementById("manualText");
+const manualSubmit = document.getElementById("manualSubmit");
+
 /* =====================================================
-   GEMINI KEY
+   GEMINI CONFIGURATION
 ===================================================== */
 let apiKey = localStorage.getItem("edith_gemini_key") || "";
 apiKeyInput.value = apiKey;
@@ -361,7 +401,22 @@ settingsButton.onclick = () => { settings.style.display = "block"; };
 closeSettings.onclick = () => { settings.style.display = "none"; };
 
 /* =====================================================
-   CAMERA + MICROPHONE
+   MANUAL COMMAND TERMINAL
+===================================================== */
+async function sendManualCommand() {
+    const text = manualText.value.trim();
+    if (!text) return;
+    manualText.value = "";
+    await askGemini(text);
+}
+
+manualSubmit.onclick = sendManualCommand;
+manualText.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendManualCommand();
+});
+
+/* =====================================================
+   DEVICE CAMERA & MICROPHONE CAPTURE
 ===================================================== */
 let mediaStream = null;
 
@@ -386,90 +441,108 @@ async function startMedia() {
 
         return true;
     } catch (error) {
-        console.error(error);
-        response.textContent = "Please allow camera and microphone access.";
-        cameraStatus.textContent = "DENIED";
-        cameraStatus.className = "red";
-        micStatus.textContent = "DENIED";
-        micStatus.className = "red";
-        return false;
+        console.warn("Hardware initialization fallback:", error);
+        
+        // Try audio-only if camera access was blocked
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            micStatus.textContent = "CONNECTED";
+            micStatus.className = "green";
+            cameraStatus.textContent = "OFFLINE";
+            cameraStatus.className = "yellow";
+            return true;
+        } catch (audioErr) {
+            response.textContent = "Audio/Camera blocked. Use the direct text input bar.";
+            cameraStatus.textContent = "DENIED";
+            cameraStatus.className = "red";
+            micStatus.textContent = "DENIED";
+            micStatus.className = "red";
+            return true; // Still allow app to load for manual input
+        }
     }
 }
 
 /* =====================================================
-   VOICE
+   VOICE ENGINE
 ===================================================== */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let listening = false;
 let edithStarted = false;
 let conversationActive = false;
+let restartTimer = null;
 
 if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = "en-GB";
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    try {
+        recognition = new SpeechRecognition();
+        recognition.lang = "en-GB";
+        recognition.continuous = false; // single pass avoids Quest browser hangs
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => {
-        listening = true;
-        voiceStatus.textContent = "LISTENING";
-        voiceStatus.className = "green";
-    };
+        recognition.onstart = () => {
+            listening = true;
+            voiceStatus.textContent = "LISTENING";
+            voiceStatus.className = "green";
+        };
 
-    recognition.onresult = async (event) => {
-        const result = event.results[event.results.length - 1];
-        if (!result.isFinal) return;
+        recognition.onresult = async (event) => {
+            const spoken = event.results[0][0].transcript.trim();
+            console.log("HEARD:", spoken);
+            if (!spoken) return;
 
-        const spoken = result[0].transcript.trim();
-        console.log("HEARD:", spoken);
-        if (!spoken) return;
+            if (!edithStarted) {
+                if (!spoken.toLowerCase().includes("edith")) return;
+                edithStarted = true;
+                conversationActive = true;
 
-        if (!edithStarted) {
-            if (!spoken.toLowerCase().includes("edith")) return;
-
-            edithStarted = true;
-            conversationActive = true;
-
-            const question = spoken.replace(/edith/gi, "").trim();
-            if (!question) {
-                response.textContent = "Yes. How can I assist?";
-                speak("Yes. How can I assist?");
+                const question = spoken.replace(/edith/gi, "").trim();
+                if (!question) {
+                    response.textContent = "Yes. How can I assist?";
+                    speak("Yes. How can I assist?");
+                    return;
+                }
+                await askGemini(question);
                 return;
             }
-            await askGemini(question);
-            return;
-        }
 
-        if (conversationActive) {
-            await askGemini(spoken);
-        }
-    };
+            if (conversationActive) {
+                await askGemini(spoken);
+            }
+        };
 
-    recognition.onerror = (event) => {
-        console.log("VOICE:", event.error);
-        listening = false;
-        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-            voiceStatus.textContent = "BLOCKED";
-            voiceStatus.className = "red";
-        }
-    };
+        recognition.onerror = (event) => {
+            console.warn("VOICE ERROR:", event.error);
+            listening = false;
+            if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+                voiceStatus.textContent = "UNSUPPORTED";
+                voiceStatus.className = "yellow";
+            }
+        };
 
-    recognition.onend = () => {
-        listening = false;
-        if (mediaStream) {
-            setTimeout(startListening, 500);
-        }
-    };
+        recognition.onend = () => {
+            listening = false;
+            clearTimeout(restartTimer);
+            // Cycle listener gently so it doesn't freeze the Quest browser
+            restartTimer = setTimeout(() => {
+                startListening();
+            }, 600);
+        };
+    } catch (e) {
+        voiceStatus.textContent = "UNAVAILABLE";
+        voiceStatus.className = "yellow";
+    }
+} else {
+    voiceStatus.textContent = "NOT SUPPORTED";
+    voiceStatus.className = "yellow";
 }
 
 function startListening() {
     if (!recognition || listening) return;
     try {
         recognition.start();
-    } catch (error) {
-        console.log(error.message);
+    } catch (err) {
+        // Recognition already alive or locked
     }
 }
 
@@ -495,7 +568,7 @@ function captureCamera() {
 }
 
 /* =====================================================
-   GEMINI
+   GEMINI API
 ===================================================== */
 async function askGemini(question) {
     if (!apiKey) {
@@ -506,18 +579,14 @@ async function askGemini(question) {
 
     aiStatus.textContent = "ANALYSING";
     aiStatus.className = "yellow";
+    response.textContent = "Analyzing query...";
 
     const image = captureCamera();
     const parts = [
         {
-            text: `You are E.D.I.T.H., a futuristic personal AI assistant.
-User:
-${question}
+            text: `You are E.D.I.T.H., a futuristic tactical assistant. Keep responses direct, factual, and concise.
 
-If a camera image is provided, use it to answer questions about the user's surroundings.
-Only describe things actually visible.
-Do not make things up.
-Keep answers concise and natural.`
+User Query: ${question}`
         }
     ];
 
@@ -550,39 +619,37 @@ Keep answers concise and natural.`
 
         errorText = await result.text();
         if (result.status === 503 || result.status === 429) {
-            await new Promise(resolve => setTimeout(resolve, attempt * 2500));
+            await new Promise(res => setTimeout(res, attempt * 2000));
             continue;
         }
         break;
     }
 
     if (!result || !result.ok) {
-        console.error(errorText);
         aiStatus.textContent = "ERROR";
         aiStatus.className = "red";
-        response.textContent = result && result.status === 503 ? "Gemini is temporarily busy." : "Gemini connection error.";
+        response.textContent = "Gemini API Connection failed. Check API key.";
         return;
     }
 
     try {
         const data = await result.json();
         const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!answer) throw new Error("No AI response");
+        if (!answer) throw new Error("Empty payload");
 
         aiStatus.textContent = "ONLINE";
         aiStatus.className = "green";
         response.textContent = answer;
         speak(answer);
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
         aiStatus.textContent = "ERROR";
         aiStatus.className = "red";
-        response.textContent = "E.D.I.T.H. could not process the response.";
+        response.textContent = "Parsing error processing AI output.";
     }
 }
 
 /* =====================================================
-   TEXT TO SPEECH
+   VOICE SYNTHESIS
 ===================================================== */
 function speak(text) {
     if (!window.speechSynthesis) return;
@@ -590,43 +657,34 @@ function speak(text) {
 
     const speech = new SpeechSynthesisUtterance(text);
     speech.lang = "en-GB";
-    speech.rate = 1;
-    speech.pitch = 0.9;
+    speech.rate = 1.0;
+    speech.pitch = 0.95;
 
-    speech.onstart = () => {
-        voiceStatus.textContent = "SPEAKING";
-    };
-    speech.onend = () => {
-        voiceStatus.textContent = "LISTENING";
-    };
+    speech.onstart = () => { voiceStatus.textContent = "TRANSMITTING"; };
+    speech.onend = () => { voiceStatus.textContent = "LISTENING"; };
 
     window.speechSynthesis.speak(speech);
 }
 
 /* =====================================================
-   START E.D.I.T.H.
+   INITIALIZE APP
 ===================================================== */
 startButton.onclick = async () => {
     startButton.disabled = true;
     startButton.textContent = "INITIALIZING...";
 
-    const ok = await startMedia();
-    if (!ok) {
-        startButton.disabled = false;
-        startButton.textContent = "TRY AGAIN";
-        return;
-    }
-
+    await startMedia();
     start.style.display = "none";
     startListening();
 };
 
 /* =====================================================
-   WEBXR PASSTHROUGH / MIXED REALITY
+   WEBXR PASSTHROUGH (QUEST 3S SAFE)
 ===================================================== */
 let xrSession = null;
 let xrRefSpace = null;
 let xrGL = null;
+let isSessionBusy = false;
 
 async function checkXR() {
     if (!navigator.xr) {
@@ -640,71 +698,83 @@ async function checkXR() {
         const vrSupported = await navigator.xr.isSessionSupported("immersive-vr");
 
         if (arSupported || vrSupported) {
-            xrStatus.textContent = arSupported ? "AR PASSTHROUGH READY" : "VR READY";
+            xrStatus.textContent = arSupported ? "PASSTHROUGH AR" : "VR AVAILABLE";
             xrStatus.className = "green";
             vrButton.style.display = "block";
-            vrButton.textContent = arSupported ? "ENTER PASSTHROUGH AR" : "ENTER VR MODE";
+            vrButton.textContent = arSupported ? "ENTER AR PASSTHROUGH" : "ENTER VR";
         } else {
             xrStatus.textContent = "UNAVAILABLE";
             xrStatus.className = "red";
         }
-    } catch (error) {
-        console.error(error);
+    } catch (e) {
+        console.warn("XR Detection Exception:", e);
     }
 }
 
-/* =====================================================
-   ENTER AR / VR PASSTHROUGH
-===================================================== */
 vrButton.onclick = async () => {
+    if (isSessionBusy) return;
+
+    // If already in an active session, cleanly close it
     if (xrSession) {
-        await xrSession.end();
+        try {
+            isSessionBusy = true;
+            await xrSession.end();
+        } catch (e) {
+            console.warn("Forced cleanup on session termination:", e);
+        } finally {
+            xrSession = null;
+            isSessionBusy = false;
+        }
         return;
     }
 
     if (!navigator.xr) return;
 
     try {
+        isSessionBusy = true;
+
         const arSupported = await navigator.xr.isSessionSupported("immersive-ar");
         const sessionMode = arSupported ? "immersive-ar" : "immersive-vr";
 
-        // Required & optional WebXR features for full passthrough & DOM Overlay
         const sessionInit = {
             requiredFeatures: ["local-floor"],
-            optionalFeatures: ["dom-overlay", "unbounded", "hit-test"],
+            optionalFeatures: ["dom-overlay", "unbounded"],
             domOverlay: { root: document.getElementById("hud") }
         };
 
-        xrSession = await navigator.xr.requestSession(sessionMode, sessionInit);
+        const session = await navigator.xr.requestSession(sessionMode, sessionInit);
+        xrSession = session;
 
         document.body.style.background = "transparent";
         camera.style.display = "none";
 
-        xrSession.addEventListener("end", () => {
+        session.addEventListener("end", () => {
             xrSession = null;
+            isSessionBusy = false;
             document.body.style.background = "#020609";
-            if (mediaStream) camera.style.display = "block";
-            xrStatus.textContent = arSupported ? "AR PASSTHROUGH READY" : "VR READY";
+            if (mediaStream && cameraStatus.textContent === "ONLINE") {
+                camera.style.display = "block";
+            }
+            xrStatus.textContent = arSupported ? "PASSTHROUGH AR" : "VR AVAILABLE";
             xrStatus.className = "green";
-            vrButton.textContent = arSupported ? "ENTER PASSTHROUGH AR" : "ENTER VR MODE";
+            vrButton.textContent = arSupported ? "ENTER AR PASSTHROUGH" : "ENTER VR";
         });
 
         vrButton.textContent = "EXIT E.D.I.T.H.";
         xrStatus.textContent = "PASSTHROUGH ACTIVE";
         xrStatus.className = "green";
 
-        await setupXR(xrSession);
+        await setupXR(session);
     } catch (error) {
-        console.error("XR ERROR:", error);
-        response.textContent = "XR error: " + error.message;
+        console.error("XR Launch Failure:", error);
+        response.textContent = "XR Error: " + error.message;
         xrStatus.textContent = "ERROR";
         xrStatus.className = "red";
+    } finally {
+        isSessionBusy = false;
     }
 };
 
-/* =====================================================
-   XR WEBGL SETUP
-===================================================== */
 async function setupXR(session) {
     const canvas = document.createElement("canvas");
     xrGL = canvas.getContext("webgl", {
@@ -713,17 +783,11 @@ async function setupXR(session) {
         premultipliedAlpha: false
     });
 
-    if (!xrGL) {
-        throw new Error("WebGL context not available.");
-    }
+    if (!xrGL) throw new Error("WebGL context init failed");
 
     await xrGL.makeXRCompatible();
 
-    // Layer with alpha set so real-world camera passthrough is visible
-    const layer = new XRWebGLLayer(session, xrGL, {
-        alpha: true
-    });
-
+    const layer = new XRWebGLLayer(session, xrGL, { alpha: true });
     session.updateRenderState({ baseLayer: layer });
 
     try {
@@ -735,9 +799,6 @@ async function setupXR(session) {
     session.requestAnimationFrame(renderXR);
 }
 
-/* =====================================================
-   XR RENDER LOOP
-===================================================== */
 function renderXR(time, frame) {
     const session = frame.session;
     const pose = frame.getViewerPose(xrRefSpace);
@@ -746,7 +807,7 @@ function renderXR(time, frame) {
         const layer = session.renderState.baseLayer;
         xrGL.bindFramebuffer(xrGL.FRAMEBUFFER, layer.framebuffer);
 
-        // Alpha clear to 0 is mandatory for the headset to display passthrough underneath
+        // Alpha clear to 0 renders pass-through real-world view behind HUD
         xrGL.clearColor(0.0, 0.0, 0.0, 0.0);
         xrGL.clear(xrGL.COLOR_BUFFER_BIT | xrGL.DEPTH_BUFFER_BIT);
     }
