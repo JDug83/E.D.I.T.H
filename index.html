@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
+
 <meta
     name="viewport"
     content="width=device-width,
@@ -9,7 +11,8 @@
     maximum-scale=1.0,
     user-scalable=no"
 >
-<title>E.D.I.T.H. // OPTICAL SYSTEM</title>
+
+<title>E.D.I.T.H. // SPIDER OPTICAL SYSTEM</title>
 
 <style>
 
@@ -25,121 +28,211 @@ body {
     height: 100%;
     overflow: hidden;
     background: #000;
-    color: #00eaff;
-    font-family: Consolas, "Courier New", monospace;
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
 }
 
 #canvasXR {
     position: fixed;
     inset: 0;
+
     width: 100%;
     height: 100%;
+
     display: block;
+
+    background: transparent;
 }
 
+
+/* ============================================================
+   START SCREEN
+============================================================ */
+
 #setupScreen {
+
     position: fixed;
     inset: 0;
+
     z-index: 100;
+
     display: flex;
+    flex-direction: column;
+
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+
     background:
         radial-gradient(
             circle at center,
-            rgba(0,80,100,.18),
+            rgba(0,70,100,.20),
             #000 70%
         );
+
+    color: #00eaff;
 }
 
-#setupScreen::before {
+
+#setupScreen::after {
+
     content: "";
+
     position: absolute;
     inset: 0;
+
+    pointer-events: none;
+
     background:
         repeating-linear-gradient(
             0deg,
             transparent 0px,
             transparent 3px,
-            rgba(0,230,255,.025) 4px
+            rgba(0,220,255,.025) 4px
         );
-    pointer-events: none;
 }
+
 
 .logo {
+
     position: relative;
-    font-size: clamp(40px, 8vw, 80px);
+
+    color: white;
+
+    font-size:
+        clamp(42px, 8vw, 80px);
+
     font-weight: 900;
-    letter-spacing: 16px;
-    color: #fff;
+
+    letter-spacing: 14px;
+
     text-shadow:
-        0 0 10px #00eaff,
-        0 0 30px rgba(0,234,255,.8),
-        0 0 70px rgba(0,234,255,.35);
+        0 0 8px #00eaff,
+        0 0 25px #00eaff,
+        0 0 60px rgba(0,220,255,.45);
 }
 
+
 .subtitle {
+
     position: relative;
-    margin-top: 10px;
+
+    margin-top: 12px;
     margin-bottom: 35px;
-    color: rgba(0,234,255,.55);
+
+    color:
+        rgba(0,235,255,.55);
+
     font-size: 10px;
+
     letter-spacing: 4px;
 }
 
+
 .setupBox {
+
     position: relative;
-    width: min(450px, 90vw);
+
+    width:
+        min(460px, 90vw);
+
     padding: 25px;
-    background: rgba(0,10,15,.75);
-    border: 1px solid rgba(0,234,255,.4);
+
+    background:
+        rgba(0,10,15,.82);
+
+    border:
+        1px solid rgba(0,235,255,.45);
+
     box-shadow:
-        0 0 40px rgba(0,234,255,.08),
-        inset 0 0 25px rgba(0,234,255,.04);
+        0 0 40px
+        rgba(0,235,255,.08),
+
+        inset 0 0 30px
+        rgba(0,235,255,.05);
 }
 
+
 .label {
-    color: rgba(0,234,255,.5);
+
+    color:
+        rgba(0,235,255,.5);
+
     font-size: 9px;
+
     letter-spacing: 3px;
+
     margin-bottom: 10px;
 }
 
+
 #apiKeyInput {
+
     width: 100%;
+
     height: 50px;
-    background: #020607;
-    color: white;
-    border: 1px solid rgba(0,234,255,.5);
+
+    border:
+        1px solid
+        rgba(0,235,255,.55);
+
     outline: none;
+
+    background:
+        rgba(0,5,8,.95);
+
+    color: white;
+
     text-align: center;
+
     font-family: inherit;
+
     font-size: 13px;
 }
 
+
 #btnInit {
+
     width: 100%;
+
     height: 52px;
+
     margin-top: 15px;
-    background: rgba(0,234,255,.05);
+
+    border:
+        1px solid #00eaff;
+
+    background:
+        rgba(0,235,255,.05);
+
     color: #00eaff;
-    border: 1px solid #00eaff;
+
     font-family: inherit;
+
     font-weight: bold;
+
     letter-spacing: 4px;
+
     cursor: pointer;
 }
 
+
 #btnInit:hover {
-    background: rgba(0,234,255,.18);
-    box-shadow: 0 0 30px rgba(0,234,255,.35);
+
+    background:
+        rgba(0,235,255,.18);
+
+    box-shadow:
+        0 0 30px
+        rgba(0,235,255,.4);
 }
 
 </style>
 </head>
 
 <body>
+
 
 <div id="setupScreen">
 
@@ -172,9 +265,12 @@ body {
 
 </div>
 
+
 <canvas id="canvasXR"></canvas>
 
+
 <script>
+
 
 /* ================================================================
    STATE
@@ -199,14 +295,28 @@ let apiKey =
 apiKeyInput.value = apiKey;
 
 
+let session = null;
+
+let referenceSpace = null;
+
+let xrLayer = null;
+
 let isRecording = false;
+
 let isProcessing = false;
+
 let isSpeaking = false;
 
-let systemStatus = "SYSTEM READY";
+let detectedPlanes = [];
+
+
+let systemStatus =
+    "SYSTEM READY";
+
 
 let edithResponse =
     "E.D.I.T.H. online. Awaiting directive.";
+
 
 let debugLog =
     "OPTICAL SYSTEM STANDBY";
@@ -217,8 +327,11 @@ let debugLog =
 ================================================================ */
 
 let audioContext = null;
+
 let micStream = null;
+
 let mediaRecorder = null;
+
 let audioChunks = [];
 
 
@@ -234,18 +347,20 @@ function initAudio() {
     }
 
     if (
-        audioContext.state === "suspended"
+        audioContext.state ===
+        "suspended"
     ) {
+
         audioContext.resume();
     }
 }
 
 
-function tone(
+function playTone(
     frequency,
     duration,
     type = "sine",
-    volume = .1
+    volume = 0.1
 ) {
 
     try {
@@ -269,20 +384,25 @@ function tone(
         );
 
         gain.gain.exponentialRampToValueAtTime(
-            .0001,
-            audioContext.currentTime + duration
+            0.0001,
+            audioContext.currentTime +
+            duration
         );
 
         osc.connect(gain);
-        gain.connect(audioContext.destination);
+
+        gain.connect(
+            audioContext.destination
+        );
 
         osc.start();
 
         osc.stop(
-            audioContext.currentTime + duration
+            audioContext.currentTime +
+            duration
         );
 
-    } catch {}
+    } catch (e) {}
 }
 
 
@@ -290,35 +410,56 @@ function tone(
    SPEECH
 ================================================================ */
 
-function speak(text) {
+function speakText(text) {
 
-    if (!window.speechSynthesis)
+    if (!window.speechSynthesis) {
+
         return;
+    }
 
     speechSynthesis.cancel();
 
-    const u =
-        new SpeechSynthesisUtterance(text);
+    const utterance =
+        new SpeechSynthesisUtterance(
+            text
+        );
 
-    u.lang = "en-US";
-    u.rate = 1.02;
-    u.pitch = .82;
-    u.volume = .9;
+    utterance.lang =
+        "en-US";
 
-    u.onstart = () => {
-        isSpeaking = true;
-    };
+    utterance.rate =
+        1.02;
 
-    u.onend = () => {
-        isSpeaking = false;
+    utterance.pitch =
+        0.82;
 
-        if (!isRecording) {
-            systemStatus =
-                "SYSTEM READY";
-        }
-    };
+    utterance.volume =
+        0.9;
 
-    speechSynthesis.speak(u);
+
+    utterance.onstart =
+        () => {
+
+            isSpeaking = true;
+        };
+
+
+    utterance.onend =
+        () => {
+
+            isSpeaking = false;
+
+            if (!isRecording) {
+
+                systemStatus =
+                    "SYSTEM READY";
+            }
+        };
+
+
+    speechSynthesis.speak(
+        utterance
+    );
 }
 
 
@@ -326,59 +467,85 @@ function speak(text) {
    MICROPHONE
 ================================================================ */
 
-async function setupMic() {
+async function setupMicrophone() {
 
     micStream =
         await navigator.mediaDevices
             .getUserMedia({
+
                 audio: {
+
                     channelCount: 1,
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
+
+                    echoCancellation:
+                        true,
+
+                    noiseSuppression:
+                        true,
+
+                    autoGainControl:
+                        true
                 }
             });
 
 
-    let mime = "";
+    let mimeType = "";
 
     const formats = [
+
         "audio/webm;codecs=opus",
+
         "audio/webm",
+
         "audio/ogg;codecs=opus"
     ];
 
-    for (const f of formats) {
+
+    for (
+        const format of formats
+    ) {
 
         if (
-            MediaRecorder.isTypeSupported(f)
+            MediaRecorder
+                .isTypeSupported(
+                    format
+                )
         ) {
 
-            mime = f;
+            mimeType =
+                format;
+
             break;
         }
     }
 
 
     mediaRecorder =
-        mime
+        mimeType
+
             ? new MediaRecorder(
                 micStream,
-                { mimeType: mime }
+                {
+                    mimeType
+                }
             )
+
             : new MediaRecorder(
                 micStream
             );
 
 
     mediaRecorder.ondataavailable =
-        e => {
+        event => {
 
             if (
-                e.data &&
-                e.data.size
+                event.data &&
+                event.data.size > 0
             ) {
-                audioChunks.push(e.data);
+
+                audioChunks.push(
+                    event.data
+                );
             }
         };
 
@@ -391,22 +558,33 @@ async function setupMic() {
 
             audioChunks = [];
 
-            if (!chunks.length) {
-                isProcessing = false;
+
+            if (
+                chunks.length === 0
+            ) {
+
+                isProcessing =
+                    false;
+
                 return;
             }
+
 
             const blob =
                 new Blob(
                     chunks,
                     {
                         type:
-                            mediaRecorder.mimeType ||
+                            mediaRecorder
+                                .mimeType ||
                             "audio/webm"
                     }
                 );
 
-            await sendToGemini(blob);
+
+            await sendAudioToGemini(
+                blob
+            );
         };
 
 
@@ -416,7 +594,7 @@ async function setupMic() {
 
 
 /* ================================================================
-   RECORD
+   RECORDING
 ================================================================ */
 
 function startRecording() {
@@ -426,6 +604,7 @@ function startRecording() {
         isRecording ||
         isProcessing
     ) {
+
         return;
     }
 
@@ -438,13 +617,16 @@ function startRecording() {
 
     isRecording = true;
 
+
     systemStatus =
         "LISTENING";
+
 
     debugLog =
         "VOICE CAPTURE ACTIVE";
 
-    tone(
+
+    playTone(
         520,
         .07,
         "triangle"
@@ -458,22 +640,28 @@ function stopRecording() {
         !mediaRecorder ||
         !isRecording
     ) {
+
         return;
     }
 
 
     isRecording = false;
+
     isProcessing = true;
+
 
     systemStatus =
         "PROCESSING";
 
+
     debugLog =
         "UPLOADING DIRECTIVE";
 
+
     mediaRecorder.stop();
 
-    tone(
+
+    playTone(
         900,
         .08,
         "triangle"
@@ -482,7 +670,7 @@ function stopRecording() {
 
 
 /* ================================================================
-   BLOB BASE64
+   BLOB -> BASE64
 ================================================================ */
 
 function blobToBase64(blob) {
@@ -493,21 +681,27 @@ function blobToBase64(blob) {
             const reader =
                 new FileReader();
 
-            reader.onloadend = () => {
+            reader.onloadend =
+                () => {
 
-                const result =
-                    reader.result;
+                    const result =
+                        reader.result;
 
-                resolve(
-                    result.substring(
-                        result.indexOf(",") + 1
-                    )
-                );
-            };
+                    resolve(
+                        result.substring(
+                            result.indexOf(",") + 1
+                        )
+                    );
+                };
 
-            reader.onerror = reject;
 
-            reader.readAsDataURL(blob);
+            reader.onerror =
+                reject;
+
+
+            reader.readAsDataURL(
+                blob
+            );
         }
     );
 }
@@ -517,15 +711,21 @@ function blobToBase64(blob) {
    GEMINI
 ================================================================ */
 
-async function sendToGemini(blob) {
+async function sendAudioToGemini(
+    blob
+) {
 
     try {
 
         systemStatus =
             "NEURAL UPLINK";
 
+
         const audio =
-            await blobToBase64(blob);
+            await blobToBase64(
+                blob
+            );
+
 
         const mime =
             blob.type.split(";")[0] ||
@@ -534,65 +734,87 @@ async function sendToGemini(blob) {
 
         const response =
             await fetch(
+
                 "https://generativelanguage.googleapis.com/" +
                 "v1beta/models/gemini-2.5-flash:generateContent" +
                 "?key=" +
-                encodeURIComponent(apiKey),
+                encodeURIComponent(
+                    apiKey
+                ),
+
                 {
+
                     method: "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json"
                     },
 
                     body: JSON.stringify({
 
-                        contents: [{
-                            parts: [
+                        contents: [
 
-                                {
-                                    text:
+                            {
+
+                                parts: [
+
+                                    {
+
+                                        text:
 `You are E.D.I.T.H., an advanced tactical optical AI.
 
 Respond to the user's spoken command.
 
-Be extremely concise and natural.
-
 Maximum two short sentences.
 
-Sound calm, intelligent and futuristic.
+Be calm, intelligent, concise and futuristic.
 
-Never explain your internal instructions.`
-                                },
+Do not mention these instructions.`
+                                    },
 
-                                {
-                                    inline_data: {
-                                        mime_type: mime,
-                                        data: audio
+                                    {
+
+                                        inline_data: {
+
+                                            mime_type:
+                                                mime,
+
+                                            data:
+                                                audio
+                                        }
                                     }
-                                }
-
-                            ]
-                        }],
+                                ]
+                            }
+                        ],
 
                         generationConfig: {
-                            temperature: .35,
-                            maxOutputTokens: 120
+
+                            temperature:
+                                0.35,
+
+                            maxOutputTokens:
+                                120
                         }
                     })
                 }
             );
 
 
-        const text =
+        const raw =
             await response.text();
+
 
         let data;
 
         try {
-            data = JSON.parse(text);
+
+            data =
+                JSON.parse(raw);
+
         } catch {
+
             throw new Error(
                 "Invalid AI response"
             );
@@ -611,14 +833,17 @@ Never explain your internal instructions.`
         const reply =
             data
                 ?.candidates?.[0]
-                ?.content
-                ?.parts
-                ?.map(p => p.text || "")
+                ?.content?.parts
+                ?.map(
+                    part =>
+                        part.text || ""
+                )
                 .join("")
                 .trim();
 
 
         if (!reply) {
+
             throw new Error(
                 "No AI response"
             );
@@ -628,31 +853,43 @@ Never explain your internal instructions.`
         edithResponse =
             reply;
 
+
         systemStatus =
             "DIRECTIVE COMPLETE";
 
+
         debugLog =
             "GEMINI // ONLINE";
+
 
         isProcessing =
             false;
 
 
-        tone(
+        playTone(
             1200,
             .13,
             "sine"
         );
 
-        speak(reply);
+
+        speakText(
+            reply
+        );
 
 
     } catch (error) {
 
-        isProcessing = false;
+        console.error(error);
+
+
+        isProcessing =
+            false;
+
 
         systemStatus =
             "AI ERROR";
+
 
         debugLog =
             error.message.substring(
@@ -660,10 +897,12 @@ Never explain your internal instructions.`
                 70
             );
 
+
         edithResponse =
             "Neural uplink unavailable. Please retry.";
 
-        tone(
+
+        playTone(
             220,
             .3,
             "sawtooth"
@@ -677,45 +916,56 @@ Never explain your internal instructions.`
 ================================================================ */
 
 const hud =
-    document.createElement("canvas");
+    document.createElement(
+        "canvas"
+    );
+
 
 hud.width = 1920;
+
 hud.height = 1080;
+
 
 const ctx =
     hud.getContext("2d");
 
-const W = hud.width;
-const H = hud.height;
+
+const W = 1920;
+
+const H = 1080;
 
 const CX = W / 2;
+
 const CY = H / 2;
 
 
 const CYAN =
     "rgba(0,235,255,.95)";
 
-const CYAN2 =
-    "rgba(0,235,255,.45)";
+const CYAN_DIM =
+    "rgba(0,235,255,.48)";
 
-const CYAN3 =
-    "rgba(0,235,255,.12)";
+const CYAN_FAINT =
+    "rgba(0,235,255,.16)";
 
 const RED =
-    "rgba(255,35,55,.95)";
+    "rgba(255,25,45,.95)";
+
+const RED_DIM =
+    "rgba(255,25,45,.45)";
 
 const GREEN =
-    "rgba(0,255,150,.95)";
+    "rgba(0,255,145,.95)";
 
 const WHITE =
-    "rgba(235,255,255,.96)";
+    "rgba(240,255,255,.98)";
 
 
 /* ================================================================
    TEXT
 ================================================================ */
 
-function text(
+function drawText(
     value,
     x,
     y,
@@ -739,7 +989,7 @@ function text(
         color;
 
     ctx.shadowBlur =
-        7;
+        6;
 
     ctx.fillText(
         value,
@@ -755,12 +1005,12 @@ function text(
    LINE
 ================================================================ */
 
-function line(
+function drawLine(
     x1,
     y1,
     x2,
     y2,
-    color = CYAN2,
+    color = CYAN_DIM,
     width = 1
 ) {
 
@@ -774,8 +1024,15 @@ function line(
 
     ctx.beginPath();
 
-    ctx.moveTo(x1,y1);
-    ctx.lineTo(x2,y2);
+    ctx.moveTo(
+        x1,
+        y1
+    );
+
+    ctx.lineTo(
+        x2,
+        y2
+    );
 
     ctx.stroke();
 
@@ -784,133 +1041,1024 @@ function line(
 
 
 /* ================================================================
-   HEXAGON
+   RED SPIDER SIDE GRAPHICS
 ================================================================ */
 
-function hexagon(
-    x,
-    y,
-    radius,
-    color,
-    rotation = 0
+function drawSideGraphics(
+    time
 ) {
+
+    const pulse =
+        0.65 +
+        Math.sin(
+            time * .004
+        ) * .2;
+
 
     ctx.save();
 
-    ctx.strokeStyle =
-        color;
+    ctx.lineCap =
+        "round";
 
-    ctx.lineWidth = 1;
+
+    /*
+     * LEFT RED EYE EDGE
+     */
+
+    ctx.strokeStyle =
+        `rgba(255,20,40,${pulse})`;
 
     ctx.shadowColor =
-        color;
+        RED;
 
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur =
+        18;
+
+
+    ctx.lineWidth =
+        3;
+
 
     ctx.beginPath();
+
+    ctx.moveTo(
+        45,
+        90
+    );
+
+    ctx.bezierCurveTo(
+        20,
+        230,
+        20,
+        370,
+        48,
+        470
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        48,
+        610
+    );
+
+    ctx.bezierCurveTo(
+        20,
+        720,
+        25,
+        850,
+        58,
+        980
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * RIGHT RED EYE EDGE
+     */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W - 45,
+        90
+    );
+
+    ctx.bezierCurveTo(
+        W - 20,
+        230,
+        W - 20,
+        370,
+        W - 48,
+        470
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W - 48,
+        610
+    );
+
+    ctx.bezierCurveTo(
+        W - 20,
+        720,
+        W - 25,
+        850,
+        W - 58,
+        980
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * SMALL RED TECH MARKS
+     */
 
     for (
         let i = 0;
-        i < 6;
+        i < 8;
         i++
     ) {
 
-        const a =
-            rotation +
-            i *
-            Math.PI /
-            3;
+        const y =
+            150 +
+            i * 105;
 
-        const px =
-            x +
-            Math.cos(a) *
-            radius;
 
-        const py =
-            y +
-            Math.sin(a) *
-            radius;
+        const len =
+            15 +
+            (i % 3) * 10;
 
-        if (i === 0)
-            ctx.moveTo(px,py);
-        else
-            ctx.lineTo(px,py);
+
+        drawLine(
+            58,
+            y,
+            58 + len,
+            y,
+            RED_DIM,
+            1
+        );
+
+
+        drawLine(
+            W - 58,
+            y,
+            W - 58 - len,
+            y,
+            RED_DIM,
+            1
+        );
     }
 
-    ctx.closePath();
-    ctx.stroke();
+
+    /*
+     * RED DIAGONAL SPIDER CUTS
+     */
+
+    drawLine(
+        65,
+        240,
+        130,
+        175,
+        RED_DIM,
+        2
+    );
+
+    drawLine(
+        W - 65,
+        240,
+        W - 130,
+        175,
+        RED_DIM,
+        2
+    );
+
+
+    drawLine(
+        65,
+        840,
+        130,
+        905,
+        RED_DIM,
+        2
+    );
+
+    drawLine(
+        W - 65,
+        840,
+        W - 130,
+        905,
+        RED_DIM,
+        2
+    );
+
 
     ctx.restore();
 }
 
 
 /* ================================================================
-   BRACKET
+   TOP PITCH LADDER
 ================================================================ */
 
-function bracket(
-    x,
-    y,
-    w,
-    h,
-    color
+function drawPitchLadder(
+    time
 ) {
+
+    const centerX =
+        CX;
+
+    const top =
+        60;
+
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        CYAN;
+
+    ctx.lineWidth =
+        1.4;
+
+    ctx.shadowColor =
+        CYAN;
+
+    ctx.shadowBlur =
+        5;
+
+
+    /*
+     * vertical center
+     */
+
+    drawLine(
+        centerX,
+        top - 25,
+        centerX,
+        top + 100,
+        CYAN_DIM,
+        1
+    );
+
+
+    /*
+     * ladder ticks
+     */
+
+    for (
+        let i = -5;
+        i <= 5;
+        i++
+    ) {
+
+        const y =
+            top +
+            i * 16;
+
+
+        const width =
+            i === 0
+                ? 38
+                : 18;
+
+
+        drawLine(
+            centerX - width,
+            y,
+            centerX + width,
+            y,
+            i === 0
+                ? CYAN
+                : CYAN_DIM,
+            i === 0
+                ? 2
+                : 1
+        );
+
+
+        if (
+            i !== 0
+        ) {
+
+            drawText(
+                `${-i * 5}°`,
+                centerX +
+                    width +
+                    12,
+                y + 3,
+                7,
+                CYAN_DIM,
+                "left"
+            );
+        }
+    }
+
+
+    /*
+     * center chevron
+     */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        centerX - 16,
+        top + 1
+    );
+
+    ctx.lineTo(
+        centerX,
+        top + 12
+    );
+
+    ctx.lineTo(
+        centerX + 16,
+        top + 1
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * little animated aircraft-style marker
+     */
+
+    const drift =
+        Math.sin(
+            time * .001
+        ) * 3;
+
+
+    drawLine(
+        centerX - 65,
+        top + 52 + drift,
+        centerX - 38,
+        top + 52 + drift,
+        CYAN_DIM
+    );
+
+
+    drawLine(
+        centerX + 38,
+        top + 52 + drift,
+        centerX + 65,
+        top + 52 + drift,
+        CYAN_DIM
+    );
+
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   COMPASS
+================================================================ */
+
+function drawCompass(
+    time
+) {
+
+    const y =
+        205;
+
+
+    drawText(
+        "N",
+        CX,
+        y,
+        10,
+        WHITE,
+        "center"
+    );
+
+
+    for (
+        let i = -9;
+        i <= 9;
+        i++
+    ) {
+
+        const x =
+            CX +
+            i * 38;
+
+
+        const tall =
+            i % 3 === 0;
+
+
+        drawLine(
+            x,
+            y + 10,
+            x,
+            y +
+                (tall
+                    ? 27
+                    : 19),
+            tall
+                ? CYAN
+                : CYAN_DIM
+        );
+    }
+
+
+    drawText(
+        "W",
+        CX - 125,
+        y + 34,
+        8,
+        CYAN_DIM,
+        "center"
+    );
+
+
+    drawText(
+        "E",
+        CX + 125,
+        y + 34,
+        8,
+        CYAN_DIM,
+        "center"
+    );
+}
+
+
+/* ================================================================
+   RADAR
+================================================================ */
+
+function drawRadar(
+    time
+) {
+
+    ctx.save();
+
+    ctx.translate(
+        CX,
+        CY
+    );
+
+
+    /*
+     * faint rings
+     */
+
+    ctx.strokeStyle =
+        CYAN_FAINT;
+
+    ctx.lineWidth = 1;
+
+    ctx.setLineDash([
+        3,
+        12
+    ]);
+
+
+    for (
+        const radius of
+        [150, 215, 280]
+    ) {
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            radius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+    }
+
+
+    /*
+     * rotating scan
+     */
+
+    ctx.rotate(
+        time * .0005
+    );
+
+
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle =
+        CYAN_DIM;
+
+    ctx.lineWidth = 1;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        0
+    );
+
+    ctx.lineTo(
+        280,
+        0
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * scan cone
+     */
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            280,
+            0
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "rgba(0,235,255,.18)"
+    );
+
+
+    gradient.addColorStop(
+        1,
+        "rgba(0,235,255,0)"
+    );
+
+
+    ctx.fillStyle =
+        gradient;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        0
+    );
+
+    ctx.arc(
+        0,
+        0,
+        280,
+        -.15,
+        .15
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   CENTRAL RETICLE
+================================================================ */
+
+function drawReticle(
+    time
+) {
+
+    const color =
+        isRecording
+            ? RED
+            : isSpeaking
+                ? GREEN
+                : CYAN;
+
+
+    const pulse =
+        1 +
+        Math.sin(
+            time * .006
+        ) * .06;
+
+
+    const r =
+        (
+            isRecording
+                ? 48
+                : 36
+        ) *
+        pulse;
+
 
     ctx.save();
 
     ctx.strokeStyle =
         color;
 
-    ctx.lineWidth = 2;
-
     ctx.shadowColor =
         color;
 
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur =
+        18;
 
-    const s = 18;
+
+    /*
+     * outer targeting brackets
+     */
+
+    ctx.lineWidth =
+        2;
+
 
     ctx.beginPath();
 
-    ctx.moveTo(x,y+s);
-    ctx.lineTo(x,y);
-    ctx.lineTo(x+s,y);
-
-    ctx.moveTo(x+w-s,y);
-    ctx.lineTo(x+w,y);
-    ctx.lineTo(x+w,y+s);
-
-    ctx.moveTo(x,y+h-s);
-    ctx.lineTo(x,y+h);
-    ctx.lineTo(x+s,y+h);
-
-    ctx.moveTo(x+w-s,y+h);
-    ctx.lineTo(x+w,y+h);
-    ctx.lineTo(x+w,y+h-s);
+    ctx.arc(
+        CX,
+        CY,
+        r,
+        0,
+        Math.PI * 2
+    );
 
     ctx.stroke();
+
+
+    /*
+     * inner eye
+     */
+
+    ctx.lineWidth =
+        1.5;
+
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        CX,
+        CY,
+        r * 1.55,
+        r * .65,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * pupil
+     */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        CX,
+        CY,
+        6,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        color;
+
+    ctx.fill();
+
+
+    /*
+     * crosshair
+     */
+
+    drawLine(
+        CX - 115,
+        CY,
+        CX - 55,
+        CY,
+        color,
+        1
+    );
+
+
+    drawLine(
+        CX + 55,
+        CY,
+        CX + 115,
+        CY,
+        color,
+        1
+    );
+
+
+    drawLine(
+        CX,
+        CY - 115,
+        CX,
+        CY - 55,
+        color,
+        1
+    );
+
+
+    drawLine(
+        CX,
+        CY + 55,
+        CX,
+        CY + 115,
+        color,
+        1
+    );
+
+
+    /*
+     * tiny target marks
+     */
+
+    drawLine(
+        CX - 80,
+        CY - 80,
+        CX - 62,
+        CY - 80,
+        color
+    );
+
+    drawLine(
+        CX - 80,
+        CY - 80,
+        CX - 80,
+        CY - 62,
+        color
+    );
+
+
+    drawLine(
+        CX + 80,
+        CY - 80,
+        CX + 62,
+        CY - 80,
+        color
+    );
+
+    drawLine(
+        CX + 80,
+        CY - 80,
+        CX + 80,
+        CY - 62,
+        color
+    );
+
+
+    drawLine(
+        CX - 80,
+        CY + 80,
+        CX - 62,
+        CY + 80,
+        color
+    );
+
+    drawLine(
+        CX - 80,
+        CY + 80,
+        CX - 80,
+        CY + 62,
+        color
+    );
+
+
+    drawLine(
+        CX + 80,
+        CY + 80,
+        CX + 62,
+        CY + 80,
+        color
+    );
+
+    drawLine(
+        CX + 80,
+        CY + 80,
+        CX + 80,
+        CY + 62,
+        color
+    );
+
 
     ctx.restore();
 }
 
 
 /* ================================================================
-   RESPONSE TEXT
+   FLOATING DATA
 ================================================================ */
 
-function responseText() {
+function drawTelemetry() {
 
-    const max =
-        650;
+    /*
+     * LEFT
+     */
 
-    const words =
-        edithResponse
-            .replace(/\s+/g," ")
-            .split(" ");
+    const lx =
+        155;
 
-    let current = "";
-    let y =
-        CY + 190;
+
+    drawText(
+        "OPTICAL ANALYSIS",
+        lx,
+        330,
+        11,
+        CYAN
+    );
+
+
+    drawText(
+        "VISION       ONLINE",
+        lx,
+        355,
+        9,
+        CYAN_DIM
+    );
+
+
+    drawText(
+        "MOTION       TRACKING",
+        lx,
+        375,
+        9,
+        CYAN_DIM
+    );
+
+
+    drawText(
+        "DEPTH        ACTIVE",
+        lx,
+        395,
+        9,
+        CYAN_DIM
+    );
+
+
+    drawText(
+        "ROOM         SCANNING",
+        lx,
+        415,
+        9,
+        CYAN_DIM
+    );
+
+
+    /*
+     * RIGHT
+     */
+
+    const rx =
+        W - 155;
+
+
+    drawText(
+        "TACTICAL SYSTEM",
+        rx,
+        330,
+        11,
+        CYAN,
+        "right"
+    );
+
+
+    drawText(
+        "THREAT       LOW",
+        rx,
+        355,
+        9,
+        CYAN_DIM,
+        "right"
+    );
+
+
+    drawText(
+        "PLANES       " +
+        detectedPlanes.length,
+        rx,
+        375,
+        9,
+        CYAN_DIM,
+        "right"
+    );
+
+
+    drawText(
+        "LOCK         " +
+        (
+            isRecording
+                ? "VOICE"
+                : "NONE"
+        ),
+        rx,
+        395,
+        9,
+        isRecording
+            ? RED
+            : CYAN_DIM,
+        "right"
+    );
+
+
+    drawText(
+        "AI           " +
+        (
+            isProcessing
+                ? "BUSY"
+                : "READY"
+        ),
+        rx,
+        415,
+        9,
+        isProcessing
+            ? RED
+            : CYAN_DIM,
+        "right"
+    );
+}
+
+
+/* ================================================================
+   VOICE WAVE
+================================================================ */
+
+function drawVoiceWave(
+    time
+) {
+
+    const y =
+        H - 185;
+
+
+    drawText(
+        "VOICE LINK",
+        CX,
+        y,
+        9,
+        CYAN_DIM,
+        "center"
+    );
+
+
+    for (
+        let i = -32;
+        i <= 32;
+        i++
+    ) {
+
+        const active =
+            isRecording ||
+            isSpeaking;
+
+
+        const amp =
+            active
+
+                ? 4 +
+                    Math.abs(
+                        Math.sin(
+                            time * .012 +
+                            i * .42
+                        )
+                    ) *
+                    25
+
+                : 3;
+
+
+        const color =
+            isRecording
+                ? RED
+                : isSpeaking
+                    ? GREEN
+                    : CYAN_DIM;
+
+
+        ctx.fillStyle =
+            color;
+
+
+        ctx.fillRect(
+
+            CX +
+                i * 7,
+
+            y + 15 -
+                amp / 2,
+
+            3,
+
+            amp
+        );
+    }
+}
+
+
+/* ================================================================
+   RESPONSE
+================================================================ */
+
+function drawResponse() {
+
+    drawText(
+        "E.D.I.T.H. // RESPONSE",
+        CX,
+        CY + 150,
+        9,
+        CYAN_DIM,
+        "center"
+    );
+
 
     ctx.save();
 
@@ -926,7 +2074,29 @@ function responseText() {
     ctx.shadowColor =
         CYAN;
 
-    ctx.shadowBlur = 5;
+    ctx.shadowBlur =
+        5;
+
+
+    const words =
+        edithResponse
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .split(" ");
+
+
+    const maxWidth =
+        650;
+
+
+    let line =
+        "";
+
+
+    let y =
+        CY + 185;
 
 
     for (
@@ -934,41 +2104,623 @@ function responseText() {
     ) {
 
         const test =
-            current +
+            line +
             word +
             " ";
 
+
         if (
-            ctx.measureText(test).width >
-            max
+            ctx.measureText(
+                test
+            ).width >
+            maxWidth
         ) {
 
             ctx.fillText(
-                current,
+                line,
                 CX,
                 y
             );
 
-            y += 21;
 
-            current =
+            y += 22;
+
+
+            line =
                 word + " ";
 
         } else {
 
-            current =
+            line =
                 test;
         }
     }
 
 
     ctx.fillText(
-        current,
+        line,
         CX,
         y
     );
 
+
     ctx.restore();
+}
+
+
+/* ================================================================
+   WORLD PLANE HIGHLIGHTS
+================================================================ */
+
+/*
+ * This uses Quest's WebXR plane detection.
+
+ * It does NOT read the camera pixels.
+
+ * Quest gives us detected world surfaces such as
+ * floors, walls and tables.
+
+ * We project those detected surfaces into the user's
+ * view and draw Spider-style targeting brackets.
+ */
+
+
+function drawWorldPlaneHighlights(
+    frame,
+    pose
+) {
+
+    if (
+        !session ||
+        !session.detectedPlanes
+    ) {
+
+        return;
+    }
+
+
+    detectedPlanes =
+        Array.from(
+            session.detectedPlanes
+        );
+
+
+    /*
+     * Limit rendering so we don't
+     * overload the HUD.
+     */
+
+    const planes =
+        detectedPlanes.slice(
+            0,
+            12
+        );
+
+
+    for (
+        const plane of planes
+    ) {
+
+        try {
+
+            const planePose =
+                frame.getPose(
+                    plane.planeSpace,
+                    referenceSpace
+                );
+
+
+            if (!planePose)
+                continue;
+
+
+            /*
+             * Plane dimensions.
+
+             * Quest Browser currently exposes
+             * rectangular horizontal/vertical planes.
+             */
+
+            const width =
+                plane.polygon?.length
+                    ? getPlaneWidth(
+                        plane.polygon
+                    )
+                    : .5;
+
+
+            const height =
+                plane.polygon?.length
+                    ? getPlaneHeight(
+                        plane.polygon
+                    )
+                    : .5;
+
+
+            /*
+             * Center of plane in local coordinates.
+             */
+
+            const center =
+                planePose.transform.position;
+
+
+            const screen =
+                projectWorldPoint(
+                    center,
+                    pose
+                );
+
+
+            if (!screen)
+                continue;
+
+
+            /*
+             * Distance scaling.
+             */
+
+            const distance =
+                Math.max(
+                    .4,
+                    Math.abs(
+                        screen.z
+                    )
+                );
+
+
+            const size =
+                Math.min(
+                    260,
+                    Math.max(
+                        45,
+                        210 / distance
+                    )
+                );
+
+
+            const color =
+                plane.orientation ===
+                "horizontal"
+                    ? CYAN
+                    : RED;
+
+
+            /*
+             * Holographic target bracket
+             */
+
+            drawTargetBox(
+                screen.x,
+                screen.y,
+                size,
+                color
+            );
+
+
+            /*
+             * Plane label
+             */
+
+            const label =
+                plane.orientation ===
+                "horizontal"
+                    ? "SURFACE"
+                    : "VERTICAL";
+
+
+            drawText(
+                label,
+                screen.x,
+                screen.y -
+                    size / 2 -
+                    12,
+                8,
+                color,
+                "center"
+            );
+
+
+        } catch (
+            error
+        ) {
+
+            /*
+             * Some browsers may expose
+             * incomplete plane data.
+             */
+
+            continue;
+        }
+    }
+}
+
+
+/* ================================================================
+   TARGET BOX
+================================================================ */
+
+function drawTargetBox(
+    x,
+    y,
+    size,
+    color
+) {
+
+    const half =
+        size / 2;
+
+
+    const corner =
+        Math.min(
+            24,
+            size * .25
+        );
+
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        color;
+
+    ctx.lineWidth =
+        2;
+
+    ctx.shadowColor =
+        color;
+
+    ctx.shadowBlur =
+        10;
+
+
+    /*
+     * top-left
+     */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x - half,
+        y - half +
+        corner
+    );
+
+    ctx.lineTo(
+        x - half,
+        y - half
+    );
+
+    ctx.lineTo(
+        x - half +
+        corner,
+        y - half
+    );
+
+
+    /*
+     * top-right
+     */
+
+    ctx.moveTo(
+        x + half -
+        corner,
+        y - half
+    );
+
+    ctx.lineTo(
+        x + half,
+        y - half
+    );
+
+    ctx.lineTo(
+        x + half,
+        y - half +
+        corner
+    );
+
+
+    /*
+     * bottom-left
+     */
+
+    ctx.moveTo(
+        x - half,
+        y + half -
+        corner
+    );
+
+    ctx.lineTo(
+        x - half,
+        y + half
+    );
+
+    ctx.lineTo(
+        x - half +
+        corner,
+        y + half
+    );
+
+
+    /*
+     * bottom-right
+     */
+
+    ctx.moveTo(
+        x + half -
+        corner,
+        y + half
+    );
+
+    ctx.lineTo(
+        x + half,
+        y + half
+    );
+
+    ctx.lineTo(
+        x + half,
+        y + half -
+        corner
+    );
+
+
+    ctx.stroke();
+
+
+    /*
+     * target dot
+     */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        3,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        color;
+
+    ctx.fill();
+
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   WORLD -> SCREEN
+================================================================ */
+
+function projectWorldPoint(
+    position,
+    pose
+) {
+
+    /*
+     * We need to transform the world point
+     * into the view's coordinate system.
+
+     * For simplicity, use the first view.
+     */
+
+    const view =
+        pose.views[0];
+
+
+    if (!view)
+        return null;
+
+
+    const viewMatrix =
+        view.transform.inverse.matrix;
+
+
+    const projectionMatrix =
+        view.projectionMatrix;
+
+
+    const x =
+        position.x;
+
+    const y =
+        position.y;
+
+    const z =
+        position.z;
+
+
+    /*
+     * view transform
+     */
+
+    const vx =
+        viewMatrix[0] * x +
+        viewMatrix[4] * y +
+        viewMatrix[8] * z +
+        viewMatrix[12];
+
+
+    const vy =
+        viewMatrix[1] * x +
+        viewMatrix[5] * y +
+        viewMatrix[9] * z +
+        viewMatrix[13];
+
+
+    const vz =
+        viewMatrix[2] * x +
+        viewMatrix[6] * y +
+        viewMatrix[10] * z +
+        viewMatrix[14];
+
+
+    const vw =
+        viewMatrix[3] * x +
+        viewMatrix[7] * y +
+        viewMatrix[11] * z +
+        viewMatrix[15];
+
+
+    /*
+     * projection
+     */
+
+    const clipX =
+        projectionMatrix[0] * vx +
+        projectionMatrix[4] * vy +
+        projectionMatrix[8] * vz +
+        projectionMatrix[12] * vw;
+
+
+    const clipY =
+        projectionMatrix[1] * vx +
+        projectionMatrix[5] * vy +
+        projectionMatrix[9] * vz +
+        projectionMatrix[13] * vw;
+
+
+    const clipZ =
+        projectionMatrix[2] * vx +
+        projectionMatrix[6] * vy +
+        projectionMatrix[10] * vz +
+        projectionMatrix[14] * vw;
+
+
+    const clipW =
+        projectionMatrix[3] * vx +
+        projectionMatrix[7] * vy +
+        projectionMatrix[11] * vz +
+        projectionMatrix[15] * vw;
+
+
+    if (
+        clipW <= 0
+    ) {
+
+        return null;
+    }
+
+
+    const ndcX =
+        clipX / clipW;
+
+    const ndcY =
+        clipY / clipW;
+
+    const ndcZ =
+        clipZ / clipW;
+
+
+    return {
+
+        x:
+            (ndcX * .5 + .5) *
+            W,
+
+        y:
+            (-ndcY * .5 + .5) *
+            H,
+
+        z:
+            ndcZ
+    };
+}
+
+
+/* ================================================================
+   PLANE SIZE HELPERS
+================================================================ */
+
+function getPlaneWidth(
+    polygon
+) {
+
+    if (
+        !polygon ||
+        polygon.length < 2
+    ) {
+
+        return .5;
+    }
+
+
+    let minX =
+        Infinity;
+
+    let maxX =
+        -Infinity;
+
+
+    for (
+        const p of polygon
+    ) {
+
+        minX =
+            Math.min(
+                minX,
+                p.x
+            );
+
+        maxX =
+            Math.max(
+                maxX,
+                p.x
+            );
+    }
+
+
+    return (
+        maxX -
+        minX
+    );
+}
+
+
+function getPlaneHeight(
+    polygon
+) {
+
+    if (
+        !polygon ||
+        polygon.length < 2
+    ) {
+
+        return .5;
+    }
+
+
+    let minY =
+        Infinity;
+
+    let maxY =
+        -Infinity;
+
+
+    for (
+        const p of polygon
+    ) {
+
+        minY =
+            Math.min(
+                minY,
+                p.y
+            );
+
+        maxY =
+            Math.max(
+                maxY,
+                p.y
+            );
+    }
+
+
+    return (
+        maxY -
+        minY
+    );
 }
 
 
@@ -976,7 +2728,17 @@ function responseText() {
    MAIN HUD
 ================================================================ */
 
-function renderHUD(time) {
+function renderHUD(
+    time,
+    frame,
+    pose
+) {
+
+    /*
+     * CLEAR ENTIRELY TRANSPARENT.
+
+     * THIS IS CRITICAL FOR PASSTHROUGH.
+     */
 
     ctx.clearRect(
         0,
@@ -986,23 +2748,64 @@ function renderHUD(time) {
     );
 
 
-    const t =
-        time * .001;
+    /*
+     * No black background.
+     * No vignette.
+     * No giant border.
+     */
 
 
-    /* ============================================================
-       IMPORTANT:
-       NO PERIPHERAL BORDER.
-       NO BLACK VIGNETTE.
-       NO SCREEN FRAME.
-    ============================================================ */
+    drawSideGraphics(
+        time
+    );
 
 
-    /* ============================================================
-       CENTRAL OPTICAL SYSTEM
-    ============================================================ */
+    drawPitchLadder(
+        time
+    );
 
-    const active =
+
+    drawCompass(
+        time
+    );
+
+
+    drawRadar(
+        time
+    );
+
+
+    /*
+     * Real-world plane targets.
+     */
+
+    drawWorldPlaneHighlights(
+        frame,
+        pose
+    );
+
+
+    drawTelemetry();
+
+
+    drawReticle(
+        time
+    );
+
+
+    drawResponse();
+
+
+    drawVoiceWave(
+        time
+    );
+
+
+    /*
+     * status
+     */
+
+    const statusColor =
         isRecording
             ? RED
             : isSpeaking
@@ -1010,564 +2813,25 @@ function renderHUD(time) {
                 : CYAN;
 
 
-    /* outer radar rings */
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        CYAN3;
-
-    ctx.lineWidth = 1;
-
-    ctx.setLineDash([
-        3,
-        14
-    ]);
-
-    ctx.beginPath();
-
-    ctx.arc(
+    drawText(
+        "● " +
+        systemStatus,
         CX,
-        CY,
-        285,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.stroke();
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        CX,
-        CY,
-        350,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.stroke();
-
-    ctx.restore();
-
-
-    /* ============================================================
-       ROTATING RADAR
-    ============================================================ */
-
-    ctx.save();
-
-    ctx.translate(
-        CX,
-        CY
-    );
-
-    ctx.rotate(
-        t * .4
-    );
-
-    ctx.strokeStyle =
-        CYAN2;
-
-    ctx.lineWidth = 1;
-
-    ctx.beginPath();
-
-    ctx.arc(
-        0,
-        0,
-        315,
-        -.35,
-        .35
-    );
-
-    ctx.stroke();
-
-    ctx.restore();
-
-
-    /* ============================================================
-       ROTATING HEXAGONS
-    ============================================================ */
-
-    hexagon(
-        CX,
-        CY,
-        115,
-        active,
-        t * .3
-    );
-
-    hexagon(
-        CX,
-        CY,
-        145,
-        CYAN2,
-        -t * .18
-    );
-
-
-    /* ============================================================
-       CENTRAL SPIDER-LIKE OPTICAL RETICLE
-    ============================================================ */
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        active;
-
-    ctx.lineWidth = 2;
-
-    ctx.shadowColor =
-        active;
-
-    ctx.shadowBlur = 16;
-
-
-    const pulse =
-        1 +
-        Math.sin(t * 5) *
-        .06;
-
-
-    const r =
-        (
-            isRecording
-                ? 45
-                : 34
-        ) *
-        pulse;
-
-
-    /* eye */
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        CX,
-        CY,
-        r * 1.5,
-        r,
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.stroke();
-
-
-    /* pupil */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        CX,
-        CY,
-        8,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.stroke();
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        CX,
-        CY,
-        3,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fillStyle =
-        active;
-
-    ctx.fill();
-
-
-    /* crosshair */
-
-    line(
-        CX - 100,
-        CY,
-        CX - 48,
-        CY,
-        active,
-        1
-    );
-
-    line(
-        CX + 48,
-        CY,
-        CX + 100,
-        CY,
-        active,
-        1
-    );
-
-    line(
-        CX,
-        CY - 100,
-        CX,
-        CY - 48,
-        active,
-        1
-    );
-
-    line(
-        CX,
-        CY + 48,
-        CX,
-        CY + 100,
-        active,
-        1
-    );
-
-
-    ctx.restore();
-
-
-    /* ============================================================
-       FLOATING LEFT DATA
-    ============================================================ */
-
-    const leftX = 180;
-
-    text(
-        "OPTICAL ANALYSIS",
-        leftX,
-        280,
+        CY + 285,
         11,
-        CYAN
-    );
-
-    text(
-        "VISION       ACTIVE",
-        leftX,
-        305,
-        9,
-        CYAN2
-    );
-
-    text(
-        "MOTION       TRACKING",
-        leftX,
-        324,
-        9,
-        CYAN2
-    );
-
-    text(
-        "DEPTH        NOMINAL",
-        leftX,
-        343,
-        9,
-        CYAN2
-    );
-
-    text(
-        "ENVIRONMENT  MAPPED",
-        leftX,
-        362,
-        9,
-        CYAN2
-    );
-
-
-    /* little graph */
-
-    line(
-        leftX,
-        390,
-        leftX + 180,
-        390,
-        CYAN3
-    );
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        CYAN;
-
-    ctx.beginPath();
-
-    for (
-        let i = 0;
-        i < 180;
-        i += 5
-    ) {
-
-        const yy =
-            390 +
-            Math.sin(
-                t * 5 +
-                i * .09
-            ) * 8;
-
-        if (i === 0)
-            ctx.moveTo(
-                leftX + i,
-                yy
-            );
-        else
-            ctx.lineTo(
-                leftX + i,
-                yy
-            );
-    }
-
-    ctx.stroke();
-
-    ctx.restore();
-
-
-    /* ============================================================
-       FLOATING RIGHT DATA
-    ============================================================ */
-
-    const rightX =
-        W - 180;
-
-
-    text(
-        "TACTICAL SYSTEM",
-        rightX,
-        280,
-        11,
-        CYAN,
-        "right"
-    );
-
-    text(
-        "THREAT       LOW",
-        rightX,
-        305,
-        9,
-        CYAN2,
-        "right"
-    );
-
-    text(
-        "TARGETS      00",
-        rightX,
-        324,
-        9,
-        CYAN2,
-        "right"
-    );
-
-    text(
-        "RANGE        12.4 M",
-        rightX,
-        343,
-        9,
-        CYAN2,
-        "right"
-    );
-
-    text(
-        "LOCK         " +
-        (
-            isRecording
-                ? "VOICE"
-                : "NONE"
-        ),
-        rightX,
-        362,
-        9,
-        isRecording
-            ? RED
-            : CYAN2,
-        "right"
-    );
-
-
-    /* ============================================================
-       TARGETING CORNERS
-    ============================================================ */
-
-    bracket(
-        500,
-        310,
-        920,
-        430,
-        CYAN2
-    );
-
-
-    /* ============================================================
-       TOP CENTER
-    ============================================================ */
-
-    text(
-        "E.D.I.T.H.",
-        CX,
-        80,
-        18,
-        WHITE,
-        "center"
-    );
-
-    text(
-        "OPTICAL TACTICAL INTERFACE",
-        CX,
-        101,
-        8,
-        CYAN2,
+        statusColor,
         "center"
     );
 
 
-    /* ============================================================
-       COMPASS
-    ============================================================ */
+    /*
+     * bottom diagnostics
+     */
 
-    const compassY =
-        135;
-
-
-    text(
-        "N",
-        CX,
-        compassY,
-        10,
-        WHITE,
-        "center"
-    );
-
-
-    for (
-        let i = -10;
-        i <= 10;
-        i++
-    ) {
-
-        const x =
-            CX +
-            i * 34;
-
-
-        const tall =
-            i % 3 === 0;
-
-
-        line(
-            x,
-            compassY + 8,
-            x,
-            compassY +
-                (tall ? 25 : 18),
-            tall
-                ? CYAN
-                : CYAN2
-        );
-    }
-
-
-    /* ============================================================
-       VOICE VISUALIZER
-    ============================================================ */
-
-    const voiceY =
-        H - 190;
-
-
-    text(
-        "VOICE LINK",
-        CX,
-        voiceY,
-        9,
-        CYAN2,
-        "center"
-    );
-
-
-    for (
-        let i = -25;
-        i <= 25;
-        i++
-    ) {
-
-        const amp =
-            (
-                isRecording ||
-                isSpeaking
-            )
-                ? (
-                    4 +
-                    Math.abs(
-                        Math.sin(
-                            t * 8 +
-                            i * .45
-                        )
-                    ) * 25
-                )
-                : 3;
-
-
-        const color =
-            isRecording
-                ? RED
-                : isSpeaking
-                    ? GREEN
-                    : CYAN2;
-
-
-        ctx.fillStyle =
-            color;
-
-
-        ctx.fillRect(
-            CX + i * 8,
-            voiceY + 15 - amp / 2,
-            4,
-            amp
-        );
-    }
-
-
-    /* ============================================================
-       AI RESPONSE
-    ============================================================ */
-
-    text(
-        "E.D.I.T.H. // RESPONSE",
-        CX,
-        CY + 145,
-        9,
-        CYAN2,
-        "center"
-    );
-
-
-    responseText();
-
-
-    /* ============================================================
-       STATUS
-    ============================================================ */
-
-    text(
-        "● " + systemStatus,
-        CX,
-        CY + 275,
-        11,
-        active,
-        "center"
-    );
-
-
-    /* ============================================================
-       BOTTOM SYSTEM DATA
-    ============================================================ */
-
-    text(
+    drawText(
         "MIC",
-        CX - 160,
-        H - 85,
+        CX - 150,
+        H - 80,
         8,
         isRecording
             ? RED
@@ -1576,10 +2840,10 @@ function renderHUD(time) {
     );
 
 
-    text(
+    drawText(
         "AI",
-        CX - 80,
-        H - 85,
+        CX - 50,
+        H - 80,
         8,
         isProcessing
             ? RED
@@ -1588,32 +2852,34 @@ function renderHUD(time) {
     );
 
 
-    text(
+    drawText(
         "XR",
-        CX,
-        H - 85,
+        CX + 50,
+        H - 80,
         8,
         GREEN,
         "center"
     );
 
 
-    text(
-        "OPTICS",
-        CX + 90,
-        H - 85,
+    drawText(
+        "ROOM",
+        CX + 150,
+        H - 80,
         8,
-        GREEN,
+        detectedPlanes.length
+            ? GREEN
+            : CYAN_DIM,
         "center"
     );
 
 
-    text(
+    drawText(
         debugLog,
         CX,
-        H - 45,
+        H - 40,
         8,
-        "rgba(255,180,0,.65)",
+        "rgba(255,185,0,.65)",
         "center"
     );
 }
@@ -1630,13 +2896,17 @@ const gl =
             alpha: true,
             antialias: false,
             depth: false,
-            stencil: false
+            stencil: false,
+            premultipliedAlpha: true
         }
     );
 
 
 if (!gl) {
-    alert("WebGL is not available.");
+
+    alert(
+        "WebGL is not available."
+    );
 }
 
 
@@ -1644,9 +2914,10 @@ if (!gl) {
    SHADERS
 ================================================================ */
 
-const VS = `
+const vertexShaderSource = `
 
 attribute vec2 aPosition;
+
 attribute vec2 aUV;
 
 varying vec2 vUV;
@@ -1660,12 +2931,13 @@ void main() {
             1.0
         );
 
-    vUV = aUV;
+    vUV =
+        aUV;
 }
 `;
 
 
-const FS = `
+const fragmentShaderSource = `
 
 precision mediump float;
 
@@ -1675,46 +2947,56 @@ varying vec2 vUV;
 
 void main() {
 
-    vec4 c =
+    vec4 color =
         texture2D(
             uTexture,
             vUV
         );
 
     gl_FragColor =
-        c;
+        color;
 }
 `;
 
 
-function shader(
+function compileShader(
     type,
     source
 ) {
 
-    const s =
-        gl.createShader(type);
+    const shader =
+        gl.createShader(
+            type
+        );
+
 
     gl.shaderSource(
-        s,
+        shader,
         source
     );
 
-    gl.compileShader(s);
+
+    gl.compileShader(
+        shader
+    );
+
 
     if (
         !gl.getShaderParameter(
-            s,
+            shader,
             gl.COMPILE_STATUS
         )
     ) {
 
         throw new Error(
-            gl.getShaderInfoLog(s)
+            gl.getShaderInfoLog(
+                shader
+            )
         );
     }
 
-    return s;
+
+    return shader;
 }
 
 
@@ -1724,51 +3006,83 @@ const program =
 
 gl.attachShader(
     program,
-    shader(
+    compileShader(
         gl.VERTEX_SHADER,
-        VS
+        vertexShaderSource
     )
 );
 
+
 gl.attachShader(
     program,
-    shader(
+    compileShader(
         gl.FRAGMENT_SHADER,
-        FS
+        fragmentShaderSource
     )
 );
+
 
 gl.linkProgram(
     program
 );
 
 
+if (
+    !gl.getProgramParameter(
+        program,
+        gl.LINK_STATUS
+    )
+) {
+
+    throw new Error(
+        gl.getProgramInfoLog(
+            program
+        )
+    );
+}
+
+
 /* ================================================================
-   QUAD
+   FULLSCREEN QUAD
 ================================================================ */
 
 const vertices =
     new Float32Array([
 
-        -1,-1, 0,1,
-         1,-1, 1,1,
-        -1, 1, 0,0,
+        /*
+         * position    UV
+         */
 
-        -1, 1, 0,0,
-         1,-1, 1,1,
-         1, 1, 1,0
+        -1, -1,
+         0,  1,
 
+         1, -1,
+         1,  1,
+
+        -1,  1,
+         0,  0,
+
+
+        -1,  1,
+         0,  0,
+
+         1, -1,
+         1,  1,
+
+         1,  1,
+         1,  0
     ]);
 
 
-const vbo =
+const vertexBuffer =
     gl.createBuffer();
 
 
 gl.bindBuffer(
     gl.ARRAY_BUFFER,
-    vbo
+    vertexBuffer
 );
+
 
 gl.bufferData(
     gl.ARRAY_BUFFER,
@@ -1777,14 +3091,14 @@ gl.bufferData(
 );
 
 
-const positionLoc =
+const positionLocation =
     gl.getAttribLocation(
         program,
         "aPosition"
     );
 
 
-const uvLoc =
+const uvLocation =
     gl.getAttribLocation(
         program,
         "aUV"
@@ -1792,16 +3106,16 @@ const uvLoc =
 
 
 /* ================================================================
-   TEXTURE
+   HUD TEXTURE
 ================================================================ */
 
-const texture =
+const hudTexture =
     gl.createTexture();
 
 
 gl.bindTexture(
     gl.TEXTURE_2D,
-    texture
+    hudTexture
 );
 
 
@@ -1811,17 +3125,20 @@ gl.texParameteri(
     gl.LINEAR
 );
 
+
 gl.texParameteri(
     gl.TEXTURE_2D,
     gl.TEXTURE_MAG_FILTER,
     gl.LINEAR
 );
 
+
 gl.texParameteri(
     gl.TEXTURE_2D,
     gl.TEXTURE_WRAP_S,
     gl.CLAMP_TO_EDGE
 );
+
 
 gl.texParameteri(
     gl.TEXTURE_2D,
@@ -1831,20 +3148,17 @@ gl.texParameteri(
 
 
 /* ================================================================
-   XR
+   XR SUPPORT CHECK
 ================================================================ */
 
-let session = null;
-let refSpace = null;
-let layer = null;
+async function checkARSupport() {
 
-
-async function startXR() {
-
-    if (!navigator.xr) {
+    if (
+        !navigator.xr
+    ) {
 
         throw new Error(
-            "WebXR unavailable. Open this on Quest Browser."
+            "WebXR is unavailable. Open this page in Meta Quest Browser."
         );
     }
 
@@ -1852,34 +3166,72 @@ async function startXR() {
     const supported =
         await navigator.xr
             .isSessionSupported(
-                "immersive-vr"
+                "immersive-ar"
             );
 
 
     if (!supported) {
 
         throw new Error(
-            "Immersive VR is not supported."
+            "Immersive AR passthrough is not supported by this browser/headset."
         );
     }
+}
+
+
+/* ================================================================
+   START AR
+================================================================ */
+
+async function startAR() {
+
+    await checkARSupport();
 
 
     await gl.makeXRCompatible();
 
 
+    /*
+     * THIS IS THE IMPORTANT CHANGE:
+
+     * immersive-ar
+     *
+     * Instead of immersive-vr.
+     */
+
+
     session =
         await navigator.xr.requestSession(
-            "immersive-vr",
+            "immersive-ar",
             {
+
+                /*
+                 * We want room information
+                 * when available.
+                 */
+
+                requiredFeatures: [],
+
                 optionalFeatures: [
+
                     "local-floor",
-                    "bounded-floor"
+
+                    "plane-detection",
+
+                    "anchors"
                 ]
             }
         );
 
 
-    layer =
+    /*
+     * Transparent XR framebuffer.
+
+     * Passthrough appears behind our
+     * transparent HUD.
+     */
+
+    xrLayer =
         new XRWebGLLayer(
             session,
             gl,
@@ -1892,29 +3244,37 @@ async function startXR() {
 
 
     session.updateRenderState({
-        baseLayer: layer
+
+        baseLayer:
+            xrLayer
     });
 
 
+    /*
+     * Reference space.
+     */
+
     try {
 
-        refSpace =
-            await session.requestReferenceSpace(
-                "local-floor"
-            );
+        referenceSpace =
+            await session
+                .requestReferenceSpace(
+                    "local-floor"
+                );
 
     } catch {
 
-        refSpace =
-            await session.requestReferenceSpace(
-                "local"
-            );
+        referenceSpace =
+            await session
+                .requestReferenceSpace(
+                    "local"
+                );
     }
 
 
-    /* ============================================================
-       CONTROLLER
-    ============================================================ */
+    /*
+     * QUEST CONTROLLER
+     */
 
     session.addEventListener(
         "selectstart",
@@ -1934,11 +3294,19 @@ async function startXR() {
     );
 
 
+    /*
+     * End cleanup.
+     */
+
     session.addEventListener(
         "end",
         () => {
 
-            session = null;
+            session =
+                null;
+
+            detectedPlanes =
+                [];
 
             systemStatus =
                 "XR SESSION ENDED";
@@ -1946,8 +3314,12 @@ async function startXR() {
     );
 
 
+    /*
+     * Start rendering.
+     */
+
     session.requestAnimationFrame(
-        frame
+        renderXRFrame
     );
 }
 
@@ -1956,33 +3328,49 @@ async function startXR() {
    XR FRAME
 ================================================================ */
 
-function frame(
+function renderXRFrame(
     time,
-    xrFrame
+    frame
 ) {
 
-    if (!session)
+    if (
+        !session
+    ) {
+
         return;
+    }
 
 
     session.requestAnimationFrame(
-        frame
+        renderXRFrame
     );
 
 
     const pose =
-        xrFrame.getViewerPose(
-            refSpace
+        frame.getViewerPose(
+            referenceSpace
         );
 
 
-    if (!pose)
+    if (!pose) {
+
         return;
+    }
+
+
+    /*
+     * IMPORTANT:
+     *
+     * DO NOT use gl.clearColor(... alpha 1)
+     *
+     * because passthrough needs
+     * transparent pixels.
+     */
 
 
     gl.bindFramebuffer(
         gl.FRAMEBUFFER,
-        layer.framebuffer
+        xrLayer.framebuffer
     );
 
 
@@ -1991,15 +3379,10 @@ function frame(
     );
 
 
-    /*
-     * Completely transparent HUD.
-     * No border.
-     * No vignette.
-     */
-
     gl.enable(
         gl.BLEND
     );
+
 
     gl.blendFunc(
         gl.SRC_ALPHA,
@@ -2007,11 +3390,15 @@ function frame(
     );
 
 
+    /*
+     * Clear to transparent.
+     */
+
     gl.clearColor(
         0,
         0,
         0,
-        1
+        0
     );
 
 
@@ -2020,22 +3407,31 @@ function frame(
     );
 
 
-    renderHUD(time);
+    /*
+     * Draw HUD.
+     */
 
-
-    /* ============================================================
-       UPLOAD
-    ============================================================ */
-
-    gl.bindTexture(
-        gl.TEXTURE_2D,
-        texture
+    renderHUD(
+        time,
+        frame,
+        pose
     );
 
 
-    gl.pixelStorei(
-        gl.UNPACK_FLIP_Y_WEBGL,
-        true
+    /*
+     * Upload canvas.
+
+     * IMPORTANT:
+     *
+     * There is NO UNPACK_FLIP_Y_WEBGL here.
+
+     * That was the cause of the upside-down
+     * text in the previous version.
+     */
+
+    gl.bindTexture(
+        gl.TEXTURE_2D,
+        hudTexture
     );
 
 
@@ -2055,9 +3451,9 @@ function frame(
     );
 
 
-    /* ============================================================
-       DRAW
-    ============================================================ */
+    /*
+     * Draw.
+     */
 
     gl.useProgram(
         program
@@ -2066,17 +3462,17 @@ function frame(
 
     gl.bindBuffer(
         gl.ARRAY_BUFFER,
-        vbo
+        vertexBuffer
     );
 
 
     gl.enableVertexAttribArray(
-        positionLoc
+        positionLocation
     );
 
 
     gl.vertexAttribPointer(
-        positionLoc,
+        positionLocation,
         2,
         gl.FLOAT,
         false,
@@ -2086,12 +3482,12 @@ function frame(
 
 
     gl.enableVertexAttribArray(
-        uvLoc
+        uvLocation
     );
 
 
     gl.vertexAttribPointer(
-        uvLoc,
+        uvLocation,
         2,
         gl.FLOAT,
         false,
@@ -2100,19 +3496,27 @@ function frame(
     );
 
 
+    /*
+     * One HUD across both eyes.
+
+     * Quest handles the XR viewports.
+     */
+
     for (
         const view of pose.views
     ) {
 
-        const vp =
-            layer.getViewport(view);
+        const viewport =
+            xrLayer.getViewport(
+                view
+            );
 
 
         gl.viewport(
-            vp.x,
-            vp.y,
-            vp.width,
-            vp.height
+            viewport.x,
+            viewport.y,
+            viewport.width,
+            viewport.height
         );
 
 
@@ -2126,7 +3530,7 @@ function frame(
 
 
 /* ================================================================
-   INITIALIZE
+   INIT BUTTON
 ================================================================ */
 
 btnInit.onclick =
@@ -2155,53 +3559,81 @@ btnInit.onclick =
         btnInit.disabled =
             true;
 
+
         btnInit.textContent =
-            "INITIALIZING...";
+            "STARTING PASSTHROUGH...";
 
 
         try {
 
             initAudio();
 
-            await setupMic();
 
-            await startXR();
+            /*
+             * Ask for microphone first.
+             */
 
+            await setupMicrophone();
+
+
+            /*
+             * Start Quest AR.
+             */
+
+            await startAR();
+
+
+            /*
+             * Hide setup UI.
+             */
 
             setupScreen.style.display =
                 "none";
 
 
             systemStatus =
-                "SYSTEM READY";
+                "PASSTHROUGH ONLINE";
+
 
             debugLog =
-                "E.D.I.T.H. ONLINE";
+                "OPTICAL SYSTEM ONLINE";
 
 
-            tone(
-                700,
-                .08,
+            /*
+             * Startup sound.
+             */
+
+            playTone(
+                650,
+                .07,
                 "triangle"
             );
 
 
             setTimeout(
-                () => tone(
-                    1100,
-                    .12,
-                    "triangle"
-                ),
+                () => {
+
+                    playTone(
+                        1050,
+                        .12,
+                        "triangle"
+                    );
+
+                },
                 100
             );
 
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
+
 
             btnInit.disabled =
                 false;
+
 
             btnInit.textContent =
                 "INITIALIZE SYSTEM";
@@ -2216,19 +3648,20 @@ btnInit.onclick =
 
 
 /* ================================================================
-   KEYBOARD FALLBACK
+   DESKTOP SPACEBAR FALLBACK
 ================================================================ */
 
 window.addEventListener(
     "keydown",
-    e => {
+    event => {
 
         if (
-            e.code === "Space" &&
-            !e.repeat
+            event.code ===
+            "Space" &&
+            !event.repeat
         ) {
 
-            e.preventDefault();
+            event.preventDefault();
 
             startRecording();
         }
@@ -2238,13 +3671,14 @@ window.addEventListener(
 
 window.addEventListener(
     "keyup",
-    e => {
+    event => {
 
         if (
-            e.code === "Space"
+            event.code ===
+            "Space"
         ) {
 
-            e.preventDefault();
+            event.preventDefault();
 
             stopRecording();
         }
@@ -2270,7 +3704,9 @@ window.addEventListener(
                 );
         }
 
+
         if (session) {
+
             session.end();
         }
     }
@@ -2278,10 +3714,16 @@ window.addEventListener(
 
 
 /* ================================================================
-   FIRST FRAME
+   INITIAL PREVIEW
 ================================================================ */
 
-renderHUD(0);
+renderHUD(
+    0,
+    null,
+    {
+        views: []
+    }
+);
 
 </script>
 
