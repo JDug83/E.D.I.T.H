@@ -1,4000 +1,690 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width,initial-scale=1">
-
-<title>E.D.I.T.H.</title>
-
-<style>
-
-/* =====================================================
-   BASE
-===================================================== */
-
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-
-    margin: 0;
-
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-
-    background: #020609;
-
-    color: #00d9ff;
-
-    font-family: Arial, sans-serif;
-}
-
-
-/* =====================================================
-   NORMAL CAMERA
-===================================================== */
-
-#camera {
-
-    position: fixed;
-
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-
-    display: none;
-
-    z-index: 0;
-}
-
-
-/* =====================================================
-   NORMAL HUD
-===================================================== */
-
-#hud {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 5;
-
-    pointer-events: none;
-
-    background: transparent;
-}
-
-
-/* =====================================================
-   LOGO
-===================================================== */
-
-.logo {
-
-    position: absolute;
-
-    top: 25px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    font-size: 34px;
-
-    font-weight: bold;
-
-    letter-spacing: 9px;
-
-    color: #00d9ff;
-
-    text-shadow:
-        0 0 8px #00d9ff,
-        0 0 20px #00d9ff,
-        0 0 40px #008cff;
-}
-
-
-.online {
-
-    position: absolute;
-
-    top: 73px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    font-size: 11px;
-
-    letter-spacing: 4px;
-
-    color: #00ff88;
-}
-
-
-/* =====================================================
-   TARGET
-===================================================== */
-
-.target {
-
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 160px;
-    height: 160px;
-
-    transform:
-        translate(-50%, -50%);
-
-    border:
-        2px solid
-        rgba(0,217,255,.75);
-
-    border-radius: 50%;
-
-    box-shadow:
-        0 0 20px #00d9ff,
-        inset 0 0 20px
-        rgba(0,217,255,.15);
-
-    animation:
-        targetPulse 2s infinite;
-}
-
-
-.target:before {
-
-    content: "";
-
-    position: absolute;
-
-    width: 220px;
-    height: 1px;
-
-    left: -32px;
-    top: 78px;
-
-    background: #00d9ff;
-
-    box-shadow:
-        0 0 8px #00d9ff;
-}
-
-
-.target:after {
-
-    content: "";
-
-    position: absolute;
-
-    width: 1px;
-    height: 220px;
-
-    top: -32px;
-    left: 78px;
-
-    background: #00d9ff;
-
-    box-shadow:
-        0 0 8px #00d9ff;
-}
-
-
-@keyframes targetPulse {
-
-    0%,100% {
-        opacity: .65;
-        transform:
-            translate(-50%,-50%)
-            scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform:
-            translate(-50%,-50%)
-            scale(1.04);
-    }
-
-}
-
-
-/* =====================================================
-   SPIDER-VISION STYLE CORNERS
-===================================================== */
-
-.vision {
-
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 330px;
-    height: 330px;
-
-    transform:
-        translate(-50%, -50%);
-
-    pointer-events: none;
-}
-
-
-.corner {
-
-    position: absolute;
-
-    width: 42px;
-    height: 42px;
-
-    border-color:
-        rgba(0,217,255,.9);
-
-    border-style: solid;
-
-    filter:
-        drop-shadow(
-            0 0 7px #00d9ff
-        );
-}
-
-
-.corner.tl {
-
-    top: 0;
-    left: 0;
-
-    border-width:
-        2px 0 0 2px;
-}
-
-
-.corner.tr {
-
-    top: 0;
-    right: 0;
-
-    border-width:
-        2px 2px 0 0;
-}
-
-
-.corner.bl {
-
-    bottom: 0;
-    left: 0;
-
-    border-width:
-        0 0 2px 2px;
-}
-
-
-.corner.br {
-
-    bottom: 0;
-    right: 0;
-
-    border-width:
-        0 2px 2px 0;
-}
-
-
-/* =====================================================
-   SCAN LINE
-===================================================== */
-
-.scanLine {
-
-    position: absolute;
-
-    left: 50%;
-
-    top: 50%;
-
-    width: 360px;
-
-    height: 2px;
-
-    transform:
-        translate(-50%, -50%);
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            #00d9ff,
-            transparent
-        );
-
-    box-shadow:
-        0 0 12px #00d9ff;
-
-    animation:
-        scan 2.8s infinite;
-}
-
-
-@keyframes scan {
-
-    0% {
-        transform:
-            translate(-50%, -160px);
-        opacity: 0;
-    }
-
-    15% {
-        opacity: 1;
-    }
-
-    85% {
-        opacity: 1;
-    }
-
-    100% {
-        transform:
-            translate(-50%, 160px);
-        opacity: 0;
-    }
-
-}
-
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-.status {
-
-    position: absolute;
-
-    left: 25px;
-    bottom: 25px;
-
-    width: 270px;
-
-    padding: 18px;
-
-    background:
-        rgba(0,10,18,.76);
-
-    border-left:
-        2px solid #00d9ff;
-
-    backdrop-filter:
-        blur(10px);
-}
-
-
-.status h2 {
-
-    margin:
-        0 0 13px;
-
-    font-size: 13px;
-
-    letter-spacing: 3px;
-}
-
-
-.status p {
-
-    margin: 8px 0;
-
-    color: #aaa;
-
-    font-size: 12px;
-}
-
-
-.green {
-    color: #00ff88;
-}
-
-.yellow {
-    color: #ffff00;
-}
-
-.red {
-    color: #ff4050;
-}
-
-
-/* =====================================================
-   TELEMETRY
-===================================================== */
-
-.telemetry {
-
-    position: absolute;
-
-    right: 25px;
-
-    top: 115px;
-
-    width: 190px;
-
-    padding: 14px;
-
-    color: #00d9ff;
-
-    font-size: 10px;
-
-    line-height: 1.8;
-
-    letter-spacing: 1px;
-
-    text-align: right;
-
-    opacity: .85;
-}
-
-
-.telemetry span {
-    color: #00ff88;
-}
-
-
-/* =====================================================
-   RESPONSE
-===================================================== */
-
-#response {
-
-    position: absolute;
-
-    left: 50%;
-
-    bottom: 125px;
-
-    transform:
-        translateX(-50%);
-
-    width: 65%;
-
-    max-width: 750px;
-
-    text-align: center;
-
-    color: white;
-
-    font-size: 18px;
-
-    line-height: 1.5;
-
-    text-shadow:
-        0 0 5px #000,
-        0 0 10px #00d9ff;
-
-    max-height: 180px;
-
-    overflow: hidden;
-}
-
-
-/* =====================================================
-   MANUAL INPUT
-===================================================== */
-
-#manualInputBox {
-
-    position: absolute;
-
-    left: 50%;
-
-    bottom: 35px;
-
-    transform:
-        translateX(-50%);
-
-    width:
-        min(650px, 70%);
-
-    display: flex;
-
-    gap: 8px;
-
-    pointer-events: auto;
-}
-
-
-#manualInput {
-
-    flex: 1;
-
-    padding: 12px;
-
-    background:
-        rgba(0,10,18,.9);
-
-    color: white;
-
-    border:
-        1px solid #00d9ff;
-
-    outline: none;
-}
-
-
-#sendButton {
-
-    padding:
-        12px 20px;
-
-    pointer-events: auto;
-}
-
-
-/* =====================================================
-   START
-===================================================== */
-
-#start {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 100;
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-
-    align-items: center;
-
-    text-align: center;
-
-    background:
-        radial-gradient(
-            circle,
-            #041824,
-            #020609 70%
-        );
-}
-
-
-#start h1 {
-
-    margin: 0;
-
-    font-size: 52px;
-
-    letter-spacing: 11px;
-
-    text-shadow:
-        0 0 15px #00d9ff,
-        0 0 40px #00d9ff;
-}
-
-
-#start p {
-
-    color: #777;
-
-    line-height: 1.7;
-
-    letter-spacing: 2px;
-}
-
-
-button {
-
-    padding:
-        12px 18px;
-
-    color: #00d9ff;
-
-    background:
-        rgba(0,10,18,.9);
-
-    border:
-        1px solid #00d9ff;
-
-    cursor: pointer;
-}
-
-
-button:hover {
-
-    background: #00d9ff;
-
-    color: #001018;
-}
-
-
-/* =====================================================
-   VR BUTTON
-===================================================== */
-
-#vrButton {
-
-    position: fixed;
-
-    top: 20px;
-    right: 20px;
-
-    z-index: 200;
-
-    display: none;
-
-    pointer-events: auto;
-}
-
-
-/* =====================================================
-   SETTINGS
-===================================================== */
-
-#settingsButton {
-
-    position: fixed;
-
-    right: 20px;
-    bottom: 20px;
-
-    z-index: 200;
-
-    pointer-events: auto;
-}
-
-
-#settings {
-
-    position: fixed;
-
-    right: 20px;
-    top: 70px;
-
-    z-index: 300;
-
-    width: 330px;
-
-    padding: 20px;
-
-    display: none;
-
-    background:
-        rgba(2,10,15,.98);
-
-    border:
-        1px solid #00d9ff;
-
-    pointer-events: auto;
-}
-
-
-#apiKey {
-
-    width: 100%;
-
-    padding: 10px;
-
-    background: #000;
-
-    color: white;
-
-    border:
-        1px solid #00d9ff;
-}
-
-
-#error {
-
-    color: #ff4050;
-
-    font-size: 11px;
-
-    margin-top: 10px;
-}
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media(max-width:700px){
-
-    .logo {
-
-        font-size: 25px;
-
-        letter-spacing: 6px;
-    }
-
-
-    .target {
-
-        width: 120px;
-        height: 120px;
-    }
-
-
-    .target:before {
-
-        width: 170px;
-
-        left: -27px;
-
-        top: 58px;
-    }
-
-
-    .target:after {
-
-        height: 170px;
-
-        top: -27px;
-
-        left: 58px;
-    }
-
-
-    .vision {
-
-        width: 270px;
-        height: 270px;
-    }
-
-
-    .status {
-
-        left: 10px;
-
-        bottom: 85px;
-
-        width: 220px;
-
-        padding: 12px;
-    }
-
-
-    .telemetry {
-
-        right: 10px;
-
-        top: 90px;
-
-        width: 150px;
-
-        font-size: 8px;
-    }
-
-
-    #response {
-
-        width: 90%;
-
-        bottom: 145px;
-
-        font-size: 15px;
-    }
-
-
-    #manualInputBox {
-
-        width: 90%;
-
-        bottom: 25px;
-    }
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>E.D.I.T.H. Interface</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            color: #00d9ff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            user-select: none;
+        }
+
+        #camera {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            z-index: 0;
+        }
+
+        #hud {
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .logo {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 8px;
+            color: #00d9ff;
+            text-shadow: 0 0 12px #00d9ff;
+        }
+
+        .online {
+            position: absolute;
+            top: 68px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .target {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 140px;
+            height: 140px;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(0, 217, 255, 0.85);
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d9ff, inset 0 0 15px rgba(0, 217, 255, 0.3);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .target::before {
+            content: "";
+            position: absolute;
+            width: 200px;
+            height: 1px;
+            left: -31px;
+            top: 68px;
+            background: #00d9ff;
+            box-shadow: 0 0 8px #00d9ff;
+        }
+
+        .target::after {
+            content: "";
+            position: absolute;
+            width: 1px;
+            height: 200px;
+            top: -31px;
+            left: 68px;
+            background: #00d9ff;
+            box-shadow: 0 0 8px #00d9ff;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+        }
+
+        .vision {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 300px;
+            height: 300px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .corner {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-color: #00d9ff;
+            border-style: solid;
+            filter: drop-shadow(0 0 6px #00d9ff);
+        }
+
+        .corner.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+        .corner.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+        .corner.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+        .corner.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+        .status {
+            position: absolute;
+            left: 25px;
+            bottom: 25px;
+            width: 260px;
+            padding: 16px;
+            background: rgba(2, 10, 18, 0.85);
+            border-left: 3px solid #00d9ff;
+            backdrop-filter: blur(8px);
+            font-size: 11px;
+        }
+
+        .status h2 {
+            font-size: 12px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .status p {
+            margin: 6px 0;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .green { color: #00ff88 !important; }
+        .yellow { color: #ffbb00 !important; }
+        .red { color: #ff4050 !important; }
+
+        #response {
+            position: absolute;
+            left: 50%;
+            bottom: 110px;
+            transform: translateX(-50%);
+            width: 70%;
+            max-width: 750px;
+            text-align: center;
+            color: #fff;
+            font-size: 18px;
+            line-height: 1.5;
+            text-shadow: 0 0 8px #000, 0 0 12px #00d9ff;
+        }
+
+        #manualInputBox {
+            position: absolute;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            width: min(650px, 85%);
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        #manualInput {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(2, 10, 18, 0.9);
+            color: #fff;
+            border: 1px solid #00d9ff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 12px 20px;
+            color: #00d9ff;
+            background: rgba(2, 10, 18, 0.9);
+            border: 1px solid #00d9ff;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: 0.2s all;
+        }
+
+        button:hover {
+            background: #00d9ff;
+            color: #020609;
+        }
+
+        #start {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #051a29, #010408 80%);
+            text-align: center;
+        }
+
+        #start h1 {
+            font-size: 48px;
+            letter-spacing: 10px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 20px #00d9ff;
+        }
+
+        #vrButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            display: none;
+        }
+
+        #settingsButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+        }
+
+        #settings {
+            position: fixed;
+            right: 20px;
+            top: 70px;
+            z-index: 60;
+            width: 320px;
+            padding: 20px;
+            background: rgba(2, 10, 18, 0.95);
+            border: 1px solid #00d9ff;
+            display: none;
+        }
+
+        #apiKey {
+            width: 100%;
+            padding: 10px;
+            margin: 12px 0;
+            background: #000;
+            color: #fff;
+            border: 1px solid #00d9ff;
+            outline: none;
+        }
+    </style>
 </head>
-
-
 <body>
 
-
-<!-- =====================================================
-     CAMERA
-===================================================== -->
-
-<video
-    id="camera"
-    autoplay
-    muted
-    playsinline>
-</video>
-
-
-<!-- =====================================================
-     START SCREEN
-===================================================== -->
+<video id="camera" autoplay muted playsinline></video>
 
 <div id="start">
-
     <h1>E.D.I.T.H.</h1>
-
-    <p>
-        ENHANCED DEFENCE<br>
-        INTELLIGENCE &amp; THREAT SYSTEM
-    </p>
-
-    <button id="startButton">
-        INITIALIZE E.D.I.T.H.
-    </button>
-
-    <p style="font-size:11px;color:#555">
-        Say "E.D.I.T.H." once to begin.
-    </p>
-
+    <p style="color: #888; margin-bottom: 25px; letter-spacing: 2px;">TACTICAL AUGMENTED INTERFACE</p>
+    <button id="startButton">INITIALIZE INTERFACE</button>
 </div>
-
-
-<!-- =====================================================
-     NORMAL HUD
-===================================================== -->
 
 <div id="hud">
-
-    <div class="logo">
-        E.D.I.T.H.
-    </div>
-
-
-    <div class="online">
-        ● SYSTEM ONLINE
-    </div>
-
-
+    <div class="logo">E.D.I.T.H.</div>
+    <div class="online">● SYSTEM ONLINE</div>
     <div class="target"></div>
-
-
     <div class="vision">
-
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
-
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
     </div>
-
-
-    <div class="scanLine"></div>
-
-
-    <div class="telemetry">
-
-        OPTICAL SYSTEM <span>ONLINE</span><br>
-        TRACKING <span>ACTIVE</span><br>
-        ENVIRONMENT <span>VISIBLE</span><br>
-        NEURAL LINK <span>CONNECTED</span><br>
-        HUD CORE <span>ONLINE</span>
-
-    </div>
-
-
     <div class="status">
-
-        <h2>SYSTEM STATUS</h2>
-
-        <p>
-            CAMERA:
-            <span
-                id="cameraStatus"
-                class="yellow">
-                STANDBY
-            </span>
-        </p>
-
-        <p>
-            MICROPHONE:
-            <span
-                id="micStatus"
-                class="yellow">
-                STANDBY
-            </span>
-        </p>
-
-        <p>
-            VOICE:
-            <span
-                id="voiceStatus"
-                class="yellow">
-                STANDBY
-            </span>
-        </p>
-
-        <p>
-            AI:
-            <span
-                id="aiStatus"
-                class="yellow">
-                STANDBY
-            </span>
-        </p>
-
-        <p>
-            XR:
-            <span
-                id="xrStatus"
-                class="yellow">
-                CHECKING
-            </span>
-        </p>
-
+        <h2>TELEMETRY</h2>
+        <p>OPTICAL LINK: <span id="cameraStatus" class="yellow">OFFLINE</span></p>
+        <p>SPEECH ENGINE: <span id="voiceStatus" class="yellow">STANDBY</span></p>
+        <p>NEURAL CORE: <span id="aiStatus" class="yellow">STANDBY</span></p>
+        <p>XR SUBSYSTEM: <span id="xrStatus" class="yellow">CHECKING</span></p>
     </div>
-
-
-    <div id="response">
-
-        E.D.I.T.H. is ready.
-
-    </div>
-
-
+    <div id="response">Awaiting directive...</div>
     <div id="manualInputBox">
-
-        <input
-            id="manualInput"
-            type="text"
-            autocomplete="off"
-            placeholder="Ask E.D.I.T.H...">
-
-        <button id="sendButton">
-            SEND
-        </button>
-
+        <input id="manualInput" type="text" placeholder="Speak or enter directive..." autocomplete="off">
+        <button id="sendButton">EXECUTE</button>
     </div>
-
 </div>
 
-
-<!-- =====================================================
-     XR BUTTON
-===================================================== -->
-
-<button id="vrButton">
-
-    ENTER E.D.I.T.H. PASSTHROUGH
-
-</button>
-
-
-<!-- =====================================================
-     SETTINGS
-===================================================== -->
-
-<button id="settingsButton">
-
-    ⚙ SETTINGS
-
-</button>
-
+<button id="vrButton">ENTER PASSTHROUGH</button>
+<button id="settingsButton">⚙ SETTINGS</button>
 
 <div id="settings">
-
-    <h2>E.D.I.T.H. SETTINGS</h2>
-
-    <p>Gemini API Key</p>
-
-    <input
-        id="apiKey"
-        type="password"
-        placeholder="Paste Gemini API key">
-
-    <br><br>
-
-    <button id="saveKey">
-        SAVE
-    </button>
-
-    <button id="closeSettings">
-        CLOSE
-    </button>
-
-    <div id="error"></div>
-
+    <p style="font-size: 12px; letter-spacing: 1px;">GEMINI API KEY</p>
+    <input id="apiKey" type="password" placeholder="Paste key here">
+    <div style="display: flex; gap: 8px;">
+        <button id="saveKey" style="flex: 1;">SAVE</button>
+        <button id="closeSettings" style="flex: 1;">CLOSE</button>
+    </div>
 </div>
 
-
-<!-- =====================================================
-     XR CANVAS
-===================================================== -->
-
-<canvas
-    id="xrCanvas"
-    style="display:none">
-</canvas>
-
+<canvas id="xrCanvas" style="display: none;"></canvas>
 
 <script>
+const camera = document.getElementById("camera");
+const cameraStatus = document.getElementById("cameraStatus");
+const voiceStatus = document.getElementById("voiceStatus");
+const aiStatus = document.getElementById("aiStatus");
+const xrStatus = document.getElementById("xrStatus");
+const responseEl = document.getElementById("response");
+const vrButton = document.getElementById("vrButton");
+const settings = document.getElementById("settings");
+const apiKeyInput = document.getElementById("apiKey");
+const manualInput = document.getElementById("manualInput");
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const start =
-    document.getElementById("start");
-
-const startButton =
-    document.getElementById("startButton");
-
-const camera =
-    document.getElementById("camera");
-
-const cameraStatus =
-    document.getElementById("cameraStatus");
-
-const micStatus =
-    document.getElementById("micStatus");
-
-const voiceStatus =
-    document.getElementById("voiceStatus");
-
-const aiStatus =
-    document.getElementById("aiStatus");
-
-const xrStatus =
-    document.getElementById("xrStatus");
-
-const response =
-    document.getElementById("response");
-
-const vrButton =
-    document.getElementById("vrButton");
-
-const settings =
-    document.getElementById("settings");
-
-const settingsButton =
-    document.getElementById("settingsButton");
-
-const closeSettings =
-    document.getElementById("closeSettings");
-
-const saveKey =
-    document.getElementById("saveKey");
-
-const apiKeyInput =
-    document.getElementById("apiKey");
-
-const errorBox =
-    document.getElementById("error");
-
-const manualInput =
-    document.getElementById("manualInput");
-
-const sendButton =
-    document.getElementById("sendButton");
-
-const xrCanvas =
-    document.getElementById("xrCanvas");
-
-
-/* =====================================================
-   GEMINI KEY
-===================================================== */
-
-let apiKey =
-    localStorage.getItem(
-        "edith_gemini_key"
-    ) || "";
-
-
-apiKeyInput.value =
-    apiKey;
-
-
-if(apiKey){
-
-    aiStatus.textContent =
-        "READY";
-
-    aiStatus.className =
-        "green";
+let apiKey = localStorage.getItem("edith_gemini_key") || "";
+apiKeyInput.value = apiKey;
+if (apiKey) {
+    aiStatus.textContent = "ONLINE";
+    aiStatus.className = "green";
 }
 
+document.getElementById("settingsButton").onclick = () => settings.style.display = "block";
+document.getElementById("closeSettings").onclick = () => settings.style.display = "none";
+document.getElementById("saveKey").onclick = () => {
+    apiKey = apiKeyInput.value.trim();
+    localStorage.setItem("edith_gemini_key", apiKey);
+    aiStatus.textContent = apiKey ? "ONLINE" : "STANDBY";
+    aiStatus.className = apiKey ? "green" : "yellow";
+    settings.style.display = "none";
+};
 
-saveKey.onclick =
-    () => {
+/* --- HARDWARE CAMERA ACQUISITION --- */
+let mediaStream = null;
 
-        const key =
-            apiKeyInput.value.trim();
+async function initSensors() {
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment", width: { ideal: 1280 } },
+            audio: false
+        });
+        camera.srcObject = mediaStream;
+        cameraStatus.textContent = "ACTIVE";
+        cameraStatus.className = "green";
+    } catch (e) {
+        cameraStatus.textContent = "DENIED";
+        cameraStatus.className = "red";
+    }
+}
 
+function captureFrame() {
+    if (!camera || camera.readyState < 2 || !camera.videoWidth) return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = 640;
+    canvas.height = (camera.videoHeight / camera.videoWidth) * 640;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.65).split(",")[1];
+}
 
-        if(!key){
+/* --- SPEECH RECOGNITION & VOICE SYNTHESIS --- */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let recognitionActive = false;
 
-            errorBox.textContent =
-                "Enter a Gemini API key.";
+function setupSpeech() {
+    if (!SpeechRecognition) {
+        voiceStatus.textContent = "UNSUPPORTED";
+        voiceStatus.className = "red";
+        return;
+    }
+    
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-GB";
 
-            return;
-        }
-
-
-        apiKey =
-            key;
-
-
-        localStorage.setItem(
-            "edith_gemini_key",
-            key
-        );
-
-
-        aiStatus.textContent =
-            "READY";
-
-        aiStatus.className =
-            "green";
-
-
-        settings.style.display =
-            "none";
-
+    recognition.onstart = () => {
+        recognitionActive = true;
+        voiceStatus.textContent = "LISTENING";
+        voiceStatus.className = "green";
     };
 
-
-settingsButton.onclick =
-    () => {
-
-        settings.style.display =
-            "block";
-
+    recognition.onerror = (e) => {
+        if (e.error !== "no-speech") {
+            voiceStatus.textContent = "RETRYING";
+            voiceStatus.className = "yellow";
+        }
     };
 
-
-closeSettings.onclick =
-    () => {
-
-        settings.style.display =
-            "none";
-
+    recognition.onend = () => {
+        recognitionActive = false;
+        if (mediaStream) {
+            setTimeout(startSpeechSafe, 400);
+        }
     };
 
-
-/* =====================================================
-   CAMERA / MICROPHONE
-===================================================== */
-
-let mediaStream =
-    null;
-
-
-async function startMedia(){
-
-    try{
-
-        mediaStream =
-            await navigator
-                .mediaDevices
-                .getUserMedia({
-
-                    video: {
-
-                        facingMode:
-                            "environment"
-
-                    },
-
-                    audio: {
-
-                        echoCancellation:
-                            true,
-
-                        noiseSuppression:
-                            true,
-
-                        autoGainControl:
-                            true
-
-                    }
-
-                });
-
-
-        camera.srcObject =
-            mediaStream;
-
-
-        /*
-         * IMPORTANT:
-         *
-         * We do NOT show this camera feed
-         * in XR.
-         *
-         * Quest provides its own passthrough.
-         */
-
-        camera.style.display =
-            "none";
-
-
-        cameraStatus.textContent =
-            "ONLINE";
-
-        cameraStatus.className =
-            "green";
-
-
-        micStatus.textContent =
-            "CONNECTED";
-
-        micStatus.className =
-            "green";
-
-
-        return true;
-
-
-    }catch(error){
-
-        console.error(
-            "MEDIA ERROR:",
-            error
-        );
-
-
-        cameraStatus.textContent =
-            "DENIED";
-
-        cameraStatus.className =
-            "red";
-
-
-        micStatus.textContent =
-            "DENIED";
-
-        micStatus.className =
-            "red";
-
-
-        response.textContent =
-            "Camera/microphone permission was denied.";
-
-        return false;
-
-    }
-
-}
-
-
-/* =====================================================
-   SPEECH RECOGNITION
-===================================================== */
-
-const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
-
-
-let recognition =
-    null;
-
-let listening =
-    false;
-
-let edithStarted =
-    false;
-
-let conversationActive =
-    false;
-
-
-if(SpeechRecognition){
-
-    recognition =
-        new SpeechRecognition();
-
-
-    recognition.lang =
-        "en-GB";
-
-
-    recognition.continuous =
-        true;
-
-
-    recognition.interimResults =
-        false;
-
-
-    recognition.maxAlternatives =
-        1;
-
-
-    recognition.onstart =
-        () => {
-
-            listening =
-                true;
-
-
-            voiceStatus.textContent =
-                "LISTENING";
-
-
-            voiceStatus.className =
-                "green";
-
-        };
-
-
-    recognition.onresult =
-        async(event) => {
-
-            const result =
-                event.results[
-                    event.results.length - 1
-                ];
-
-
-            if(!result.isFinal)
-                return;
-
-
-            const spoken =
-                result[0]
-                    .transcript
-                    .trim();
-
-
-            if(!spoken)
-                return;
-
-
-            console.log(
-                "E.D.I.T.H. HEARD:",
-                spoken
-            );
-
-
-            if(!edithStarted){
-
-                if(
-                    !spoken
-                        .toLowerCase()
-                        .includes("edith")
-                ){
-
-                    return;
-                }
-
-
-                edithStarted =
-                    true;
-
-
-                conversationActive =
-                    true;
-
-
-                const question =
-                    spoken
-                        .replace(
-                            /edith/gi,
-                            ""
-                        )
-                        .trim();
-
-
-                if(!question){
-
-                    response.textContent =
-                        "Yes. How can I assist?";
-
-
-                    speak(
-                        "Yes. How can I assist?"
-                    );
-
-
-                    return;
-                }
-
-
-                await askGemini(
-                    question
-                );
-
-
-                return;
+    recognition.onresult = async (e) => {
+        const text = e.results[e.results.length - 1][0].transcript.trim();
+        if (/edith/i.test(text)) {
+            const query = text.replace(/edith/gi, "").trim();
+            if (query) {
+                askAI(query);
+            } else {
+                speak("Standing by.");
             }
-
-
-            if(conversationActive){
-
-                await askGemini(
-                    spoken
-                );
-
-            }
-
-        };
-
-
-    recognition.onerror =
-        event => {
-
-            console.log(
-                "VOICE:",
-                event.error
-            );
-
-
-            listening =
-                false;
-
-
-            if(
-                event.error ===
-                    "not-allowed" ||
-
-                event.error ===
-                    "service-not-allowed"
-            ){
-
-                voiceStatus.textContent =
-                    "BLOCKED";
-
-                voiceStatus.className =
-                    "red";
-
-            }
-
-        };
-
-
-    recognition.onend =
-        () => {
-
-            listening =
-                false;
-
-
-            if(mediaStream){
-
-                setTimeout(
-                    startListening,
-                    800
-                );
-
-            }
-
-        };
-
-}else{
-
-    voiceStatus.textContent =
-        "MANUAL";
-
-    voiceStatus.className =
-        "yellow";
-
-}
-
-
-function startListening(){
-
-    if(!recognition)
-        return;
-
-
-    if(listening)
-        return;
-
-
-    try{
-
-        recognition.start();
-
-    }catch(error){
-
-        console.log(
-            "Speech:",
-            error.message
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   MANUAL INPUT
-===================================================== */
-
-async function sendManual(){
-
-    const question =
-        manualInput.value.trim();
-
-
-    if(!question)
-        return;
-
-
-    manualInput.value =
-        "";
-
-
-    edithStarted =
-        true;
-
-
-    conversationActive =
-        true;
-
-
-    await askGemini(
-        question
-    );
-
-}
-
-
-sendButton.onclick =
-    sendManual;
-
-
-manualInput.addEventListener(
-    "keydown",
-    event => {
-
-        if(event.key === "Enter"){
-
-            event.preventDefault();
-
-            sendManual();
-
         }
+    };
 
-    }
-);
-
-
-/* =====================================================
-   CAMERA CAPTURE
-===================================================== */
-
-function captureCamera(){
-
-    if(
-        !camera ||
-        camera.readyState < 2 ||
-        !camera.videoWidth
-    ){
-
-        return null;
-    }
-
-
-    const canvas =
-        document.createElement(
-            "canvas"
-        );
-
-
-    const width =
-        Math.min(
-            1024,
-            camera.videoWidth
-        );
-
-
-    const scale =
-        width /
-        camera.videoWidth;
-
-
-    canvas.width =
-        width;
-
-
-    canvas.height =
-        camera.videoHeight *
-        scale;
-
-
-    const ctx =
-        canvas.getContext(
-            "2d"
-        );
-
-
-    ctx.drawImage(
-        camera,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    return canvas
-        .toDataURL(
-            "image/jpeg",
-            .7
-        )
-        .split(",")[1];
-
+    startSpeechSafe();
 }
 
+function startSpeechSafe() {
+    if (recognition && !recognitionActive) {
+        try {
+            recognition.start();
+        } catch (e) {}
+    }
+}
 
-/* =====================================================
-   GEMINI
-===================================================== */
+function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = "en-GB";
+    utt.pitch = 0.95;
+    utt.rate = 1.05;
+    window.speechSynthesis.speak(utt);
+}
 
-async function askGemini(
-    question
-){
-
-    if(!apiKey){
-
-        response.textContent =
-            "Add your Gemini API key in Settings.";
-
-        settings.style.display =
-            "block";
-
+/* --- GEMINI 2.5 ANALYTICS --- */
+async function askAI(promptText) {
+    if (!apiKey) {
+        responseEl.textContent = "API key required. Configure in Settings.";
+        speak("API key required.");
         return;
     }
 
+    aiStatus.textContent = "ANALYSING";
+    aiStatus.className = "yellow";
+    responseEl.textContent = "Processing visual and acoustic telemetry...";
 
-    aiStatus.textContent =
-        "ANALYSING";
+    const imgBase64 = captureFrame();
+    const parts = [{
+        text: `You are E.D.I.T.H., Tony Stark's tactical AI. Deliver responses in 1 to 2 short sentences. Concise, direct, and tactical.\nUser: ${promptText}`
+    }];
 
-
-    aiStatus.className =
-        "yellow";
-
-
-    const image =
-        captureCamera();
-
-
-    const parts = [
-
-        {
-
-            text:
-
-`You are E.D.I.T.H., a futuristic personal AI assistant.
-
-User:
-${question}
-
-If a camera image is provided, use it to answer questions about the user's surroundings.
-
-Only describe things actually visible.
-
-Do not make things up.
-
-Keep answers concise and natural.`
-
-        }
-
-    ];
-
-
-    if(image){
-
+    if (imgBase64) {
         parts.push({
+            inline_data: { mime_type: "image/jpeg", data: imgBase64 }
+        });
+    }
 
-            inline_data: {
-
-                mime_type:
-                    "image/jpeg",
-
-                data:
-                    image
-
-            }
-
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts }] })
         });
 
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No intelligence returned.";
+        responseEl.textContent = reply;
+        aiStatus.textContent = "ONLINE";
+        aiStatus.className = "green";
+        speak(reply);
+    } catch (err) {
+        aiStatus.textContent = "ERROR";
+        aiStatus.className = "red";
+        responseEl.textContent = "Telemetry link failure.";
     }
-
-
-    const url =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
-        +
-        encodeURIComponent(
-            apiKey
-        );
-
-
-    let result =
-        null;
-
-    let errorText =
-        "";
-
-
-    for(
-        let attempt = 1;
-        attempt <= 3;
-        attempt++
-    ){
-
-        try{
-
-            result =
-                await fetch(
-                    url,
-                    {
-
-                        method:
-                            "POST",
-
-                        headers: {
-
-                            "Content-Type":
-                                "application/json"
-
-                        },
-
-                        body:
-                            JSON.stringify({
-
-                                contents: [
-
-                                    {
-
-                                        parts:
-                                            parts
-
-                                    }
-
-                                ]
-
-                            })
-
-                    }
-                );
-
-
-        }catch(error){
-
-            errorText =
-                error.message;
-
-            break;
-
-        }
-
-
-        if(result.ok)
-            break;
-
-
-        errorText =
-            await result.text();
-
-
-        if(
-            result.status === 429 ||
-            result.status === 503
-        ){
-
-            await new Promise(
-                resolve =>
-                    setTimeout(
-                        resolve,
-                        attempt * 2500
-                    )
-            );
-
-            continue;
-
-        }
-
-
-        break;
-
-    }
-
-
-    if(
-        !result ||
-        !result.ok
-    ){
-
-        console.error(
-            errorText
-        );
-
-
-        aiStatus.textContent =
-            "ERROR";
-
-        aiStatus.className =
-            "red";
-
-
-        response.textContent =
-            "Gemini connection error.";
-
-        return;
-
-    }
-
-
-    try{
-
-        const data =
-            await result.json();
-
-
-        const answer =
-            data
-                ?.candidates?.[0]
-                ?.content?.parts?.[0]
-                ?.text;
-
-
-        if(!answer){
-
-            throw new Error(
-                "No AI response"
-            );
-
-        }
-
-
-        aiStatus.textContent =
-            "ONLINE";
-
-        aiStatus.className =
-            "green";
-
-
-        response.textContent =
-            answer;
-
-
-        speak(
-            answer
-        );
-
-
-    }catch(error){
-
-        console.error(
-            error
-        );
-
-
-        aiStatus.textContent =
-            "ERROR";
-
-        aiStatus.className =
-            "red";
-
-
-        response.textContent =
-            "E.D.I.T.H. could not process the response.";
-
-    }
-
 }
 
-
-/* =====================================================
-   TEXT TO SPEECH
-===================================================== */
-
-function speak(
-    text
-){
-
-    if(
-        !window.speechSynthesis
-    )
-        return;
-
-
-    try{
-
-        window.speechSynthesis.cancel();
-
-
-        const utterance =
-            new SpeechSynthesisUtterance(
-                text
-            );
-
-
-        utterance.lang =
-            "en-GB";
-
-
-        utterance.rate =
-            1;
-
-
-        utterance.pitch =
-            .9;
-
-
-        utterance.volume =
-            1;
-
-
-        utterance.onstart =
-            () => {
-
-                voiceStatus.textContent =
-                    "SPEAKING";
-
-                voiceStatus.className =
-                    "green";
-
-            };
-
-
-        utterance.onend =
-            () => {
-
-                voiceStatus.textContent =
-                    recognition
-                        ? "LISTENING"
-                        : "MANUAL";
-
-            };
-
-
-        window.speechSynthesis.speak(
-            utterance
-        );
-
-
-    }catch(error){
-
-        console.error(
-            "TTS:",
-            error
-        );
-
+document.getElementById("sendButton").onclick = () => {
+    if (manualInput.value.trim()) {
+        askAI(manualInput.value.trim());
+        manualInput.value = "";
     }
+};
 
-}
-
-
-/* =====================================================
-   START
-===================================================== */
-
-startButton.onclick =
-    async() => {
-
-        startButton.disabled =
-            true;
-
-
-        startButton.textContent =
-            "INITIALIZING...";
-
-
-        const ok =
-            await startMedia();
-
-
-        if(!ok){
-
-            startButton.disabled =
-                false;
-
-            startButton.textContent =
-                "TRY AGAIN";
-
-            return;
-
-        }
-
-
-        start.style.display =
-            "none";
-
-
-        startListening();
-
-    };
-
-
-/* =====================================================
-   WEBXR VARIABLES
-===================================================== */
-
-let xrSession =
-    null;
-
-let xrReferenceSpace =
-    null;
-
-let xrGL =
-    null;
-
-let xrLayer =
-    null;
-
-let xrProgram =
-    null;
-
-let xrTexture =
-    null;
-
-let xrPositionBuffer =
-    null;
-
-let xrTexcoordBuffer =
-    null;
-
-let xrCanvas2D =
-    null;
-
-let xrContext2D =
-    null;
-
-
-/* =====================================================
-   CHECK PASSTHROUGH
-===================================================== */
-
-async function checkXR(){
-
-    if(
-        !navigator.xr
-    ){
-
-        xrStatus.textContent =
-            "NOT AVAILABLE";
-
-        xrStatus.className =
-            "red";
-
-        return;
-
+manualInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        document.getElementById("sendButton").click();
     }
+});
 
+/* --- WEBXR IMMERSIVE PASSTHROUGH ENGINE --- */
+let xrSession = null;
+let gl = null;
+let xrCanvas2D = null;
+let xrCtx2D = null;
+let hudTexture = null;
+let shaderProgram = null;
 
-    try{
-
-        const supported =
-            await navigator.xr
-                .isSessionSupported(
-                    "immersive-ar"
-                );
-
-
-        if(!supported){
-
-            xrStatus.textContent =
-                "PASSTHROUGH UNAVAILABLE";
-
-            xrStatus.className =
-                "red";
-
-            vrButton.style.display =
-                "none";
-
-            return;
-
-        }
-
-
-        xrStatus.textContent =
-            "PASSTHROUGH READY";
-
-        xrStatus.className =
-            "green";
-
-
-        vrButton.style.display =
-            "block";
-
-
-    }catch(error){
-
-        console.error(
-            error
-        );
-
-
-        xrStatus.textContent =
-            "XR ERROR";
-
-        xrStatus.className =
-            "red";
-
+async function checkXRSupport() {
+    if (navigator.xr && await navigator.xr.isSessionSupported("immersive-ar")) {
+        xrStatus.textContent = "READY";
+        xrStatus.className = "green";
+        vrButton.style.display = "block";
+    } else {
+        xrStatus.textContent = "UNAVAILABLE";
+        xrStatus.className = "red";
     }
-
 }
 
-
-/* =====================================================
-   SHADERS
-===================================================== */
-
-const vertexShaderSource = `
-
-attribute vec2 a_position;
-
-attribute vec2 a_texcoord;
-
-varying vec2 v_texcoord;
-
-void main(){
-
-    gl_Position =
-        vec4(
-            a_position,
-            0.0,
-            1.0
-        );
-
-    v_texcoord =
-        a_texcoord;
-
+function init2DHUD() {
+    xrCanvas2D = document.createElement("canvas");
+    xrCanvas2D.width = 1024;
+    xrCanvas2D.height = 1024;
+    xrCtx2D = xrCanvas2D.getContext("2d");
 }
 
-`;
-
-
-const fragmentShaderSource = `
-
-precision mediump float;
-
-uniform sampler2D u_texture;
-
-varying vec2 v_texcoord;
-
-void main(){
-
-    vec4 color =
-        texture2D(
-            u_texture,
-            v_texcoord
-        );
-
-    gl_FragColor =
-        color;
-
-}
-
-`;
-
-
-/* =====================================================
-   CREATE SHADER
-===================================================== */
-
-function createShader(
-    gl,
-    type,
-    source
-){
-
-    const shader =
-        gl.createShader(
-            type
-        );
-
-
-    gl.shaderSource(
-        shader,
-        source
-    );
-
-
-    gl.compileShader(
-        shader
-    );
-
-
-    if(
-        !gl.getShaderParameter(
-            shader,
-            gl.COMPILE_STATUS
-        )
-    ){
-
-        throw new Error(
-            gl.getShaderInfoLog(
-                shader
-            )
-        );
-
-    }
-
-
-    return shader;
-
-}
-
-
-/* =====================================================
-   CREATE PROGRAM
-===================================================== */
-
-function createProgram(
-    gl
-){
-
-    const vertex =
-        createShader(
-            gl,
-            gl.VERTEX_SHADER,
-            vertexShaderSource
-        );
-
-
-    const fragment =
-        createShader(
-            gl,
-            gl.FRAGMENT_SHADER,
-            fragmentShaderSource
-        );
-
-
-    const program =
-        gl.createProgram();
-
-
-    gl.attachShader(
-        program,
-        vertex
-    );
-
-
-    gl.attachShader(
-        program,
-        fragment
-    );
-
-
-    gl.linkProgram(
-        program
-    );
-
-
-    if(
-        !gl.getProgramParameter(
-            program,
-            gl.LINK_STATUS
-        )
-    ){
-
-        throw new Error(
-            gl.getProgramInfoLog(
-                program
-            )
-        );
-
-    }
-
-
-    return program;
-
-}
-
-
-/* =====================================================
-   BUILD XR HUD CANVAS
-===================================================== */
-
-function createXRHUD(){
-
-    xrCanvas2D =
-        document.createElement(
-            "canvas"
-        );
-
-
-    /*
-     * High-resolution HUD.
-     */
-
-    xrCanvas2D.width =
-        2048;
-
-
-    xrCanvas2D.height =
-        2048;
-
-
-    xrContext2D =
-        xrCanvas2D.getContext(
-            "2d"
-        );
-
-
-    xrContext2D.clearRect(
-        0,
-        0,
-        2048,
-        2048
-    );
-
-}
-
-
-/* =====================================================
-   DRAW XR HUD
-===================================================== */
-
-function drawXRHUD(
-    time
-){
-
-    if(!xrContext2D)
-        return;
-
-
-    const ctx =
-        xrContext2D;
-
-
-    const W =
-        xrCanvas2D.width;
-
-
-    const H =
-        xrCanvas2D.height;
-
-
-    /*
-     * Completely transparent background.
-     */
-
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-
-    /*
-     * HUD scaling.
-     */
-
-    const cx =
-        W / 2;
-
-
-    const cy =
-        H / 2;
-
-
-    /* =================================================
-       LOGO
-    ================================================= */
-
-    ctx.textAlign =
-        "center";
-
-
-    ctx.font =
-        "bold 82px Arial";
-
-
-    ctx.fillStyle =
-        "#00d9ff";
-
-
-    ctx.shadowColor =
-        "#00d9ff";
-
-
-    ctx.shadowBlur =
-        25;
-
-
-    ctx.fillText(
-        "E.D.I.T.H.",
-        cx,
-        120
-    );
-
-
-    ctx.shadowBlur =
-        0;
-
-
-    ctx.font =
-        "24px Arial";
-
-
-    ctx.fillStyle =
-        "#00ff88";
-
-
-    ctx.fillText(
-        "● SYSTEM ONLINE",
-        cx,
-        165
-    );
-
-
-    /* =================================================
-       MAIN TARGET
-    ================================================= */
-
-    const pulse =
-        Math.sin(
-            time * .002
-        ) * 5;
-
-
+function updateHUDTexture(time) {
+    const ctx = xrCtx2D;
+    ctx.clearRect(0, 0, 1024, 1024);
+
+    const cx = 512, cy = 512;
+    const pulse = Math.sin(time * 0.003) * 6;
+
+    // Center Tactical Target
+    ctx.strokeStyle = "rgba(0, 217, 255, 0.9)";
+    ctx.lineWidth = 4;
     ctx.beginPath();
-
-
-    ctx.arc(
-        cx,
-        cy,
-        210 + pulse,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.strokeStyle =
-        "rgba(0,217,255,.85)";
-
-
-    ctx.lineWidth =
-        5;
-
-
-    ctx.shadowColor =
-        "#00d9ff";
-
-
-    ctx.shadowBlur =
-        18;
-
-
+    ctx.arc(cx, cy, 110 + pulse, 0, Math.PI * 2);
     ctx.stroke();
 
-
-    ctx.shadowBlur =
-        0;
-
-
-    /*
-     * Inner circle.
-     */
-
+    ctx.strokeStyle = "rgba(0, 217, 255, 0.4)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-
-
-    ctx.arc(
-        cx,
-        cy,
-        170,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.strokeStyle =
-        "rgba(0,217,255,.45)";
-
-
-    ctx.lineWidth =
-        2;
-
-
+    ctx.arc(cx, cy, 75, 0, Math.PI * 2);
     ctx.stroke();
 
-
-    /* =================================================
-       CROSSHAIR
-    ================================================= */
-
-    ctx.strokeStyle =
-        "#00d9ff";
-
-
-    ctx.lineWidth =
-        2;
-
-
+    // Crosshairs
+    ctx.strokeStyle = "#00d9ff";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-
-    ctx.moveTo(
-        cx - 310,
-        cy
-    );
-
-    ctx.lineTo(
-        cx + 310,
-        cy
-    );
-
-    ctx.moveTo(
-        cx,
-        cy - 310
-    );
-
-    ctx.lineTo(
-        cx,
-        cy + 310
-    );
-
+    ctx.moveTo(cx - 150, cy); ctx.lineTo(cx + 150, cy);
+    ctx.moveTo(cx, cy - 150); ctx.lineTo(cx, cy + 150);
     ctx.stroke();
 
-
-    /* =================================================
-       CORNERS
-    ================================================= */
-
-    const size =
-        420;
-
-
-    const left =
-        cx - size / 2;
-
-
-    const right =
-        cx + size / 2;
-
-
-    const top =
-        cy - size / 2;
-
-
-    const bottom =
-        cy + size / 2;
-
-
-    const corner =
-        65;
-
-
-    ctx.strokeStyle =
-        "#00d9ff";
-
-
-    ctx.lineWidth =
-        5;
-
-
-    ctx.shadowColor =
-        "#00d9ff";
-
-
-    ctx.shadowBlur =
-        12;
-
-
-    /* TL */
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        left,
-        top + corner
-    );
-
-    ctx.lineTo(
-        left,
-        top
-    );
-
-    ctx.lineTo(
-        left + corner,
-        top
-    );
-
-    ctx.stroke();
-
-
-    /* TR */
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        right - corner,
-        top
-    );
-
-    ctx.lineTo(
-        right,
-        top
-    );
-
-    ctx.lineTo(
-        right,
-        top + corner
-    );
-
-    ctx.stroke();
-
-
-    /* BL */
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        left,
-        bottom - corner
-    );
-
-    ctx.lineTo(
-        left,
-        bottom
-    );
-
-    ctx.lineTo(
-        left + corner,
-        bottom
-    );
-
-    ctx.stroke();
-
-
-    /* BR */
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        right - corner,
-        bottom
-    );
-
-    ctx.lineTo(
-        right,
-        bottom
-    );
-
-    ctx.lineTo(
-        right,
-        bottom - corner
-    );
-
-    ctx.stroke();
-
-
-    ctx.shadowBlur =
-        0;
-
-
-    /* =================================================
-       ROTATING SCANNER
-    ================================================= */
-
-    const angle =
-        time * .001;
-
-
+    // Rotating Outer Arc
     ctx.save();
-
-
-    ctx.translate(
-        cx,
-        cy
-    );
-
-
-    ctx.rotate(
-        angle
-    );
-
-
-    ctx.strokeStyle =
-        "rgba(0,217,255,.65)";
-
-
-    ctx.lineWidth =
-        3;
-
-
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 0.001);
+    ctx.strokeStyle = "rgba(0, 255, 136, 0.8)";
+    ctx.lineWidth = 4;
     ctx.beginPath();
-
-
-    ctx.arc(
-        0,
-        0,
-        260,
-        -0.25,
-        0.25
-    );
-
-
+    ctx.arc(0, 0, 140, 0, 0.6);
     ctx.stroke();
-
-
     ctx.restore();
 
-
-    /* =================================================
-       SCAN LINE
-    ================================================= */
-
-    const scan =
-        ((time * .0008) % 2) - 1;
-
-
-    const scanY =
-        cy + scan * 300;
-
-
-    const gradient =
-        ctx.createLinearGradient(
-            cx - 380,
-            scanY,
-            cx + 380,
-            scanY
-        );
-
-
-    gradient.addColorStop(
-        0,
-        "transparent"
-    );
-
-
-    gradient.addColorStop(
-        .5,
-        "#00d9ff"
-    );
-
-
-    gradient.addColorStop(
-        1,
-        "transparent"
-    );
-
-
-    ctx.strokeStyle =
-        gradient;
-
-
-    ctx.lineWidth =
-        4;
-
-
-    ctx.beginPath();
-
-
-    ctx.moveTo(
-        cx - 380,
-        scanY
-    );
-
-
-    ctx.lineTo(
-        cx + 380,
-        scanY
-    );
-
-
-    ctx.stroke();
-
-
-    /* =================================================
-       TOP RIGHT TELEMETRY
-    ================================================= */
-
-    ctx.textAlign =
-        "right";
-
-
-    ctx.font =
-        "22px monospace";
-
-
-    ctx.fillStyle =
-        "#00d9ff";
-
-
-    const telemetryX =
-        W - 80;
-
-
-    let ty =
-        270;
-
-
-    ctx.fillText(
-        "OPTICAL SYSTEM",
-        telemetryX,
-        ty
-    );
-
-
-    ty += 34;
-
-
-    ctx.fillStyle =
-        "#00ff88";
-
-
-    ctx.fillText(
-        "ONLINE",
-        telemetryX,
-        ty
-    );
-
-
-    ty += 42;
-
-
-    ctx.fillStyle =
-        "#00d9ff";
-
-
-    ctx.fillText(
-        "TRACKING",
-        telemetryX,
-        ty
-    );
-
-
-    ty += 34;
-
-
-    ctx.fillStyle =
-        "#00ff88";
-
-
-    ctx.fillText(
-        "ACTIVE",
-        telemetryX,
-        ty
-    );
-
-
-    ty += 42;
-
-
-    ctx.fillStyle =
-        "#00d9ff";
-
-
-    ctx.fillText(
-        "ENVIRONMENT",
-        telemetryX,
-        ty
-    );
-
-
-    ty += 34;
-
-
-    ctx.fillStyle =
-        "#00ff88";
-
-
-    ctx.fillText(
-        "VISIBLE",
-        telemetryX,
-        ty
-    );
-
-
-    /* =================================================
-       BOTTOM LEFT STATUS
-    ================================================= */
-
-    const boxX =
-        70;
-
-
-    const boxY =
-        H - 500;
-
-
-    const boxW =
-        450;
-
-
-    const boxH =
-        380;
-
-
-    ctx.fillStyle =
-        "rgba(0,8,15,.72)";
-
-
-    ctx.fillRect(
-        boxX,
-        boxY,
-        boxW,
-        boxH
-    );
-
-
-    ctx.strokeStyle =
-        "rgba(0,217,255,.65)";
-
-
-    ctx.lineWidth =
-        3;
-
-
-    ctx.beginPath();
-
-
-    ctx.moveTo(
-        boxX,
-        boxY
-    );
-
-
-    ctx.lineTo(
-        boxX,
-        boxY + boxH
-    );
-
-
-    ctx.lineTo(
-        boxX + 8,
-        boxY + boxH
-    );
-
-
-    ctx.stroke();
-
-
-    ctx.textAlign =
-        "left";
-
-
-    ctx.font =
-        "bold 24px Arial";
-
-
-    ctx.fillStyle =
-        "#00d9ff";
-
-
-    ctx.fillText(
-        "SYSTEM STATUS",
-        boxX + 25,
-        boxY + 42
-    );
-
-
-    ctx.font =
-        "20px Arial";
-
-
-    let sy =
-        boxY + 90;
-
-
-    function statusLine(
-        name,
-        value,
-        color
-    ){
-
-        ctx.fillStyle =
-            "#999";
-
-
-        ctx.fillText(
-            name,
-            boxX + 25,
-            sy
-        );
-
-
-        ctx.fillStyle =
-            color;
-
-
-        ctx.fillText(
-            value,
-            boxX + 235,
-            sy
-        );
-
-
-        sy += 48;
-
-    }
-
-
-    statusLine(
-        "CAMERA",
-        cameraStatus.textContent,
-        cameraStatus.classList.contains("green")
-            ? "#00ff88"
-            : "#ffff00"
-    );
-
-
-    statusLine(
-        "MIC",
-        micStatus.textContent,
-        micStatus.classList.contains("green")
-            ? "#00ff88"
-            : "#ffff00"
-    );
-
-
-    statusLine(
-        "VOICE",
-        voiceStatus.textContent,
-        voiceStatus.classList.contains("green")
-            ? "#00ff88"
-            : "#ffff00"
-    );
-
-
-    statusLine(
-        "AI",
-        aiStatus.textContent,
-        aiStatus.classList.contains("green")
-            ? "#00ff88"
-            : "#ffff00"
-    );
-
-
-    statusLine(
-        "XR",
-        "PASSTHROUGH",
-        "#00ff88"
-    );
-
-
-    /* =================================================
-       RESPONSE
-    ================================================= */
-
-    if(response.textContent){
-
-        ctx.textAlign =
-            "center";
-
-
-        ctx.font =
-            "26px Arial";
-
-
-        ctx.fillStyle =
-            "white";
-
-
-        ctx.shadowColor =
-            "#00d9ff";
-
-
-        ctx.shadowBlur =
-            10;
-
-
-        const maxWidth =
-            1050;
-
-
-        const words =
-            response.textContent
-                .split(" ");
-
-
-        let line =
-            "";
-
-
-        let ry =
-            H - 150;
-
-
-        for(
-            let i = 0;
-            i < words.length;
-            i++
-        ){
-
-            const test =
-                line +
-                words[i] +
-                " ";
-
-
-            if(
-                ctx.measureText(
-                    test
-                ).width >
-                    maxWidth
-            ){
-
-                ctx.fillText(
-                    line,
-                    cx,
-                    ry
-                );
-
-
-                line =
-                    words[i] + " ";
-
-
-                ry += 34;
-
-            }else{
-
-                line =
-                    test;
-
-            }
-
-
-            if(
-                ry > H - 30
-            ){
-
-                break;
-
-            }
-
-        }
-
-
-        if(line){
-
-            ctx.fillText(
-                line,
-                cx,
-                ry
-            );
-
-        }
-
-
-        ctx.shadowBlur =
-            0;
-
-    }
-
+    // Text Subtitles
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 24px monospace";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "#00d9ff";
+    ctx.shadowBlur = 8;
+    ctx.fillText(responseEl.textContent.slice(0, 55), cx, cy + 220);
 }
 
-
-/* =====================================================
-   CREATE XR GL
-===================================================== */
-
-async function setupXRGL(){
-
-    xrGL =
-        xrCanvas.getContext(
-            "webgl",
-            {
-
-                xrCompatible:
-                    true,
-
-                alpha:
-                    true,
-
-                antialias:
-                    true,
-
-                depth:
-                    false,
-
-                stencil:
-                    false,
-
-                premultipliedAlpha:
-                    true
-
-            }
-        );
-
-
-    if(!xrGL){
-
-        throw new Error(
-            "WebGL is unavailable."
-        );
-
-    }
-
-
-    await xrGL
-        .makeXRCompatible();
-
-
-    xrProgram =
-        createProgram(
-            xrGL
-        );
-
-
-    /*
-     * Full-screen quad.
-     */
-
-    xrPositionBuffer =
-        xrGL.createBuffer();
-
-
-    xrGL.bindBuffer(
-        xrGL.ARRAY_BUFFER,
-        xrPositionBuffer
-    );
-
-
-    xrGL.bufferData(
-        xrGL.ARRAY_BUFFER,
-        new Float32Array([
-
-            -1, -1,
-             1, -1,
-            -1,  1,
-
-            -1,  1,
-             1, -1,
-             1,  1
-
-        ]),
-        xrGL.STATIC_DRAW
-    );
-
-
-    xrTexcoordBuffer =
-        xrGL.createBuffer();
-
-
-    xrGL.bindBuffer(
-        xrGL.ARRAY_BUFFER,
-        xrTexcoordBuffer
-    );
-
-
-    xrGL.bufferData(
-        xrGL.ARRAY_BUFFER,
-        new Float32Array([
-
-            0, 1,
-            1, 1,
-            0, 0,
-
-            0, 0,
-            1, 1,
-            1, 0
-
-        ]),
-        xrGL.STATIC_DRAW
-    );
-
-
-    /*
-     * HUD texture.
-     */
-
-    xrTexture =
-        xrGL.createTexture();
-
-
-    xrGL.bindTexture(
-        xrGL.TEXTURE_2D,
-        xrTexture
-    );
-
-
-    xrGL.texParameteri(
-        xrGL.TEXTURE_2D,
-        xrGL.TEXTURE_MIN_FILTER,
-        xrGL.LINEAR
-    );
-
-
-    xrGL.texParameteri(
-        xrGL.TEXTURE_2D,
-        xrGL.TEXTURE_MAG_FILTER,
-        xrGL.LINEAR
-    );
-
-
-    xrGL.texParameteri(
-        xrGL.TEXTURE_2D,
-        xrGL.TEXTURE_WRAP_S,
-        xrGL.CLAMP_TO_EDGE
-    );
-
-
-    xrGL.texParameteri(
-        xrGL.TEXTURE_2D,
-        xrGL.TEXTURE_WRAP_T,
-        xrGL.CLAMP_TO_EDGE
-    );
-
-
-    xrGL.bindTexture(
-        xrGL.TEXTURE_2D,
-        null
-    );
-
-}
-
-
-/* =====================================================
-   UPLOAD HUD TEXTURE
-===================================================== */
-
-function uploadXRHUD(){
-
-    if(
-        !xrGL ||
-        !xrTexture ||
-        !xrCanvas2D
-    )
-        return;
-
-
-    xrGL.bindTexture(
-        xrGL.TEXTURE_2D,
-        xrTexture
-    );
-
-
-    xrGL.pixelStorei(
-        xrGL.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-        true
-    );
-
-
-    xrGL.texImage2D(
-        xrGL.TEXTURE_2D,
-        0,
-        xrGL.RGBA,
-        xrGL.RGBA,
-        xrGL.UNSIGNED_BYTE,
-        xrCanvas2D
-    );
-
-
-    xrGL.bindTexture(
-        xrGL.TEXTURE_2D,
-        null
-    );
-
-}
-
-
-/* =====================================================
-   DRAW XR HUD
-===================================================== */
-
-function renderXR(
-    time,
-    frame
-){
-
-    const session =
-        frame.session;
-
-
-    session.requestAnimationFrame(
-        renderXR
-    );
-
-
-    if(
-        !xrGL ||
-        !xrLayer
-    )
-        return;
-
-
-    /*
-     * IMPORTANT:
-     *
-     * Transparent clear.
-     *
-     * We never paint black over
-     * the Quest passthrough.
-     */
-
-    xrGL.bindFramebuffer(
-        xrGL.FRAMEBUFFER,
-        xrLayer.framebuffer
-    );
-
-
-    xrGL.clearColor(
-        0,
-        0,
-        0,
-        0
-    );
-
-
-    xrGL.clear(
-        xrGL.COLOR_BUFFER_BIT
-    );
-
-
-    /*
-     * Draw the HUD.
-     */
-
-    drawXRHUD(
-        time
-    );
-
-
-    uploadXRHUD();
-
-
-    xrGL.viewport(
-        0,
-        0,
-        xrLayer.framebufferWidth,
-        xrLayer.framebufferHeight
-    );
-
-
-    xrGL.enable(
-        xrGL.BLEND
-    );
-
-
-    xrGL.blendFunc(
-        xrGL.ONE,
-        xrGL.ONE_MINUS_SRC_ALPHA
-    );
-
-
-    xrGL.useProgram(
-        xrProgram
-    );
-
-
-    /*
-     * Position.
-     */
-
-    const positionLocation =
-        xrGL.getAttribLocation(
-            xrProgram,
-            "a_position"
-        );
-
-
-    xrGL.bindBuffer(
-        xrGL.ARRAY_BUFFER,
-        xrPositionBuffer
-    );
-
-
-    xrGL.enableVertexAttribArray(
-        positionLocation
-    );
-
-
-    xrGL.vertexAttribPointer(
-        positionLocation,
-        2,
-        xrGL.FLOAT,
-        false,
-        0,
-        0
-    );
-
-
-    /*
-     * Texture coordinates.
-     */
-
-    const texcoordLocation =
-        xrGL.getAttribLocation(
-            xrProgram,
-            "a_texcoord"
-        );
-
-
-    xrGL.bindBuffer(
-        xrGL.ARRAY_BUFFER,
-        xrTexcoordBuffer
-    );
-
-
-    xrGL.enableVertexAttribArray(
-        texcoordLocation
-    );
-
-
-    xrGL.vertexAttribPointer(
-        texcoordLocation,
-        2,
-        xrGL.FLOAT,
-        false,
-        0,
-        0
-    );
-
-
-    /*
-     * Texture.
-     */
-
-    const textureLocation =
-        xrGL.getUniformLocation(
-            xrProgram,
-            "u_texture"
-        );
-
-
-    xrGL.activeTexture(
-        xrGL.TEXTURE0
-    );
-
-
-    xrGL.bindTexture(
-        xrGL.TEXTURE_2D,
-        xrTexture
-    );
-
-
-    xrGL.uniform1i(
-        textureLocation,
-        0
-    );
-
-
-    /*
-     * Draw transparent HUD.
-     */
-
-    xrGL.drawArrays(
-        xrGL.TRIANGLES,
-        0,
-        6
-    );
-
-
-    xrGL.bindTexture(
-        xrGL.TEXTURE_2D,
-        null
-    );
-
-
-    xrGL.disable(
-        xrGL.BLEND
-    );
-
-}
-
-
-/* =====================================================
-   ENTER QUEST PASSTHROUGH
-===================================================== */
-
-vrButton.onclick =
-    async() => {
-
-        /*
-         * Exit.
-         */
-
-        if(xrSession){
-
-            try{
-
-                await xrSession.end();
-
-            }catch(error){
-
-                console.error(
-                    error
-                );
-
-            }
-
-            return;
-
+function setupGL(canvas) {
+    gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
+
+    const vs = `
+        attribute vec2 position;
+        varying vec2 uv;
+        void main() {
+            uv = (position + 1.0) * 0.5;
+            uv.y = 1.0 - uv.y;
+            gl_Position = vec4(position * 0.85, -0.1, 1.0);
         }
-
-
-        if(
-            !navigator.xr
-        ){
-
-            response.textContent =
-                "WebXR is unavailable.";
-
-            return;
-
+    `;
+    const fs = `
+        precision mediump float;
+        varying vec2 uv;
+        uniform sampler2D tex;
+        void main() {
+            vec4 col = texture2D(tex, uv);
+            gl_FragColor = col;
         }
-
-
-        try{
-
-            /*
-             * ONLY immersive-ar.
-             *
-             * NO immersive-vr fallback.
-             */
-
-            const supported =
-                await navigator.xr
-                    .isSessionSupported(
-                        "immersive-ar"
-                    );
-
-
-            if(!supported){
-
-                throw new Error(
-                    "Quest Browser does not report immersive-ar support."
-                );
-
-            }
-
-
-            xrStatus.textContent =
-                "ENTERING PASSTHROUGH...";
-
-            xrStatus.className =
-                "yellow";
-
-
-            /*
-             * Do NOT require DOM overlay.
-             *
-             * The E.D.I.T.H. HUD is rendered
-             * directly with WebGL.
-             */
-
-            xrSession =
-                await navigator.xr
-                    .requestSession(
-                        "immersive-ar",
-                        {
-
-                            optionalFeatures: [
-                                "local-floor"
-                            ]
-
-                        }
-                    );
-
-
-            console.log(
-                "XR SESSION:",
-                xrSession
-            );
-
-
-            console.log(
-                "BLEND MODE:",
-                xrSession.environmentBlendMode
-            );
-
-
-            /*
-             * Quest passthrough should be
-             * non-opaque.
-             */
-
-            if(
-                xrSession.environmentBlendMode ===
-                    "opaque"
-            ){
-
-                console.warn(
-                    "XR reported opaque blend mode."
-                );
-
-            }
-
-
-            xrSession.addEventListener(
-                "end",
-                onXREnd
-            );
-
-
-            await setupXRGL();
-
-
-            createXRHUD();
-
-
-            /*
-             * Create transparent XR layer.
-             */
-
-            const layerOptions = {
-
-                alpha:
-                    true,
-
-                antialias:
-                    true,
-
-                depth:
-                    false,
-
-                stencil:
-                    false
-
-            };
-
-
-            /*
-             * Native framebuffer scale if
-             * Quest exposes the method.
-             */
-
-            if(
-                typeof XRWebGLLayer
-                    .getNativeFramebufferScaleFactor ===
-                    "function"
-            ){
-
-                try{
-
-                    layerOptions.framebufferScaleFactor =
-                        XRWebGLLayer
-                            .getNativeFramebufferScaleFactor(
-                                xrSession
-                            );
-
-                }catch(error){
-
-                    console.log(
-                        "Native scale unavailable."
-                    );
-
-                }
-
-            }
-
-
-            xrLayer =
-                new XRWebGLLayer(
-                    xrSession,
-                    xrGL,
-                    layerOptions
-                );
-
-
-            xrSession.updateRenderState({
-
-                baseLayer:
-                    xrLayer
-
-            });
-
-
-            /*
-             * Reference space.
-             */
-
-            try{
-
-                xrReferenceSpace =
-                    await xrSession
-                        .requestReferenceSpace(
-                            "local-floor"
-                        );
-
-            }catch(error){
-
-                xrReferenceSpace =
-                    await xrSession
-                        .requestReferenceSpace(
-                            "local"
-                        );
-
-            }
-
-
-            /*
-             * Update UI.
-             */
-
-            xrStatus.textContent =
-                "PASSTHROUGH ACTIVE";
-
-            xrStatus.className =
-                "green";
-
-
-            vrButton.textContent =
-                "EXIT E.D.I.T.H.";
-
-
-            /*
-             * Start XR rendering.
-             */
-
-            xrSession.requestAnimationFrame(
-                renderXR
-            );
-
-
-            /*
-             * Restart voice.
-             */
-
-            setTimeout(
-                () => {
-
-                    startListening();
-
-
-                    if(
-                        window.speechSynthesis
-                    ){
-
-                        try{
-
-                            window.speechSynthesis.resume();
-
-                        }catch(error){}
-
-                    }
-
-                },
-                500
-            );
-
-
-        }catch(error){
-
-            console.error(
-                "XR ERROR:",
-                error
-            );
-
-
-            if(
-                xrSession
-            ){
-
-                try{
-
-                    await xrSession.end();
-
-                }catch(endError){}
-
-            }
-
-
-            xrSession =
-                null;
-
-
-            xrStatus.textContent =
-                "XR ERROR";
-
-            xrStatus.className =
-                "red";
-
-
-            response.textContent =
-                "Could not enter passthrough: " +
-                error.message;
-
-        }
-
+    `;
+
+    const createShader = (type, src) => {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
     };
 
+    shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, createShader(gl.VERTEX_SHADER, vs));
+    gl.attachShader(shaderProgram, createShader(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(shaderProgram);
 
-/* =====================================================
-   XR END
-===================================================== */
+    const quad = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
 
-function onXREnd(){
+    const pos = gl.getAttribLocation(shaderProgram, "position");
+    gl.enableVertexAttribArray(pos);
+    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
 
-    xrSession =
-        null;
-
-
-    xrReferenceSpace =
-        null;
-
-
-    xrLayer =
-        null;
-
-
-    xrGL =
-        null;
-
-
-    xrProgram =
-        null;
-
-
-    xrTexture =
-        null;
-
-
-    xrPositionBuffer =
-        null;
-
-
-    xrTexcoordBuffer =
-        null;
-
-
-    xrStatus.textContent =
-        "PASSTHROUGH READY";
-
-
-    xrStatus.className =
-        "green";
-
-
-    vrButton.textContent =
-        "ENTER E.D.I.T.H. PASSTHROUGH";
-
-
-    setTimeout(
-        startListening,
-        500
-    );
-
+    hudTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, hudTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 }
 
-
-/* =====================================================
-   VISIBILITY
-===================================================== */
-
-document.addEventListener(
-    "visibilitychange",
-    () => {
-
-        if(
-            !document.hidden &&
-            mediaStream
-        ){
-
-            setTimeout(
-                startListening,
-                700
-            );
-
-
-            if(
-                window.speechSynthesis
-            ){
-
-                try{
-
-                    window.speechSynthesis.resume();
-
-                }catch(error){}
-
-            }
-
-        }
-
+vrButton.onclick = async () => {
+    if (xrSession) {
+        await xrSession.end();
+        return;
     }
-);
 
+    try {
+        xrSession = await navigator.xr.requestSession("immersive-ar", {
+            requiredFeatures: ["hit-test"],
+            optionalFeatures: ["local-floor"]
+        });
 
-/* =====================================================
-   INITIAL XR CHECK
-===================================================== */
+        init2DHUD();
+        const canvas = document.getElementById("xrCanvas");
+        setupGL(canvas);
 
-checkXR();
+        const glLayer = new XRWebGLLayer(xrSession, gl, { alpha: true });
+        xrSession.updateRenderState({ baseLayer: glLayer });
 
+        await xrSession.requestReferenceSpace("viewer");
+        vrButton.textContent = "EXIT PASSTHROUGH";
+        xrStatus.textContent = "ACTIVE";
+        xrStatus.className = "green";
+
+        xrSession.requestAnimationFrame(function onFrame(time, frame) {
+            if (!xrSession) return;
+            xrSession.requestAnimationFrame(onFrame);
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            updateHUDTexture(time);
+
+            gl.bindTexture(gl.TEXTURE_2D, hudTexture);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, xrCanvas2D);
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+            gl.useProgram(shaderProgram);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        });
+
+        xrSession.onend = () => {
+            xrSession = null;
+            vrButton.textContent = "ENTER PASSTHROUGH";
+            xrStatus.textContent = "READY";
+            startSpeechSafe();
+        };
+
+        startSpeechSafe();
+    } catch (err) {
+        responseEl.textContent = "AR Init Failed: " + err.message;
+        xrStatus.textContent = "ERROR";
+        xrStatus.className = "red";
+    }
+};
+
+/* --- SYSTEM INITIALIZATION --- */
+document.getElementById("startButton").onclick = async () => {
+    document.getElementById("start").style.display = "none";
+    await initSensors();
+    setupSpeech();
+    checkXRSupport();
+    speak("E.D.I.T.H. online and standing by.");
+};
 </script>
-
 </body>
 </html>
