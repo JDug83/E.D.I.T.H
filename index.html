@@ -2,22 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
 <meta
     name="viewport"
     content="width=device-width,
-             initial-scale=1.0,
-             maximum-scale=1.0,
-             user-scalable=no"
+    initial-scale=1.0,
+    maximum-scale=1.0,
+    user-scalable=no"
 >
-
-<title>E.D.I.T.H. // Tactical Optical System</title>
+<title>E.D.I.T.H. // OPTICAL SYSTEM</title>
 
 <style>
-
-/* ================================================================
-   GLOBAL
-================================================================ */
 
 * {
     box-sizing: border-box;
@@ -27,393 +21,125 @@
 
 html,
 body {
-
     width: 100%;
     height: 100%;
-
     overflow: hidden;
-
     background: #000;
-
-    color: #00e5ff;
-
-    font-family:
-        Consolas,
-        "Courier New",
-        monospace;
+    color: #00eaff;
+    font-family: Consolas, "Courier New", monospace;
 }
-
-
-/* ================================================================
-   XR CANVAS
-================================================================ */
 
 #canvasXR {
-
     position: fixed;
-
     inset: 0;
-
-    width: 100vw;
-    height: 100vh;
-
+    width: 100%;
+    height: 100%;
     display: block;
-
-    pointer-events: none;
-
-    z-index: 1;
 }
-
-
-/* ================================================================
-   SETUP SCREEN
-================================================================ */
 
 #setupScreen {
-
     position: fixed;
-
     inset: 0;
-
     z-index: 100;
-
     display: flex;
-
-    flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
-
-    padding: 24px;
-
-    text-align: center;
-
+    flex-direction: column;
     background:
-
         radial-gradient(
-            ellipse at center,
-            rgba(0, 40, 48, .25) 0%,
-            rgba(0, 0, 0, .98) 70%
+            circle at center,
+            rgba(0,80,100,.18),
+            #000 70%
         );
-
-    overflow: hidden;
 }
 
-
-/* scanlines */
-
 #setupScreen::before {
-
     content: "";
-
     position: absolute;
-
     inset: 0;
-
-    pointer-events: none;
-
     background:
         repeating-linear-gradient(
             0deg,
             transparent 0px,
             transparent 3px,
-            rgba(0,229,255,.025) 4px
+            rgba(0,230,255,.025) 4px
         );
+    pointer-events: none;
 }
-
-
-/* animated optical circle */
-
-#setupScreen::after {
-
-    content: "";
-
-    position: absolute;
-
-    width: 700px;
-    height: 700px;
-
-    border: 1px solid
-        rgba(0,229,255,.08);
-
-    border-radius: 50%;
-
-    box-shadow:
-        0 0 80px
-        rgba(0,229,255,.05);
-
-    animation:
-        setupPulse 5s ease-in-out infinite;
-}
-
-
-@keyframes setupPulse {
-
-    0%,
-    100% {
-        transform: scale(.92);
-        opacity: .45;
-    }
-
-    50% {
-        transform: scale(1.08);
-        opacity: 1;
-    }
-}
-
-
-/* ================================================================
-   LOGO
-================================================================ */
 
 .logo {
-
     position: relative;
-
-    z-index: 2;
-
-    color: #fff;
-
-    font-size: clamp(
-        34px,
-        7vw,
-        70px
-    );
-
+    font-size: clamp(40px, 8vw, 80px);
     font-weight: 900;
-
-    letter-spacing:
-        clamp(
-            8px,
-            2vw,
-            20px
-        );
-
+    letter-spacing: 16px;
+    color: #fff;
     text-shadow:
-
-        0 0 8px #00e5ff,
-
-        0 0 25px
-        rgba(0,229,255,.7),
-
-        0 0 60px
-        rgba(0,229,255,.3);
+        0 0 10px #00eaff,
+        0 0 30px rgba(0,234,255,.8),
+        0 0 70px rgba(0,234,255,.35);
 }
-
 
 .subtitle {
-
     position: relative;
-
-    z-index: 2;
-
     margin-top: 10px;
-
-    margin-bottom: 38px;
-
-    color:
-        rgba(0,229,255,.6);
-
+    margin-bottom: 35px;
+    color: rgba(0,234,255,.55);
     font-size: 10px;
-
     letter-spacing: 4px;
 }
-
-
-/* ================================================================
-   SETUP BOX
-================================================================ */
 
 .setupBox {
-
     position: relative;
-
-    z-index: 2;
-
-    width:
-        min(
-            460px,
-            92vw
-        );
-
-    padding: 28px;
-
-    border:
-        1px solid
-        rgba(0,229,255,.35);
-
-    background:
-        rgba(0,10,14,.72);
-
+    width: min(450px, 90vw);
+    padding: 25px;
+    background: rgba(0,10,15,.75);
+    border: 1px solid rgba(0,234,255,.4);
     box-shadow:
-
-        0 0 35px
-        rgba(0,229,255,.08),
-
-        inset 0 0 30px
-        rgba(0,229,255,.04);
+        0 0 40px rgba(0,234,255,.08),
+        inset 0 0 25px rgba(0,234,255,.04);
 }
 
-
-.setupLabel {
-
-    color:
-        rgba(0,229,255,.55);
-
+.label {
+    color: rgba(0,234,255,.5);
     font-size: 9px;
-
     letter-spacing: 3px;
-
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
-
 
 #apiKeyInput {
-
     width: 100%;
-
-    height: 52px;
-
-    padding:
-        0 16px;
-
-    border:
-        1px solid
-        rgba(0,229,255,.55);
-
+    height: 50px;
+    background: #020607;
+    color: white;
+    border: 1px solid rgba(0,234,255,.5);
     outline: none;
-
-    background:
-        rgba(0,0,0,.75);
-
-    color: #fff;
-
-    font-family:
-        Consolas,
-        monospace;
-
-    font-size: 13px;
-
     text-align: center;
-
-    box-shadow:
-        inset 0 0 15px
-        rgba(0,229,255,.06);
+    font-family: inherit;
+    font-size: 13px;
 }
-
-
-#apiKeyInput:focus {
-
-    border-color: #00e5ff;
-
-    box-shadow:
-
-        0 0 18px
-        rgba(0,229,255,.18),
-
-        inset 0 0 15px
-        rgba(0,229,255,.08);
-}
-
-
-/* ================================================================
-   BUTTON
-================================================================ */
 
 #btnInit {
-
     width: 100%;
-
-    height: 54px;
-
-    margin-top: 16px;
-
-    border:
-        1px solid #00e5ff;
-
-    background:
-        rgba(0,229,255,.05);
-
-    color: #00e5ff;
-
-    font-family:
-        Consolas,
-        monospace;
-
+    height: 52px;
+    margin-top: 15px;
+    background: rgba(0,234,255,.05);
+    color: #00eaff;
+    border: 1px solid #00eaff;
+    font-family: inherit;
     font-weight: bold;
-
-    font-size: 12px;
-
     letter-spacing: 4px;
-
     cursor: pointer;
-
-    transition:
-        background .2s,
-        box-shadow .2s,
-        color .2s;
 }
-
 
 #btnInit:hover {
-
-    color: #fff;
-
-    background:
-        rgba(0,229,255,.16);
-
-    box-shadow:
-
-        0 0 30px
-        rgba(0,229,255,.4),
-
-        inset 0 0 20px
-        rgba(0,229,255,.1);
+    background: rgba(0,234,255,.18);
+    box-shadow: 0 0 30px rgba(0,234,255,.35);
 }
-
-
-#btnInit:disabled {
-
-    opacity: .5;
-
-    cursor: wait;
-}
-
-
-/* ================================================================
-   FOOTER
-================================================================ */
-
-.setupFooter {
-
-    position: relative;
-
-    z-index: 2;
-
-    margin-top: 22px;
-
-    color:
-        rgba(255,255,255,.3);
-
-    font-size: 8px;
-
-    letter-spacing: 2px;
-
-    line-height: 1.8;
-}
-
 
 </style>
 </head>
 
-
 <body>
-
-
-<!-- ==============================================================
-     SETUP
-================================================================ -->
 
 <div id="setupScreen">
 
@@ -422,22 +148,20 @@ body {
     </div>
 
     <div class="subtitle">
-        OPTICAL TACTICAL INTELLIGENCE SYSTEM
+        OPTICAL TACTICAL INTELLIGENCE
     </div>
-
 
     <div class="setupBox">
 
-        <div class="setupLabel">
+        <div class="label">
             GEMINI NEURAL UPLINK
         </div>
 
         <input
             id="apiKeyInput"
             type="password"
+            placeholder="GEMINI API KEY"
             autocomplete="off"
-            spellcheck="false"
-            placeholder="ENTER GEMINI API KEY"
         >
 
         <button id="btnInit">
@@ -446,285 +170,155 @@ body {
 
     </div>
 
-
-    <div class="setupFooter">
-
-        QUEST AR INTERFACE // WEBXR<br>
-
-        HOLD CONTROLLER TRIGGER TO SPEAK<br>
-
-        RELEASE TRIGGER TO TRANSMIT
-
-    </div>
-
 </div>
-
-
-<!-- ==============================================================
-     XR CANVAS
-================================================================ -->
 
 <canvas id="canvasXR"></canvas>
 
-
 <script>
-
-/* ================================================================
-   E.D.I.T.H.
-   QUEST WEBXR TACTICAL HUD
-================================================================ */
-
-
-/* ================================================================
-   DOM
-================================================================ */
-
-const setupScreen =
-    document.getElementById(
-        "setupScreen"
-    );
-
-const apiKeyInput =
-    document.getElementById(
-        "apiKeyInput"
-    );
-
-const btnInit =
-    document.getElementById(
-        "btnInit"
-    );
-
-const canvas =
-    document.getElementById(
-        "canvasXR"
-    );
-
 
 /* ================================================================
    STATE
 ================================================================ */
 
+const setupScreen =
+    document.getElementById("setupScreen");
+
+const apiKeyInput =
+    document.getElementById("apiKeyInput");
+
+const btnInit =
+    document.getElementById("btnInit");
+
+const canvas =
+    document.getElementById("canvasXR");
+
+
 let apiKey =
-    localStorage.getItem(
-        "edith_gemini_key"
-    ) || "";
+    localStorage.getItem("edith_gemini_key") || "";
 
 apiKeyInput.value = apiKey;
 
 
-let systemStatus =
-    "SYSTEM READY";
+let isRecording = false;
+let isProcessing = false;
+let isSpeaking = false;
+
+let systemStatus = "SYSTEM READY";
 
 let edithResponse =
     "E.D.I.T.H. online. Awaiting directive.";
 
 let debugLog =
-    "STANDBY";
-
-
-let isRecording = false;
-
-let isProcessing = false;
-
-let isSpeaking = false;
+    "OPTICAL SYSTEM STANDBY";
 
 
 /* ================================================================
-   AUDIO STATE
+   AUDIO
 ================================================================ */
 
 let audioContext = null;
-
 let micStream = null;
-
 let mediaRecorder = null;
-
 let audioChunks = [];
 
 
-/* ================================================================
-   XR STATE
-================================================================ */
+function initAudio() {
 
-let xrSession = null;
+    if (!audioContext) {
 
-let xrRefSpace = null;
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+    }
 
-let xrLayer = null;
-
-
-/* ================================================================
-   AUDIO HARDWARE
-================================================================ */
-
-function initAudioHardware() {
-
-    try {
-
-        if (!audioContext) {
-
-            audioContext =
-                new (
-                    window.AudioContext ||
-                    window.webkitAudioContext
-                )();
-
-        }
-
-        if (
-            audioContext.state ===
-            "suspended"
-        ) {
-
-            audioContext.resume();
-        }
-
-    } catch (error) {
-
-        debugLog =
-            "AUDIO INIT ERROR";
+    if (
+        audioContext.state === "suspended"
+    ) {
+        audioContext.resume();
     }
 }
 
 
-/* ================================================================
-   AUDIO TONE
-================================================================ */
-
-function playTone(
+function tone(
     frequency,
     duration,
     type = "sine",
-    volume = 0.12
+    volume = .1
 ) {
 
     try {
 
-        initAudioHardware();
+        initAudio();
 
-        const oscillator =
+        const osc =
             audioContext.createOscillator();
 
         const gain =
             audioContext.createGain();
 
+        osc.type = type;
 
-        oscillator.type = type;
-
-
-        oscillator.frequency.setValueAtTime(
-            frequency,
-            audioContext.currentTime
-        );
-
+        osc.frequency.value =
+            frequency;
 
         gain.gain.setValueAtTime(
             volume,
             audioContext.currentTime
         );
 
-
         gain.gain.exponentialRampToValueAtTime(
-            0.0001,
-            audioContext.currentTime +
-                duration
+            .0001,
+            audioContext.currentTime + duration
         );
 
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
 
-        oscillator.connect(gain);
+        osc.start();
 
-        gain.connect(
-            audioContext.destination
+        osc.stop(
+            audioContext.currentTime + duration
         );
 
-
-        oscillator.start();
-
-        oscillator.stop(
-            audioContext.currentTime +
-            duration
-        );
-
-    } catch (error) {
-
-        debugLog =
-            "AUDIO ERROR";
-    }
+    } catch {}
 }
 
 
 /* ================================================================
-   TEXT TO SPEECH
+   SPEECH
 ================================================================ */
 
-function speakText(text) {
+function speak(text) {
 
-    if (
-        !("speechSynthesis" in window)
-    ) {
-
-        debugLog =
-            "TTS NOT AVAILABLE";
-
+    if (!window.speechSynthesis)
         return;
-    }
 
+    speechSynthesis.cancel();
 
-    window.speechSynthesis.cancel();
+    const u =
+        new SpeechSynthesisUtterance(text);
 
+    u.lang = "en-US";
+    u.rate = 1.02;
+    u.pitch = .82;
+    u.volume = .9;
 
-    const utterance =
-        new SpeechSynthesisUtterance(
-            text
-        );
+    u.onstart = () => {
+        isSpeaking = true;
+    };
 
+    u.onend = () => {
+        isSpeaking = false;
 
-    utterance.lang =
-        "en-US";
+        if (!isRecording) {
+            systemStatus =
+                "SYSTEM READY";
+        }
+    };
 
-    utterance.rate =
-        1.02;
-
-    utterance.pitch =
-        0.82;
-
-    utterance.volume =
-        0.9;
-
-
-    utterance.onstart =
-        () => {
-
-            isSpeaking = true;
-        };
-
-
-    utterance.onend =
-        () => {
-
-            isSpeaking = false;
-
-            if (!isRecording) {
-
-                systemStatus =
-                    "SYSTEM READY";
-            }
-        };
-
-
-    utterance.onerror =
-        () => {
-
-            isSpeaking = false;
-
-            debugLog =
-                "TTS ERROR";
-        };
-
-
-    window.speechSynthesis.speak(
-        utterance
-    );
+    speechSynthesis.speak(u);
 }
 
 
@@ -734,110 +328,58 @@ function speakText(text) {
 
 async function setupMic() {
 
-    if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices
-            .getUserMedia
-    ) {
-
-        throw new Error(
-            "Microphone API unavailable"
-        );
-    }
-
-
     micStream =
         await navigator.mediaDevices
             .getUserMedia({
-
                 audio: {
-
                     channelCount: 1,
-
-                    echoCancellation:
-                        true,
-
-                    noiseSuppression:
-                        true,
-
-                    autoGainControl:
-                        true
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
                 }
             });
 
 
-    let mimeType = "";
-
+    let mime = "";
 
     const formats = [
-
         "audio/webm;codecs=opus",
-
         "audio/webm",
-
         "audio/ogg;codecs=opus"
     ];
 
-
-    for (
-        const format of formats
-    ) {
+    for (const f of formats) {
 
         if (
-            MediaRecorder
-                .isTypeSupported(format)
+            MediaRecorder.isTypeSupported(f)
         ) {
 
-            mimeType = format;
-
+            mime = f;
             break;
         }
     }
 
 
     mediaRecorder =
-        mimeType
-
+        mime
             ? new MediaRecorder(
                 micStream,
-                {
-                    mimeType:
-                        mimeType
-                }
+                { mimeType: mime }
             )
-
             : new MediaRecorder(
                 micStream
             );
 
 
     mediaRecorder.ondataavailable =
-        event => {
+        e => {
 
             if (
-                event.data &&
-                event.data.size > 0
+                e.data &&
+                e.data.size
             ) {
-
-                audioChunks.push(
-                    event.data
-                );
+                audioChunks.push(e.data);
             }
-        };
-
-
-    mediaRecorder.onerror =
-        () => {
-
-            isRecording = false;
-
-            isProcessing = false;
-
-            systemStatus =
-                "RECORDER ERROR";
-
-            debugLog =
-                "MEDIARECORDER FAILURE";
         };
 
 
@@ -849,61 +391,32 @@ async function setupMic() {
 
             audioChunks = [];
 
-
             if (!chunks.length) {
-
                 isProcessing = false;
-
-                systemStatus =
-                    "SYSTEM READY";
-
-                debugLog =
-                    "NO AUDIO";
-
                 return;
             }
-
-
-            const actualMime =
-                mediaRecorder.mimeType ||
-                "audio/webm";
-
 
             const blob =
                 new Blob(
                     chunks,
                     {
                         type:
-                            actualMime
+                            mediaRecorder.mimeType ||
+                            "audio/webm"
                     }
                 );
 
-
-            debugLog =
-                "AUDIO " +
-                Math.round(
-                    blob.size / 1024
-                ) +
-                " KB";
-
-
-            await sendAudioToGemini(
-                blob
-            );
+            await sendToGemini(blob);
         };
 
 
     debugLog =
-        "MIC READY // " +
-        (
-            mediaRecorder.mimeType ||
-            "DEFAULT"
-        );
+        "MICROPHONE ONLINE";
 }
 
 
 /* ================================================================
-   START RECORDING
+   RECORD
 ================================================================ */
 
 function startRecording() {
@@ -913,52 +426,31 @@ function startRecording() {
         isRecording ||
         isProcessing
     ) {
-
         return;
     }
 
 
-    initAudioHardware();
-
+    initAudio();
 
     audioChunks = [];
 
+    mediaRecorder.start();
 
-    try {
+    isRecording = true;
 
-        mediaRecorder.start();
+    systemStatus =
+        "LISTENING";
 
+    debugLog =
+        "VOICE CAPTURE ACTIVE";
 
-        isRecording = true;
-
-
-        systemStatus =
-            "LISTENING";
-
-        debugLog =
-            "RELEASE TRIGGER TO SEND";
-
-
-        playTone(
-            520,
-            .07,
-            "triangle",
-            .10
-        );
-
-    } catch (error) {
-
-        isRecording = false;
-
-        debugLog =
-            "RECORD START FAILED";
-    }
+    tone(
+        520,
+        .07,
+        "triangle"
+    );
 }
 
-
-/* ================================================================
-   STOP RECORDING
-================================================================ */
 
 function stopRecording() {
 
@@ -966,47 +458,31 @@ function stopRecording() {
         !mediaRecorder ||
         !isRecording
     ) {
-
         return;
     }
 
 
-    try {
+    isRecording = false;
+    isProcessing = true;
 
-        isRecording = false;
+    systemStatus =
+        "PROCESSING";
 
-        isProcessing = true;
+    debugLog =
+        "UPLOADING DIRECTIVE";
 
+    mediaRecorder.stop();
 
-        systemStatus =
-            "PROCESSING";
-
-        debugLog =
-            "PACKAGING AUDIO";
-
-
-        mediaRecorder.stop();
-
-
-        playTone(
-            880,
-            .08,
-            "triangle",
-            .10
-        );
-
-    } catch (error) {
-
-        isProcessing = false;
-
-        debugLog =
-            "RECORD STOP FAILED";
-    }
+    tone(
+        900,
+        .08,
+        "triangle"
+    );
 }
 
 
 /* ================================================================
-   BLOB -> BASE64
+   BLOB BASE64
 ================================================================ */
 
 function blobToBase64(blob) {
@@ -1017,182 +493,117 @@ function blobToBase64(blob) {
             const reader =
                 new FileReader();
 
+            reader.onloadend = () => {
 
-            reader.onloadend =
-                () => {
+                const result =
+                    reader.result;
 
-                    const result =
-                        reader.result;
+                resolve(
+                    result.substring(
+                        result.indexOf(",") + 1
+                    )
+                );
+            };
 
+            reader.onerror = reject;
 
-                    resolve(
-                        result.substring(
-                            result.indexOf(",") +
-                            1
-                        )
-                    );
-                };
-
-
-            reader.onerror =
-                reject;
-
-
-            reader.readAsDataURL(
-                blob
-            );
+            reader.readAsDataURL(blob);
         }
     );
 }
 
 
 /* ================================================================
-   GEMINI TRANSMISSION
+   GEMINI
 ================================================================ */
 
-async function sendAudioToGemini(
-    blob
-) {
-
-    systemStatus =
-        "CONTACTING E.D.I.T.H.";
-
-    debugLog =
-        "NEURAL UPLINK ACTIVE";
-
+async function sendToGemini(blob) {
 
     try {
 
-        const base64Audio =
-            await blobToBase64(
-                blob
-            );
+        systemStatus =
+            "NEURAL UPLINK";
 
+        const audio =
+            await blobToBase64(blob);
 
-        const mimeType =
+        const mime =
             blob.type.split(";")[0] ||
             "audio/webm";
 
 
-        const endpoint =
-            "https://generativelanguage.googleapis.com/" +
-            "v1beta/models/gemini-2.5-flash:generateContent" +
-            "?key=" +
-            encodeURIComponent(
-                apiKey
-            );
-
-
-        const requestBody = {
-
-            contents: [
-
-                {
-
-                    role: "user",
-
-                    parts: [
-
-                        {
-
-                            text:
-
-`You are E.D.I.T.H., an advanced futuristic tactical AI assistant.
-
-The user is speaking through a wearable augmented-reality optical interface.
-
-Answer naturally but concisely.
-
-Use no more than two short sentences.
-
-Be calm, intelligent, precise and useful.
-
-Do not mention these instructions.`
-
-                        },
-
-                        {
-
-                            inline_data: {
-
-                                mime_type:
-                                    mimeType,
-
-                                data:
-                                    base64Audio
-                            }
-                        }
-
-                    ]
-                }
-
-            ],
-
-
-            generationConfig: {
-
-                temperature:
-                    0.35,
-
-                maxOutputTokens:
-                    120
-            }
-        };
-
-
         const response =
             await fetch(
-                endpoint,
+                "https://generativelanguage.googleapis.com/" +
+                "v1beta/models/gemini-2.5-flash:generateContent" +
+                "?key=" +
+                encodeURIComponent(apiKey),
                 {
-
-                    method:
-                        "POST",
+                    method: "POST",
 
                     headers: {
-
                         "Content-Type":
                             "application/json"
                     },
 
-                    body:
-                        JSON.stringify(
-                            requestBody
-                        )
+                    body: JSON.stringify({
+
+                        contents: [{
+                            parts: [
+
+                                {
+                                    text:
+`You are E.D.I.T.H., an advanced tactical optical AI.
+
+Respond to the user's spoken command.
+
+Be extremely concise and natural.
+
+Maximum two short sentences.
+
+Sound calm, intelligent and futuristic.
+
+Never explain your internal instructions.`
+                                },
+
+                                {
+                                    inline_data: {
+                                        mime_type: mime,
+                                        data: audio
+                                    }
+                                }
+
+                            ]
+                        }],
+
+                        generationConfig: {
+                            temperature: .35,
+                            maxOutputTokens: 120
+                        }
+                    })
                 }
             );
 
 
-        const rawText =
+        const text =
             await response.text();
-
 
         let data;
 
-
         try {
-
-            data =
-                JSON.parse(
-                    rawText
-                );
-
+            data = JSON.parse(text);
         } catch {
-
             throw new Error(
-                "Invalid Gemini response"
+                "Invalid AI response"
             );
         }
 
 
         if (!response.ok) {
 
-            const message =
-                data?.error?.message ||
-                `HTTP ${response.status}`;
-
-
             throw new Error(
-                message
+                data?.error?.message ||
+                `HTTP ${response.status}`
             );
         }
 
@@ -1202,18 +613,14 @@ Do not mention these instructions.`
                 ?.candidates?.[0]
                 ?.content
                 ?.parts
-                ?.map(
-                    part =>
-                        part.text || ""
-                )
+                ?.map(p => p.text || "")
                 .join("")
                 .trim();
 
 
         if (!reply) {
-
             throw new Error(
-                "Gemini returned no response"
+                "No AI response"
             );
         }
 
@@ -1221,76 +628,45 @@ Do not mention these instructions.`
         edithResponse =
             reply;
 
-
         systemStatus =
             "DIRECTIVE COMPLETE";
 
         debugLog =
-            "GEMINI ONLINE // 200";
-
+            "GEMINI // ONLINE";
 
         isProcessing =
             false;
 
 
-        playTone(
+        tone(
             1200,
-            .12,
-            "sine",
-            .10
+            .13,
+            "sine"
         );
 
-
-        speakText(
-            reply
-        );
-
-
-        setTimeout(
-            () => {
-
-                if (
-                    !isRecording &&
-                    !isSpeaking
-                ) {
-
-                    systemStatus =
-                        "SYSTEM READY";
-                }
-
-            },
-            2500
-        );
+        speak(reply);
 
 
     } catch (error) {
 
-        isProcessing =
-            false;
-
+        isProcessing = false;
 
         systemStatus =
             "AI ERROR";
 
-
         debugLog =
-            "GEMINI: " +
-            error.message
-                .substring(
-                    0,
-                    65
-                );
-
+            error.message.substring(
+                0,
+                70
+            );
 
         edithResponse =
-            "Tactical uplink unavailable. Please retry.";
+            "Neural uplink unavailable. Please retry.";
 
-
-        playTone(
+        tone(
             220,
             .3,
-            "sawtooth",
-            .08
+            "sawtooth"
         );
     }
 }
@@ -1300,81 +676,64 @@ Do not mention these instructions.`
    HUD CANVAS
 ================================================================ */
 
-const hudCanvas =
-    document.createElement(
-        "canvas"
-    );
+const hud =
+    document.createElement("canvas");
 
-
-hudCanvas.width =
-    1600;
-
-hudCanvas.height =
-    900;
-
+hud.width = 1920;
+hud.height = 1080;
 
 const ctx =
-    hudCanvas.getContext(
-        "2d"
-    );
+    hud.getContext("2d");
 
+const W = hud.width;
+const H = hud.height;
 
-const W =
-    hudCanvas.width;
-
-const H =
-    hudCanvas.height;
+const CX = W / 2;
+const CY = H / 2;
 
 
 const CYAN =
-    "rgba(0,229,255,.92)";
+    "rgba(0,235,255,.95)";
 
-const CYAN_SOFT =
-    "rgba(0,229,255,.38)";
+const CYAN2 =
+    "rgba(0,235,255,.45)";
 
-const CYAN_FAINT =
-    "rgba(0,229,255,.10)";
+const CYAN3 =
+    "rgba(0,235,255,.12)";
 
 const RED =
-    "rgba(255,25,45,.95)";
-
-const RED_SOFT =
-    "rgba(255,25,45,.32)";
+    "rgba(255,35,55,.95)";
 
 const GREEN =
-    "rgba(0,255,150,.92)";
+    "rgba(0,255,150,.95)";
 
 const WHITE =
-    "rgba(240,255,255,.96)";
+    "rgba(235,255,255,.96)";
 
 
 /* ================================================================
-   HUD TEXT
+   TEXT
 ================================================================ */
 
-function hudText(
-    text,
+function text(
+    value,
     x,
     y,
-    size = 14,
+    size,
     color = CYAN,
     align = "left"
 ) {
 
     ctx.save();
 
-
     ctx.font =
         `${size}px Consolas, monospace`;
-
 
     ctx.fillStyle =
         color;
 
-
     ctx.textAlign =
         align;
-
 
     ctx.shadowColor =
         color;
@@ -1382,28 +741,26 @@ function hudText(
     ctx.shadowBlur =
         7;
 
-
     ctx.fillText(
-        text,
+        value,
         x,
         y
     );
-
 
     ctx.restore();
 }
 
 
 /* ================================================================
-   HUD LINE
+   LINE
 ================================================================ */
 
-function hudLine(
+function line(
     x1,
     y1,
     x2,
     y2,
-    color = CYAN_SOFT,
+    color = CYAN2,
     width = 1
 ) {
 
@@ -1417,15 +774,8 @@ function hudLine(
 
     ctx.beginPath();
 
-    ctx.moveTo(
-        x1,
-        y1
-    );
-
-    ctx.lineTo(
-        x2,
-        y2
-    );
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
 
     ctx.stroke();
 
@@ -1434,79 +784,141 @@ function hudLine(
 
 
 /* ================================================================
-   CORNER BRACKET
+   HEXAGON
 ================================================================ */
 
-function cornerBracket(
+function hexagon(
     x,
     y,
-    sx,
-    sy,
-    color
+    radius,
+    color,
+    rotation = 0
 ) {
-
-    const size = 42;
 
     ctx.save();
 
     ctx.strokeStyle =
         color;
 
-    ctx.lineWidth =
-        2;
+    ctx.lineWidth = 1;
 
     ctx.shadowColor =
         color;
 
-    ctx.shadowBlur =
-        8;
-
+    ctx.shadowBlur = 8;
 
     ctx.beginPath();
 
-    ctx.moveTo(
-        x + sx * size,
-        y
-    );
+    for (
+        let i = 0;
+        i < 6;
+        i++
+    ) {
 
-    ctx.lineTo(
-        x,
-        y
-    );
+        const a =
+            rotation +
+            i *
+            Math.PI /
+            3;
 
-    ctx.lineTo(
-        x,
-        y + sy * size
-    );
+        const px =
+            x +
+            Math.cos(a) *
+            radius;
 
+        const py =
+            y +
+            Math.sin(a) *
+            radius;
+
+        if (i === 0)
+            ctx.moveTo(px,py);
+        else
+            ctx.lineTo(px,py);
+    }
+
+    ctx.closePath();
     ctx.stroke();
-
 
     ctx.restore();
 }
 
 
 /* ================================================================
-   WRAPPED TEXT
+   BRACKET
 ================================================================ */
 
-function drawWrappedText(
-    text,
+function bracket(
     x,
     y,
-    maxWidth,
-    lineHeight,
+    w,
+    h,
     color
 ) {
 
     ctx.save();
 
+    ctx.strokeStyle =
+        color;
+
+    ctx.lineWidth = 2;
+
+    ctx.shadowColor =
+        color;
+
+    ctx.shadowBlur = 8;
+
+    const s = 18;
+
+    ctx.beginPath();
+
+    ctx.moveTo(x,y+s);
+    ctx.lineTo(x,y);
+    ctx.lineTo(x+s,y);
+
+    ctx.moveTo(x+w-s,y);
+    ctx.lineTo(x+w,y);
+    ctx.lineTo(x+w,y+s);
+
+    ctx.moveTo(x,y+h-s);
+    ctx.lineTo(x,y+h);
+    ctx.lineTo(x+s,y+h);
+
+    ctx.moveTo(x+w-s,y+h);
+    ctx.lineTo(x+w,y+h);
+    ctx.lineTo(x+w,y+h-s);
+
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   RESPONSE TEXT
+================================================================ */
+
+function responseText() {
+
+    const max =
+        650;
+
+    const words =
+        edithResponse
+            .replace(/\s+/g," ")
+            .split(" ");
+
+    let current = "";
+    let y =
+        CY + 190;
+
+    ctx.save();
 
     ctx.font =
-        "15px Consolas, monospace";
+        "16px Consolas, monospace";
 
     ctx.fillStyle =
-        color;
+        WHITE;
 
     ctx.textAlign =
         "center";
@@ -1514,88 +926,57 @@ function drawWrappedText(
     ctx.shadowColor =
         CYAN;
 
-    ctx.shadowBlur =
-        5;
-
-
-    const words =
-        text
-            .replace(
-                /\s+/g,
-                " "
-            )
-            .split(" ");
-
-
-    let lineText = "";
-
-    let currentY =
-        y;
+    ctx.shadowBlur = 5;
 
 
     for (
-        let i = 0;
-        i < words.length;
-        i++
+        const word of words
     ) {
 
         const test =
-            lineText +
-            words[i] +
+            current +
+            word +
             " ";
 
-
         if (
-            ctx.measureText(test)
-                .width >
-                maxWidth &&
-            lineText
+            ctx.measureText(test).width >
+            max
         ) {
 
             ctx.fillText(
-                lineText,
-                x,
-                currentY
+                current,
+                CX,
+                y
             );
 
+            y += 21;
 
-            lineText =
-                words[i] +
-                " ";
-
-
-            currentY +=
-                lineHeight;
+            current =
+                word + " ";
 
         } else {
 
-            lineText =
+            current =
                 test;
         }
     }
 
 
-    if (lineText) {
-
-        ctx.fillText(
-            lineText,
-            x,
-            currentY
-        );
-    }
-
+    ctx.fillText(
+        current,
+        CX,
+        y
+    );
 
     ctx.restore();
 }
 
 
 /* ================================================================
-   HUD RENDER
+   MAIN HUD
 ================================================================ */
 
-function renderHUD(
-    time
-) {
+function renderHUD(time) {
 
     ctx.clearRect(
         0,
@@ -1605,101 +986,187 @@ function renderHUD(
     );
 
 
-    const cx =
-        W / 2;
-
-    const cy =
-        H / 2;
-
-
     const t =
         time * .001;
 
 
     /* ============================================================
-       OPTICAL VIGNETTE
+       IMPORTANT:
+       NO PERIPHERAL BORDER.
+       NO BLACK VIGNETTE.
+       NO SCREEN FRAME.
     ============================================================ */
-
-    ctx.save();
-
-
-    const vignette =
-        ctx.createRadialGradient(
-            cx,
-            cy,
-            250,
-            cx,
-            cy,
-            850
-        );
-
-
-    vignette.addColorStop(
-        0,
-        "rgba(0,0,0,0)"
-    );
-
-
-    vignette.addColorStop(
-        .72,
-        "rgba(0,0,0,0)"
-    );
-
-
-    vignette.addColorStop(
-        1,
-        "rgba(80,0,10,.48)"
-    );
-
-
-    ctx.fillStyle =
-        vignette;
-
-
-    ctx.fillRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-
-    ctx.restore();
 
 
     /* ============================================================
-       OPTICAL EDGE LINES
+       CENTRAL OPTICAL SYSTEM
     ============================================================ */
 
-    ctx.save();
+    const active =
+        isRecording
+            ? RED
+            : isSpeaking
+                ? GREEN
+                : CYAN;
 
+
+    /* outer radar rings */
+
+    ctx.save();
 
     ctx.strokeStyle =
-        RED_SOFT;
+        CYAN3;
+
+    ctx.lineWidth = 1;
+
+    ctx.setLineDash([
+        3,
+        14
+    ]);
+
+    ctx.beginPath();
+
+    ctx.arc(
+        CX,
+        CY,
+        285,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        CX,
+        CY,
+        350,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+
+    /* ============================================================
+       ROTATING RADAR
+    ============================================================ */
+
+    ctx.save();
+
+    ctx.translate(
+        CX,
+        CY
+    );
+
+    ctx.rotate(
+        t * .4
+    );
+
+    ctx.strokeStyle =
+        CYAN2;
+
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        0,
+        315,
+        -.35,
+        .35
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+
+    /* ============================================================
+       ROTATING HEXAGONS
+    ============================================================ */
+
+    hexagon(
+        CX,
+        CY,
+        115,
+        active,
+        t * .3
+    );
+
+    hexagon(
+        CX,
+        CY,
+        145,
+        CYAN2,
+        -t * .18
+    );
+
+
+    /* ============================================================
+       CENTRAL SPIDER-LIKE OPTICAL RETICLE
+    ============================================================ */
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        active;
+
+    ctx.lineWidth = 2;
 
     ctx.shadowColor =
-        RED;
+        active;
 
-    ctx.shadowBlur =
-        18;
+    ctx.shadowBlur = 16;
 
 
-    ctx.lineWidth =
-        5;
+    const pulse =
+        1 +
+        Math.sin(t * 5) *
+        .06;
 
+
+    const r =
+        (
+            isRecording
+                ? 45
+                : 34
+        ) *
+        pulse;
+
+
+    /* eye */
 
     ctx.beginPath();
 
-    ctx.moveTo(
-        25,
-        30
-    );
-
-    ctx.quadraticCurveTo(
+    ctx.ellipse(
+        CX,
+        CY,
+        r * 1.5,
+        r,
         0,
-        cy,
-        35,
-        H - 30
+        0,
+        Math.PI * 2
+    );
+
+    ctx.stroke();
+
+
+    /* pupil */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        CX,
+        CY,
+        8,
+        0,
+        Math.PI * 2
     );
 
     ctx.stroke();
@@ -1707,99 +1174,250 @@ function renderHUD(
 
     ctx.beginPath();
 
-    ctx.moveTo(
-        W - 25,
-        30
+    ctx.arc(
+        CX,
+        CY,
+        3,
+        0,
+        Math.PI * 2
     );
 
-    ctx.quadraticCurveTo(
-        W,
-        cy,
-        W - 35,
-        H - 30
+    ctx.fillStyle =
+        active;
+
+    ctx.fill();
+
+
+    /* crosshair */
+
+    line(
+        CX - 100,
+        CY,
+        CX - 48,
+        CY,
+        active,
+        1
     );
 
-    ctx.stroke();
+    line(
+        CX + 48,
+        CY,
+        CX + 100,
+        CY,
+        active,
+        1
+    );
+
+    line(
+        CX,
+        CY - 100,
+        CX,
+        CY - 48,
+        active,
+        1
+    );
+
+    line(
+        CX,
+        CY + 48,
+        CX,
+        CY + 100,
+        active,
+        1
+    );
 
 
     ctx.restore();
 
 
     /* ============================================================
-       CORNER TARGET BRACKETS
+       FLOATING LEFT DATA
     ============================================================ */
 
-    cornerBracket(
-        55,
-        45,
-        1,
-        1,
+    const leftX = 180;
+
+    text(
+        "OPTICAL ANALYSIS",
+        leftX,
+        280,
+        11,
         CYAN
     );
 
-    cornerBracket(
-        W - 55,
-        45,
-        -1,
-        1,
-        CYAN
+    text(
+        "VISION       ACTIVE",
+        leftX,
+        305,
+        9,
+        CYAN2
     );
 
-    cornerBracket(
-        55,
-        H - 45,
-        1,
-        -1,
-        CYAN
+    text(
+        "MOTION       TRACKING",
+        leftX,
+        324,
+        9,
+        CYAN2
     );
 
-    cornerBracket(
-        W - 55,
-        H - 45,
-        -1,
-        -1,
-        CYAN
+    text(
+        "DEPTH        NOMINAL",
+        leftX,
+        343,
+        9,
+        CYAN2
+    );
+
+    text(
+        "ENVIRONMENT  MAPPED",
+        leftX,
+        362,
+        9,
+        CYAN2
+    );
+
+
+    /* little graph */
+
+    line(
+        leftX,
+        390,
+        leftX + 180,
+        390,
+        CYAN3
+    );
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        CYAN;
+
+    ctx.beginPath();
+
+    for (
+        let i = 0;
+        i < 180;
+        i += 5
+    ) {
+
+        const yy =
+            390 +
+            Math.sin(
+                t * 5 +
+                i * .09
+            ) * 8;
+
+        if (i === 0)
+            ctx.moveTo(
+                leftX + i,
+                yy
+            );
+        else
+            ctx.lineTo(
+                leftX + i,
+                yy
+            );
+    }
+
+    ctx.stroke();
+
+    ctx.restore();
+
+
+    /* ============================================================
+       FLOATING RIGHT DATA
+    ============================================================ */
+
+    const rightX =
+        W - 180;
+
+
+    text(
+        "TACTICAL SYSTEM",
+        rightX,
+        280,
+        11,
+        CYAN,
+        "right"
+    );
+
+    text(
+        "THREAT       LOW",
+        rightX,
+        305,
+        9,
+        CYAN2,
+        "right"
+    );
+
+    text(
+        "TARGETS      00",
+        rightX,
+        324,
+        9,
+        CYAN2,
+        "right"
+    );
+
+    text(
+        "RANGE        12.4 M",
+        rightX,
+        343,
+        9,
+        CYAN2,
+        "right"
+    );
+
+    text(
+        "LOCK         " +
+        (
+            isRecording
+                ? "VOICE"
+                : "NONE"
+        ),
+        rightX,
+        362,
+        9,
+        isRecording
+            ? RED
+            : CYAN2,
+        "right"
     );
 
 
     /* ============================================================
-       TOP SYSTEM BAR
+       TARGETING CORNERS
     ============================================================ */
 
-    hudLine(
-        90,
-        62,
-        W - 90,
-        62,
-        CYAN_FAINT
+    bracket(
+        500,
+        310,
+        920,
+        430,
+        CYAN2
     );
 
 
-    hudText(
+    /* ============================================================
+       TOP CENTER
+    ============================================================ */
+
+    text(
         "E.D.I.T.H.",
-        90,
-        46,
+        CX,
+        80,
         18,
-        WHITE
+        WHITE,
+        "center"
     );
 
-
-    hudText(
-        "OPTICAL TACTICAL SYSTEM",
-        215,
-        46,
-        10,
-        CYAN_SOFT
-    );
-
-
-    hudText(
-        "AR // ONLINE",
-        W - 90,
-        46,
-        11,
-        GREEN,
-        "right"
+    text(
+        "OPTICAL TACTICAL INTERFACE",
+        CX,
+        101,
+        8,
+        CYAN2,
+        "center"
     );
 
 
@@ -1808,577 +1426,149 @@ function renderHUD(
     ============================================================ */
 
     const compassY =
-        91;
+        135;
 
 
-    hudText(
+    text(
         "N",
-        cx,
+        CX,
         compassY,
-        11,
+        10,
         WHITE,
         "center"
     );
 
 
-    hudLine(
-        cx,
-        compassY + 7,
-        cx,
-        compassY + 24,
-        RED,
-        2
-    );
-
-
     for (
-        let i = -9;
-        i <= 9;
+        let i = -10;
+        i <= 10;
         i++
     ) {
 
         const x =
-            cx +
-            i * 30;
+            CX +
+            i * 34;
 
 
-        const major =
+        const tall =
             i % 3 === 0;
 
 
-        hudLine(
+        line(
             x,
-            compassY + 7,
+            compassY + 8,
             x,
             compassY +
-                (major ? 22 : 14),
-            major
+                (tall ? 25 : 18),
+            tall
                 ? CYAN
-                : CYAN_SOFT,
-            major ? 1.5 : 1
+                : CYAN2
         );
     }
 
 
     /* ============================================================
-       TOP LEFT TELEMETRY
+       VOICE VISUALIZER
     ============================================================ */
 
-    const lx =
-        105;
-
-    const ly =
-        150;
+    const voiceY =
+        H - 190;
 
 
-    hudText(
-        "OPTICAL TELEMETRY",
-        lx,
-        ly,
-        10,
-        CYAN
-    );
-
-
-    hudText(
-        "VISUAL FEED      ACTIVE",
-        lx,
-        ly + 23,
-        9,
-        CYAN_SOFT
-    );
-
-
-    hudText(
-        "TRACKING         STABLE",
-        lx,
-        ly + 41,
-        9,
-        CYAN_SOFT
-    );
-
-
-    hudText(
-        "MOTION           NOMINAL",
-        lx,
-        ly + 59,
-        9,
-        CYAN_SOFT
-    );
-
-
-    hudText(
-        "AUDIO            " +
-        (
-            isRecording
-                ? "CAPTURING"
-                : "READY"
-        ),
-        lx,
-        ly + 77,
-        9,
-        isRecording
-            ? RED
-            : CYAN_SOFT
-    );
-
-
-    /* ============================================================
-       TOP RIGHT VOICE METER
-    ============================================================ */
-
-    const vx =
-        W - 300;
-
-    const vy =
-        150;
-
-
-    hudText(
+    text(
         "VOICE LINK",
-        vx,
-        vy,
-        10,
-        CYAN
+        CX,
+        voiceY,
+        9,
+        CYAN2,
+        "center"
     );
 
 
     for (
-        let i = 0;
-        i < 18;
+        let i = -25;
+        i <= 25;
         i++
     ) {
 
-        const wave =
+        const amp =
             (
-                isSpeaking ||
-                isRecording
+                isRecording ||
+                isSpeaking
             )
-                ? Math.abs(
-                    Math.sin(
-                        t * 8 +
-                        i * .65
-                    )
+                ? (
+                    4 +
+                    Math.abs(
+                        Math.sin(
+                            t * 8 +
+                            i * .45
+                        )
+                    ) * 25
                 )
-                : .12;
+                : 3;
 
 
-        const barHeight =
-            4 +
-            wave * 28;
+        const color =
+            isRecording
+                ? RED
+                : isSpeaking
+                    ? GREEN
+                    : CYAN2;
 
 
         ctx.fillStyle =
-            isSpeaking
-                ? GREEN
-                : isRecording
-                    ? RED
-                    : CYAN_SOFT;
+            color;
 
 
         ctx.fillRect(
-            vx +
-                i * 10,
-            vy +
-                12 -
-                barHeight / 2,
-            5,
-            barHeight
+            CX + i * 8,
+            voiceY + 15 - amp / 2,
+            4,
+            amp
         );
     }
-
-
-    /* ============================================================
-       RIGHT TARGET ANALYSIS
-    ============================================================ */
-
-    const rx =
-        W - 105;
-
-    const ry =
-        255;
-
-
-    hudText(
-        "TARGET ANALYSIS",
-        rx,
-        ry,
-        10,
-        CYAN,
-        "right"
-    );
-
-
-    hudText(
-        "THREAT LEVEL     LOW",
-        rx,
-        ry + 24,
-        9,
-        CYAN_SOFT,
-        "right"
-    );
-
-
-    hudText(
-        "RANGE            12.4 M",
-        rx,
-        ry + 42,
-        9,
-        CYAN_SOFT,
-        "right"
-    );
-
-
-    hudText(
-        "LOCK             " +
-        (
-            isRecording
-                ? "VOICE"
-                : "NONE"
-        ),
-        rx,
-        ry + 60,
-        9,
-        isRecording
-            ? RED
-            : CYAN_SOFT,
-        "right"
-    );
-
-
-    /* ============================================================
-       LARGE SCANNING ARC
-    ============================================================ */
-
-    ctx.save();
-
-
-    ctx.strokeStyle =
-        CYAN_SOFT;
-
-    ctx.lineWidth =
-        2;
-
-
-    ctx.setLineDash([
-        3,
-        10
-    ]);
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-        cx,
-        cy + 40,
-        330,
-        Math.PI * 1.12,
-        Math.PI * 1.88
-    );
-
-
-    ctx.stroke();
-
-
-    ctx.restore();
-
-
-    /* ============================================================
-       ROTATING ARC
-    ============================================================ */
-
-    ctx.save();
-
-
-    ctx.strokeStyle =
-        CYAN;
-
-    ctx.lineWidth =
-        1;
-
-
-    ctx.setLineDash([
-        50,
-        18
-    ]);
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-        cx,
-        cy,
-        135,
-        t,
-        t + Math.PI * 1.2
-    );
-
-
-    ctx.stroke();
-
-
-    ctx.restore();
-
-
-    /* ============================================================
-       CENTRAL RETICLE
-    ============================================================ */
-
-    const activeColor =
-        isRecording
-            ? RED
-            : isSpeaking
-                ? GREEN
-                : CYAN;
-
-
-    const pulse =
-        1 +
-        Math.sin(t * 5) *
-        .05;
-
-
-    const radius =
-        (
-            isRecording
-                ? 48
-                : 38
-        ) *
-        pulse;
-
-
-    ctx.save();
-
-
-    ctx.strokeStyle =
-        activeColor;
-
-    ctx.lineWidth =
-        2;
-
-    ctx.shadowColor =
-        activeColor;
-
-    ctx.shadowBlur =
-        15;
-
-
-    /* outer circle */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        radius,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.stroke();
-
-
-    /* second ring */
-
-    ctx.setLineDash([
-        30,
-        10
-    ]);
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        radius + 15,
-        t,
-        t +
-            Math.PI * 1.65
-    );
-
-    ctx.stroke();
-
-
-    ctx.setLineDash([]);
-
-
-    /* horizontal */
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        cx - 90,
-        cy
-    );
-
-    ctx.lineTo(
-        cx - 15,
-        cy
-    );
-
-    ctx.moveTo(
-        cx + 15,
-        cy
-    );
-
-    ctx.lineTo(
-        cx + 90,
-        cy
-    );
-
-    ctx.stroke();
-
-
-    /* vertical */
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        cx,
-        cy - 90
-    );
-
-    ctx.lineTo(
-        cx,
-        cy - 15
-    );
-
-    ctx.moveTo(
-        cx,
-        cy + 15
-    );
-
-    ctx.lineTo(
-        cx,
-        cy + 90
-    );
-
-    ctx.stroke();
-
-
-    /* center dot */
-
-    ctx.fillStyle =
-        activeColor;
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        3,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    ctx.restore();
-
-
-    /* ============================================================
-       RETICLE STATUS
-    ============================================================ */
-
-    hudText(
-        "● " + systemStatus,
-        cx,
-        cy + 112,
-        12,
-        activeColor,
-        "center"
-    );
 
 
     /* ============================================================
        AI RESPONSE
     ============================================================ */
 
-    const panelW =
-        650;
-
-    const panelX =
-        cx -
-        panelW / 2;
-
-    const panelY =
-        cy +
-        145;
-
-
-    hudLine(
-        panelX,
-        panelY,
-        panelX + 75,
-        panelY,
-        CYAN
-    );
-
-
-    hudLine(
-        panelX +
-            panelW -
-            75,
-        panelY,
-        panelX +
-            panelW,
-        panelY,
-        CYAN
-    );
-
-
-    hudText(
+    text(
         "E.D.I.T.H. // RESPONSE",
-        cx,
-        panelY + 24,
-        10,
-        CYAN_SOFT,
+        CX,
+        CY + 145,
+        9,
+        CYAN2,
         "center"
     );
 
 
-    drawWrappedText(
-        edithResponse,
-        cx,
-        panelY + 53,
-        panelW - 30,
-        19,
-        WHITE
+    responseText();
+
+
+    /* ============================================================
+       STATUS
+    ============================================================ */
+
+    text(
+        "● " + systemStatus,
+        CX,
+        CY + 275,
+        11,
+        active,
+        "center"
     );
 
 
     /* ============================================================
-       BOTTOM DATA
+       BOTTOM SYSTEM DATA
     ============================================================ */
 
-    hudLine(
-        90,
-        H - 70,
-        W - 90,
-        H - 70,
-        CYAN_FAINT
-    );
-
-
-    hudText(
-        "EDITH-OS",
-        100,
-        H - 42,
-        9,
-        CYAN_SOFT
-    );
-
-
-    hudText(
+    text(
         "MIC",
-        cx - 120,
-        H - 42,
-        9,
+        CX - 160,
+        H - 85,
+        8,
         isRecording
             ? RED
             : GREEN,
@@ -2386,11 +1576,11 @@ function renderHUD(
     );
 
 
-    hudText(
+    text(
         "AI",
-        cx,
-        H - 42,
-        9,
+        CX - 80,
+        H - 85,
+        8,
         isProcessing
             ? RED
             : GREEN,
@@ -2398,24 +1588,30 @@ function renderHUD(
     );
 
 
-    hudText(
+    text(
         "XR",
-        cx + 120,
-        H - 42,
-        9,
+        CX,
+        H - 85,
+        8,
         GREEN,
         "center"
     );
 
 
-    /* ============================================================
-       DEBUG
-    ============================================================ */
+    text(
+        "OPTICS",
+        CX + 90,
+        H - 85,
+        8,
+        GREEN,
+        "center"
+    );
 
-    hudText(
+
+    text(
         debugLog,
-        cx,
-        H - 17,
+        CX,
+        H - 45,
         8,
         "rgba(255,180,0,.65)",
         "center"
@@ -2434,17 +1630,13 @@ const gl =
             alpha: true,
             antialias: false,
             depth: false,
-            stencil: false,
-            xrCompatible: true
+            stencil: false
         }
     );
 
 
 if (!gl) {
-
-    throw new Error(
-        "WebGL unavailable"
-    );
+    alert("WebGL is not available.");
 }
 
 
@@ -2452,7 +1644,7 @@ if (!gl) {
    SHADERS
 ================================================================ */
 
-const vertexShaderSource = `
+const VS = `
 
 attribute vec2 aPosition;
 attribute vec2 aUV;
@@ -2473,7 +1665,7 @@ void main() {
 `;
 
 
-const fragmentShaderSource = `
+const FS = `
 
 precision mediump float;
 
@@ -2483,66 +1675,48 @@ varying vec2 vUV;
 
 void main() {
 
-    vec4 color =
+    vec4 c =
         texture2D(
             uTexture,
             vUV
         );
 
     gl_FragColor =
-        color;
+        c;
 }
 `;
 
 
-/* ================================================================
-   SHADER COMPILER
-================================================================ */
-
-function compileShader(
+function shader(
     type,
     source
 ) {
 
-    const shader =
-        gl.createShader(
-            type
-        );
-
+    const s =
+        gl.createShader(type);
 
     gl.shaderSource(
-        shader,
+        s,
         source
     );
 
-
-    gl.compileShader(
-        shader
-    );
-
+    gl.compileShader(s);
 
     if (
         !gl.getShaderParameter(
-            shader,
+            s,
             gl.COMPILE_STATUS
         )
     ) {
 
         throw new Error(
-            gl.getShaderInfoLog(
-                shader
-            )
+            gl.getShaderInfoLog(s)
         );
     }
 
-
-    return shader;
+    return s;
 }
 
-
-/* ================================================================
-   WEBGL PROGRAM
-================================================================ */
 
 const program =
     gl.createProgram();
@@ -2550,69 +1724,40 @@ const program =
 
 gl.attachShader(
     program,
-    compileShader(
+    shader(
         gl.VERTEX_SHADER,
-        vertexShaderSource
+        VS
     )
 );
-
 
 gl.attachShader(
     program,
-    compileShader(
+    shader(
         gl.FRAGMENT_SHADER,
-        fragmentShaderSource
+        FS
     )
 );
-
 
 gl.linkProgram(
     program
 );
 
 
-if (
-    !gl.getProgramParameter(
-        program,
-        gl.LINK_STATUS
-    )
-) {
-
-    throw new Error(
-        gl.getProgramInfoLog(
-            program
-        )
-    );
-}
-
-
 /* ================================================================
-   FULLSCREEN CLIP-SPACE QUAD
+   QUAD
 ================================================================ */
 
 const vertices =
     new Float32Array([
 
-        /* position    UV */
+        -1,-1, 0,1,
+         1,-1, 1,1,
+        -1, 1, 0,0,
 
-        -1, -1,
-         0,  1,
+        -1, 1, 0,0,
+         1,-1, 1,1,
+         1, 1, 1,0
 
-         1, -1,
-         1,  1,
-
-        -1,  1,
-         0,  0,
-
-
-        -1,  1,
-         0,  0,
-
-         1, -1,
-         1,  1,
-
-         1,  1,
-         1,  0
     ]);
 
 
@@ -2625,7 +1770,6 @@ gl.bindBuffer(
     vbo
 );
 
-
 gl.bufferData(
     gl.ARRAY_BUFFER,
     vertices,
@@ -2633,14 +1777,14 @@ gl.bufferData(
 );
 
 
-const positionLocation =
+const positionLoc =
     gl.getAttribLocation(
         program,
         "aPosition"
     );
 
 
-const uvLocation =
+const uvLoc =
     gl.getAttribLocation(
         program,
         "aUV"
@@ -2648,16 +1792,16 @@ const uvLocation =
 
 
 /* ================================================================
-   HUD TEXTURE
+   TEXTURE
 ================================================================ */
 
-const hudTexture =
+const texture =
     gl.createTexture();
 
 
 gl.bindTexture(
     gl.TEXTURE_2D,
-    hudTexture
+    texture
 );
 
 
@@ -2667,20 +1811,17 @@ gl.texParameteri(
     gl.LINEAR
 );
 
-
 gl.texParameteri(
     gl.TEXTURE_2D,
     gl.TEXTURE_MAG_FILTER,
     gl.LINEAR
 );
 
-
 gl.texParameteri(
     gl.TEXTURE_2D,
     gl.TEXTURE_WRAP_S,
     gl.CLAMP_TO_EDGE
 );
-
 
 gl.texParameteri(
     gl.TEXTURE_2D,
@@ -2690,15 +1831,20 @@ gl.texParameteri(
 
 
 /* ================================================================
-   XR START
+   XR
 ================================================================ */
+
+let session = null;
+let refSpace = null;
+let layer = null;
+
 
 async function startXR() {
 
     if (!navigator.xr) {
 
         throw new Error(
-            "WebXR unavailable. Use Meta Quest Browser over HTTPS."
+            "WebXR unavailable. Open this on Quest Browser."
         );
     }
 
@@ -2706,87 +1852,63 @@ async function startXR() {
     const supported =
         await navigator.xr
             .isSessionSupported(
-                "immersive-ar"
+                "immersive-vr"
             );
 
 
     if (!supported) {
 
         throw new Error(
-            "immersive-ar is not supported on this Quest/browser."
+            "Immersive VR is not supported."
         );
     }
 
 
-    /*
-     * Critical XR initialization.
-     */
-
     await gl.makeXRCompatible();
 
 
-    xrSession =
-        await navigator.xr
-            .requestSession(
-                "immersive-ar",
-                {
-
-                    requiredFeatures: [],
-
-                    optionalFeatures: [
-                        "local-floor",
-                        "bounded-floor"
-                    ]
-                }
-            );
-
-
-    xrLayer =
-        new XRWebGLLayer(
-            xrSession,
-            gl,
+    session =
+        await navigator.xr.requestSession(
+            "immersive-vr",
             {
-
-                alpha: true,
-
-                antialias: false,
-
-                depth: false,
-
-                stencil: false,
-
-                framebufferScaleFactor:
-                    1.0
+                optionalFeatures: [
+                    "local-floor",
+                    "bounded-floor"
+                ]
             }
         );
 
 
-    xrSession.updateRenderState({
+    layer =
+        new XRWebGLLayer(
+            session,
+            gl,
+            {
+                alpha: true,
+                depth: false,
+                stencil: false
+            }
+        );
 
-        baseLayer:
-            xrLayer
+
+    session.updateRenderState({
+        baseLayer: layer
     });
 
 
-    /*
-     * Reference space.
-     */
-
     try {
 
-        xrRefSpace =
-            await xrSession
-                .requestReferenceSpace(
-                    "local-floor"
-                );
+        refSpace =
+            await session.requestReferenceSpace(
+                "local-floor"
+            );
 
     } catch {
 
-        xrRefSpace =
-            await xrSession
-                .requestReferenceSpace(
-                    "viewer"
-                );
+        refSpace =
+            await session.requestReferenceSpace(
+                "local"
+            );
     }
 
 
@@ -2794,7 +1916,7 @@ async function startXR() {
        CONTROLLER
     ============================================================ */
 
-    xrSession.addEventListener(
+    session.addEventListener(
         "selectstart",
         () => {
 
@@ -2803,7 +1925,7 @@ async function startXR() {
     );
 
 
-    xrSession.addEventListener(
+    session.addEventListener(
         "selectend",
         () => {
 
@@ -2812,31 +1934,20 @@ async function startXR() {
     );
 
 
-    /* ============================================================
-       SESSION END
-    ============================================================ */
-
-    xrSession.addEventListener(
+    session.addEventListener(
         "end",
         () => {
 
-            xrSession = null;
+            session = null;
 
             systemStatus =
                 "XR SESSION ENDED";
-
-            debugLog =
-                "RETURNED TO BROWSER";
         }
     );
 
 
-    /*
-     * Begin rendering.
-     */
-
-    xrSession.requestAnimationFrame(
-        xrFrame
+    session.requestAnimationFrame(
+        frame
     );
 }
 
@@ -2845,41 +1956,33 @@ async function startXR() {
    XR FRAME
 ================================================================ */
 
-function xrFrame(
+function frame(
     time,
-    frame
+    xrFrame
 ) {
 
-    if (!xrSession) {
-
+    if (!session)
         return;
-    }
 
 
-    xrSession.requestAnimationFrame(
-        xrFrame
+    session.requestAnimationFrame(
+        frame
     );
 
 
     const pose =
-        frame.getViewerPose(
-            xrRefSpace
+        xrFrame.getViewerPose(
+            refSpace
         );
 
 
-    if (!pose) {
-
+    if (!pose)
         return;
-    }
 
-
-    /* ============================================================
-       FRAMEBUFFER
-    ============================================================ */
 
     gl.bindFramebuffer(
         gl.FRAMEBUFFER,
-        xrLayer.framebuffer
+        layer.framebuffer
     );
 
 
@@ -2888,10 +1991,15 @@ function xrFrame(
     );
 
 
+    /*
+     * Completely transparent HUD.
+     * No border.
+     * No vignette.
+     */
+
     gl.enable(
         gl.BLEND
     );
-
 
     gl.blendFunc(
         gl.SRC_ALPHA,
@@ -2899,15 +2007,11 @@ function xrFrame(
     );
 
 
-    /*
-     * Transparent background.
-     */
-
     gl.clearColor(
         0,
         0,
         0,
-        0
+        1
     );
 
 
@@ -2916,22 +2020,16 @@ function xrFrame(
     );
 
 
-    /* ============================================================
-       RENDER HUD
-    ============================================================ */
-
-    renderHUD(
-        time
-    );
+    renderHUD(time);
 
 
     /* ============================================================
-       UPLOAD HUD
+       UPLOAD
     ============================================================ */
 
     gl.bindTexture(
         gl.TEXTURE_2D,
-        hudTexture
+        texture
     );
 
 
@@ -2953,7 +2051,7 @@ function xrFrame(
         gl.RGBA,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        hudCanvas
+        hud
     );
 
 
@@ -2973,12 +2071,12 @@ function xrFrame(
 
 
     gl.enableVertexAttribArray(
-        positionLocation
+        positionLoc
     );
 
 
     gl.vertexAttribPointer(
-        positionLocation,
+        positionLoc,
         2,
         gl.FLOAT,
         false,
@@ -2988,12 +2086,12 @@ function xrFrame(
 
 
     gl.enableVertexAttribArray(
-        uvLocation
+        uvLoc
     );
 
 
     gl.vertexAttribPointer(
-        uvLocation,
+        uvLoc,
         2,
         gl.FLOAT,
         false,
@@ -3002,25 +2100,19 @@ function xrFrame(
     );
 
 
-    /*
-     * Render into each eye.
-     */
-
     for (
         const view of pose.views
     ) {
 
-        const viewport =
-            xrLayer.getViewport(
-                view
-            );
+        const vp =
+            layer.getViewport(view);
 
 
         gl.viewport(
-            viewport.x,
-            viewport.y,
-            viewport.width,
-            viewport.height
+            vp.x,
+            vp.y,
+            vp.width,
+            vp.height
         );
 
 
@@ -3034,11 +2126,10 @@ function xrFrame(
 
 
 /* ================================================================
-   INITIALIZATION BUTTON
+   INITIALIZE
 ================================================================ */
 
-btnInit.addEventListener(
-    "click",
+btnInit.onclick =
     async () => {
 
         apiKey =
@@ -3064,30 +2155,15 @@ btnInit.addEventListener(
         btnInit.disabled =
             true;
 
-
         btnInit.textContent =
-            "CONNECTING...";
+            "INITIALIZING...";
 
 
         try {
 
-            initAudioHardware();
-
-
-            systemStatus =
-                "INITIALIZING";
-
-
-            debugLog =
-                "REQUESTING MICROPHONE";
-
+            initAudio();
 
             await setupMic();
-
-
-            debugLog =
-                "STARTING XR";
-
 
             await startXR();
 
@@ -3099,152 +2175,60 @@ btnInit.addEventListener(
             systemStatus =
                 "SYSTEM READY";
 
-
             debugLog =
-                "E.D.I.T.H. // ONLINE";
+                "E.D.I.T.H. ONLINE";
 
 
-            /*
-             * Startup sound.
-             */
-
-            playTone(
+            tone(
                 700,
                 .08,
-                "triangle",
-                .10
+                "triangle"
             );
 
 
             setTimeout(
-                () => {
-
-                    playTone(
-                        1100,
-                        .12,
-                        "triangle",
-                        .10
-                    );
-
-                },
+                () => tone(
+                    1100,
+                    .12,
+                    "triangle"
+                ),
                 100
             );
 
 
         } catch (error) {
 
-            console.error(
-                error
-            );
-
-
-            systemStatus =
-                "INITIALIZATION ERROR";
-
-
-            debugLog =
-                error.message;
-
+            console.error(error);
 
             btnInit.disabled =
                 false;
-
 
             btnInit.textContent =
                 "INITIALIZE SYSTEM";
 
 
             alert(
-                "E.D.I.T.H. initialization failed:\n\n" +
+                "Initialization failed:\n\n" +
                 error.message
             );
         }
-    }
-);
-
-
-/* ================================================================
-   DESKTOP / TOUCH FALLBACK
-================================================================ */
-
-let pointerTalking =
-    false;
-
-
-window.addEventListener(
-    "pointerdown",
-    event => {
-
-        /*
-         * Ignore setup UI.
-         */
-
-        if (
-            setupScreen.style.display !==
-            "none"
-        ) {
-
-            return;
-        }
-
-
-        /*
-         * Don't duplicate
-         * controller input.
-         */
-
-        if (
-            xrSession ||
-            pointerTalking
-        ) {
-
-            return;
-        }
-
-
-        pointerTalking =
-            true;
-
-
-        startRecording();
-    }
-);
-
-
-window.addEventListener(
-    "pointerup",
-    () => {
-
-        if (!pointerTalking) {
-
-            return;
-        }
-
-
-        pointerTalking =
-            false;
-
-
-        stopRecording();
-    }
-);
+    };
 
 
 /* ================================================================
    KEYBOARD FALLBACK
-   Hold SPACE = TALK
 ================================================================ */
 
 window.addEventListener(
     "keydown",
-    event => {
+    e => {
 
         if (
-            event.code === "Space" &&
-            !event.repeat
+            e.code === "Space" &&
+            !e.repeat
         ) {
 
-            event.preventDefault();
+            e.preventDefault();
 
             startRecording();
         }
@@ -3254,13 +2238,13 @@ window.addEventListener(
 
 window.addEventListener(
     "keyup",
-    event => {
+    e => {
 
         if (
-            event.code === "Space"
+            e.code === "Space"
         ) {
 
-            event.preventDefault();
+            e.preventDefault();
 
             stopRecording();
         }
@@ -3286,17 +2270,15 @@ window.addEventListener(
                 );
         }
 
-
-        if (xrSession) {
-
-            xrSession.end();
+        if (session) {
+            session.end();
         }
     }
 );
 
 
 /* ================================================================
-   INITIAL HUD
+   FIRST FRAME
 ================================================================ */
 
 renderHUD(0);
