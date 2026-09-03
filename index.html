@@ -6,27 +6,24 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+      content="width=device-width,initial-scale=1">
 
-<title>E.D.I.T.H. AI</title>
-
+<title>E.D.I.T.H.</title>
 
 <style>
 
-/* =====================================================
-   GLOBAL
-===================================================== */
+/* ==============================
+   BASE
+============================== */
 
 * {
     box-sizing: border-box;
 }
 
-
 html,
 body {
 
     margin: 0;
-
     width: 100%;
     height: 100%;
 
@@ -36,17 +33,33 @@ body {
 
     color: #00d9ff;
 
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    font-family: Arial, sans-serif;
 
 }
 
 
-/* =====================================================
-   CAMERA
-===================================================== */
+/*
+ * IMPORTANT FOR WEBXR
+ *
+ * The HUD itself is transparent.
+ */
+
+#hud {
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 5;
+
+}
+
+
+/* ==============================
+   CAMERA PREVIEW
+============================== */
 
 #camera {
 
@@ -66,53 +79,15 @@ body {
 }
 
 
-#cameraOverlay {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 1;
-
-    pointer-events: none;
-
-    display: none;
-
-    background:
-        linear-gradient(
-            rgba(0,20,30,0.05),
-            rgba(0,10,20,0.18)
-        );
-
-}
-
-
-/* =====================================================
-   HUD
-===================================================== */
-
-#hud {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 5;
-
-    pointer-events: none;
-
-}
-
-
-/* =====================================================
-   LOGO
-===================================================== */
+/* ==============================
+   E.D.I.T.H. LOGO
+============================== */
 
 .logo {
 
     position: absolute;
 
-    top: 28px;
+    top: 25px;
 
     left: 50%;
 
@@ -124,8 +99,6 @@ body {
     font-weight: bold;
 
     letter-spacing: 9px;
-
-    color: #00d9ff;
 
     text-shadow:
         0 0 8px #00d9ff,
@@ -139,127 +112,110 @@ body {
 
     position: absolute;
 
-    top: 76px;
+    top: 73px;
 
     left: 50%;
 
     transform:
         translateX(-50%);
 
-    color: #00ff88;
-
-    font-size: 12px;
+    font-size: 11px;
 
     letter-spacing: 4px;
+
+    color: #00ff88;
 
 }
 
 
-/* =====================================================
-   CENTER TARGET
-===================================================== */
+/* ==============================
+   TARGET
+============================== */
 
 .target {
 
     position: absolute;
 
-    width: 170px;
-
-    height: 170px;
-
     left: 50%;
-
     top: 50%;
+
+    width: 160px;
+    height: 160px;
 
     transform:
         translate(-50%, -50%);
 
     border:
         2px solid
-        rgba(0,217,255,0.75);
+        rgba(0,217,255,.75);
 
     border-radius: 50%;
 
     box-shadow:
         0 0 20px #00d9ff,
         inset 0 0 20px
-        rgba(0,217,255,0.15);
+        rgba(0,217,255,.15);
 
 }
 
 
-.target::before {
+.target:before {
 
     content: "";
 
     position: absolute;
 
     width: 220px;
-
     height: 1px;
 
-    left: -27px;
-
-    top: 83px;
+    left: -32px;
+    top: 78px;
 
     background: #00d9ff;
-
-    box-shadow:
-        0 0 8px #00d9ff;
 
 }
 
 
-.target::after {
+.target:after {
 
     content: "";
 
     position: absolute;
 
     width: 1px;
-
     height: 220px;
 
-    top: -27px;
-
-    left: 83px;
+    top: -32px;
+    left: 78px;
 
     background: #00d9ff;
-
-    box-shadow:
-        0 0 8px #00d9ff;
 
 }
 
 
-/* =====================================================
+/* ==============================
    STATUS
-===================================================== */
+============================== */
 
 .status {
 
     position: absolute;
 
     left: 25px;
-
     bottom: 25px;
 
-    width: 260px;
+    width: 270px;
 
-    padding: 18px 20px;
+    padding: 18px;
 
     background:
-        rgba(0,12,20,0.72);
+        rgba(0,10,18,.72);
 
     border-left:
         2px solid #00d9ff;
 
     backdrop-filter:
         blur(10px);
-
-    box-shadow:
-        0 0 20px
-        rgba(0,217,255,0.08);
 
 }
 
@@ -268,7 +224,7 @@ body {
 
     margin: 0 0 13px;
 
-    font-size: 14px;
+    font-size: 13px;
 
     letter-spacing: 3px;
 
@@ -279,9 +235,9 @@ body {
 
     margin: 8px 0;
 
-    font-size: 13px;
-
     color: #aaa;
+
+    font-size: 12px;
 
 }
 
@@ -290,20 +246,18 @@ body {
     color: #00ff88;
 }
 
-
 .yellow {
     color: #ffff00;
 }
-
 
 .red {
     color: #ff4050;
 }
 
 
-/* =====================================================
-   RESPONSE
-===================================================== */
+/* ==============================
+   AI RESPONSE
+============================== */
 
 #response {
 
@@ -311,14 +265,14 @@ body {
 
     left: 50%;
 
-    bottom: 38px;
+    bottom: 35px;
 
     transform:
         translateX(-50%);
 
     width: 60%;
 
-    max-width: 750px;
+    max-width: 700px;
 
     text-align: center;
 
@@ -334,184 +288,9 @@ body {
 }
 
 
-/* =====================================================
-   BUTTONS
-===================================================== */
-
-button {
-
-    padding: 11px 17px;
-
-    color: #00d9ff;
-
-    background:
-        rgba(0,10,18,0.9);
-
-    border:
-        1px solid #00d9ff;
-
-    cursor: pointer;
-
-    font-size: 13px;
-
-}
-
-
-button:hover {
-
-    background: #00d9ff;
-
-    color: #001018;
-
-    box-shadow:
-        0 0 20px
-        rgba(0,217,255,0.5);
-
-}
-
-
-button:disabled {
-
-    opacity: 0.5;
-
-    cursor: wait;
-
-}
-
-
-/* =====================================================
-   VR BUTTON
-===================================================== */
-
-#vrButton {
-
-    position: fixed;
-
-    top: 25px;
-
-    right: 25px;
-
-    z-index: 30;
-
-    pointer-events: auto;
-
-    font-weight: bold;
-
-    letter-spacing: 2px;
-
-    display: none;
-
-}
-
-
-/* =====================================================
-   SETTINGS BUTTON
-===================================================== */
-
-#settingsButton {
-
-    position: fixed;
-
-    right: 25px;
-
-    bottom: 25px;
-
-    z-index: 30;
-
-    pointer-events: auto;
-
-}
-
-
-/* =====================================================
-   SETTINGS
-===================================================== */
-
-#settings {
-
-    position: fixed;
-
-    right: 25px;
-
-    top: 80px;
-
-    z-index: 50;
-
-    width: 340px;
-
-    padding: 20px;
-
-    background:
-        rgba(2,10,15,0.98);
-
-    border:
-        1px solid #00d9ff;
-
-    box-shadow:
-        0 0 30px
-        rgba(0,217,255,0.2);
-
-    display: none;
-
-    pointer-events: auto;
-
-}
-
-
-#settings h2 {
-
-    margin-top: 0;
-
-    letter-spacing: 3px;
-
-}
-
-
-#settings p {
-
-    font-size: 13px;
-
-    color: #aaa;
-
-}
-
-
-#apiKey {
-
-    width: 100%;
-
-    padding: 11px;
-
-    background: #000;
-
-    color: white;
-
-    border:
-        1px solid #00d9ff;
-
-    outline: none;
-
-}
-
-
-#error {
-
-    margin-top: 12px;
-
-    color: #ff4050;
-
-    font-size: 11px;
-
-    line-height: 1.4;
-
-    word-break: break-word;
-
-}
-
-
-/* =====================================================
+/* ==============================
    START SCREEN
-===================================================== */
+============================== */
 
 #start {
 
@@ -525,17 +304,17 @@ button:disabled {
 
     flex-direction: column;
 
-    align-items: center;
-
     justify-content: center;
+
+    align-items: center;
 
     text-align: center;
 
     background:
         radial-gradient(
-            circle at center,
+            circle,
             #041824,
-            #020609 65%
+            #020609 70%
         );
 
 }
@@ -549,8 +328,6 @@ button:disabled {
 
     letter-spacing: 11px;
 
-    color: #00d9ff;
-
     text-shadow:
         0 0 15px #00d9ff,
         0 0 40px #00d9ff;
@@ -559,8 +336,6 @@ button:disabled {
 
 
 #start p {
-
-    margin-top: 20px;
 
     color: #777;
 
@@ -571,30 +346,129 @@ button:disabled {
 }
 
 
-#startButton {
+button {
 
-    margin-top: 25px;
+    padding: 12px 18px;
 
-    padding: 15px 30px;
+    color: #00d9ff;
 
-    font-size: 16px;
+    background:
+        rgba(0,10,18,.9);
 
-    letter-spacing: 3px;
+    border:
+        1px solid #00d9ff;
+
+    cursor: pointer;
 
 }
 
 
-#vrNotice {
+button:hover {
 
-    margin-top: 20px;
+    background: #00d9ff;
 
-    color: #666;
+    color: #001018;
+
+}
+
+
+/* ==============================
+   VR BUTTON
+============================== */
+
+#vrButton {
+
+    position: fixed;
+
+    top: 20px;
+    right: 20px;
+
+    z-index: 200;
+
+    display: none;
+
+    pointer-events: auto;
+
+}
+
+
+/* ==============================
+   SETTINGS
+============================== */
+
+#settingsButton {
+
+    position: fixed;
+
+    right: 20px;
+    bottom: 20px;
+
+    z-index: 200;
+
+    pointer-events: auto;
+
+}
+
+
+#settings {
+
+    position: fixed;
+
+    right: 20px;
+    top: 70px;
+
+    z-index: 300;
+
+    width: 330px;
+
+    padding: 20px;
+
+    display: none;
+
+    background:
+        rgba(2,10,15,.98);
+
+    border:
+        1px solid #00d9ff;
+
+}
+
+
+#apiKey {
+
+    width: 100%;
+
+    padding: 10px;
+
+    background: #000;
+
+    color: white;
+
+    border:
+        1px solid #00d9ff;
+
+}
+
+
+#error {
+
+    color: #ff4050;
 
     font-size: 11px;
 
-    max-width: 370px;
+    margin-top: 10px;
 
-    line-height: 1.5;
+}
+
+
+/*
+ * When inside WebXR, hide normal browser
+ * controls and make the HUD clean.
+ */
+
+:xr-overlay #settingsButton {
+
+    display: none;
 
 }
 
@@ -606,9 +480,9 @@ button:disabled {
 <body>
 
 
-<!-- =====================================================
-     CAMERA
-===================================================== -->
+<!-- ======================================
+     NORMAL CAMERA
+====================================== -->
 
 <video
     id="camera"
@@ -618,181 +492,124 @@ button:disabled {
 </video>
 
 
-<div id="cameraOverlay"></div>
-
-
-<!-- =====================================================
-     START SCREEN
-===================================================== -->
+<!-- ======================================
+     START
+====================================== -->
 
 <div id="start">
 
     <h1>E.D.I.T.H.</h1>
 
     <p>
-
         ENHANCED DEFENCE<br>
-
         INTELLIGENCE &amp; THREAT SYSTEM
-
     </p>
 
-
     <button id="startButton">
-
         INITIALIZE E.D.I.T.H.
-
     </button>
 
-
-    <div id="vrNotice">
-
-        After initialization, use ENTER VR
-        if your browser supports WebXR.
-
-    </div>
+    <p style="font-size:11px;color:#555">
+        Say "E.D.I.T.H." once to begin.
+    </p>
 
 </div>
 
 
-<!-- =====================================================
-     MAIN HUD
-===================================================== -->
+<!-- ======================================
+     HUD
+====================================== -->
 
 <div id="hud">
 
-
     <div class="logo">
-
         E.D.I.T.H.
-
     </div>
 
 
     <div class="online">
-
         ● SYSTEM ONLINE
-
     </div>
 
 
     <div class="target"></div>
 
 
-    <!-- STATUS -->
-
     <div class="status">
 
-        <h2>
-
-            SYSTEM STATUS
-
-        </h2>
-
+        <h2>SYSTEM STATUS</h2>
 
         <p>
-
             CAMERA:
-
             <span
                 id="cameraStatus"
                 class="yellow">
-
                 STANDBY
-
             </span>
-
         </p>
 
-
         <p>
-
             MICROPHONE:
-
             <span
                 id="micStatus"
                 class="yellow">
-
                 STANDBY
-
             </span>
-
         </p>
 
-
         <p>
-
             VOICE:
-
             <span
                 id="voiceStatus"
                 class="yellow">
-
                 STANDBY
-
             </span>
-
         </p>
 
-
         <p>
-
             AI:
-
             <span
                 id="aiStatus"
                 class="yellow">
-
                 STANDBY
-
             </span>
-
         </p>
 
-
         <p>
-
-            VR:
-
+            XR:
             <span
-                id="vrStatus"
+                id="xrStatus"
                 class="yellow">
-
                 CHECKING
-
             </span>
-
         </p>
 
     </div>
 
 
-    <!-- RESPONSE -->
-
     <div id="response">
 
         E.D.I.T.H. is ready.
-        Say "E.D.I.T.H." once to begin.
 
     </div>
 
 </div>
 
 
-<!-- =====================================================
-     VR BUTTON
-===================================================== -->
+<!-- ======================================
+     VR / MR BUTTON
+====================================== -->
 
 <button id="vrButton">
 
-    ENTER VR
+    ENTER E.D.I.T.H. AR
 
 </button>
 
 
-<!-- =====================================================
+<!-- ======================================
      SETTINGS
-===================================================== -->
+====================================== -->
 
 <button id="settingsButton">
 
@@ -803,169 +620,87 @@ button:disabled {
 
 <div id="settings">
 
-    <h2>
+    <h2>E.D.I.T.H. SETTINGS</h2>
 
-        E.D.I.T.H. SETTINGS
-
-    </h2>
-
-
-    <p>
-
-        Gemini API Key
-
-    </p>
-
+    <p>Gemini API Key</p>
 
     <input
         id="apiKey"
         type="password"
-        autocomplete="off"
         placeholder="Paste Gemini API key">
-
 
     <br><br>
 
-
     <button id="saveKey">
-
         SAVE
-
     </button>
-
 
     <button id="closeSettings">
-
         CLOSE
-
     </button>
 
-
     <div id="error"></div>
-
-
-    <p style="font-size:11px;color:#666">
-
-        Your key is stored locally in this
-        browser. Do not commit your API key
-        to GitHub.
-
-    </p>
 
 </div>
 
 
 <script>
 
-
 /* =====================================================
    ELEMENTS
 ===================================================== */
 
 const start =
-    document.getElementById(
-        "start"
-    );
-
+    document.getElementById("start");
 
 const startButton =
-    document.getElementById(
-        "startButton"
-    );
-
+    document.getElementById("startButton");
 
 const camera =
-    document.getElementById(
-        "camera"
-    );
-
-
-const cameraOverlay =
-    document.getElementById(
-        "cameraOverlay"
-    );
-
+    document.getElementById("camera");
 
 const cameraStatus =
-    document.getElementById(
-        "cameraStatus"
-    );
-
+    document.getElementById("cameraStatus");
 
 const micStatus =
-    document.getElementById(
-        "micStatus"
-    );
-
+    document.getElementById("micStatus");
 
 const voiceStatus =
-    document.getElementById(
-        "voiceStatus"
-    );
-
+    document.getElementById("voiceStatus");
 
 const aiStatus =
-    document.getElementById(
-        "aiStatus"
-    );
+    document.getElementById("aiStatus");
 
-
-const vrStatus =
-    document.getElementById(
-        "vrStatus"
-    );
-
+const xrStatus =
+    document.getElementById("xrStatus");
 
 const response =
-    document.getElementById(
-        "response"
-    );
-
-
-const settings =
-    document.getElementById(
-        "settings"
-    );
-
-
-const settingsButton =
-    document.getElementById(
-        "settingsButton"
-    );
-
-
-const closeSettings =
-    document.getElementById(
-        "closeSettings"
-    );
-
-
-const saveKey =
-    document.getElementById(
-        "saveKey"
-    );
-
-
-const apiKeyInput =
-    document.getElementById(
-        "apiKey"
-    );
-
-
-const errorBox =
-    document.getElementById(
-        "error"
-    );
-
+    document.getElementById("response");
 
 const vrButton =
-    document.getElementById(
-        "vrButton"
-    );
+    document.getElementById("vrButton");
+
+const settings =
+    document.getElementById("settings");
+
+const settingsButton =
+    document.getElementById("settingsButton");
+
+const closeSettings =
+    document.getElementById("closeSettings");
+
+const saveKey =
+    document.getElementById("saveKey");
+
+const apiKeyInput =
+    document.getElementById("apiKey");
+
+const errorBox =
+    document.getElementById("error");
 
 
 /* =====================================================
-   API KEY
+   GEMINI KEY
 ===================================================== */
 
 let apiKey =
@@ -998,7 +733,7 @@ saveKey.onclick = () => {
     if (!key) {
 
         errorBox.textContent =
-            "Please enter your Gemini API key.";
+            "Enter a Gemini API key.";
 
         return;
 
@@ -1011,12 +746,8 @@ saveKey.onclick = () => {
 
     localStorage.setItem(
         "edith_gemini_key",
-        apiKey
+        key
     );
-
-
-    errorBox.textContent =
-        "";
 
 
     aiStatus.textContent =
@@ -1052,8 +783,7 @@ closeSettings.onclick = () => {
    CAMERA + MICROPHONE
 ===================================================== */
 
-let mediaStream =
-    null;
+let mediaStream = null;
 
 
 async function startMedia() {
@@ -1100,10 +830,6 @@ async function startMedia() {
             "block";
 
 
-        cameraOverlay.style.display =
-            "block";
-
-
         cameraStatus.textContent =
             "ONLINE";
 
@@ -1124,9 +850,12 @@ async function startMedia() {
     } catch (error) {
 
         console.error(
-            "MEDIA ERROR:",
             error
         );
+
+
+        response.textContent =
+            "Please allow the camera and microphone.";
 
 
         cameraStatus.textContent =
@@ -1143,10 +872,6 @@ async function startMedia() {
             "red";
 
 
-        response.textContent =
-            "Camera or microphone permission was denied.";
-
-
         return false;
 
     }
@@ -1155,7 +880,7 @@ async function startMedia() {
 
 
 /* =====================================================
-   CONTINUOUS VOICE
+   VOICE
 ===================================================== */
 
 const SpeechRecognition =
@@ -1163,20 +888,13 @@ const SpeechRecognition =
     window.webkitSpeechRecognition;
 
 
-let recognition =
-    null;
+let recognition = null;
 
+let listening = false;
 
-let listening =
-    false;
+let edithStarted = false;
 
-
-let edithStarted =
-    false;
-
-
-let conversationActive =
-    false;
+let conversationActive = false;
 
 
 if (SpeechRecognition) {
@@ -1206,10 +924,8 @@ if (SpeechRecognition) {
 
             listening = true;
 
-
             voiceStatus.textContent =
                 "LISTENING";
-
 
             voiceStatus.className =
                 "green";
@@ -1226,11 +942,8 @@ if (SpeechRecognition) {
                 ];
 
 
-            if (!result.isFinal) {
-
+            if (!result.isFinal)
                 return;
-
-            }
 
 
             const spoken =
@@ -1239,24 +952,19 @@ if (SpeechRecognition) {
                     .trim();
 
 
-            if (!spoken) {
-
-                return;
-
-            }
-
-
             console.log(
                 "HEARD:",
                 spoken
             );
 
 
+            if (!spoken)
+                return;
+
+
             /*
-             * FIRST COMMAND
-             *
-             * User must say E.D.I.T.H.
-             * once.
+             * First activation requires
+             * the name.
              */
 
             if (!edithStarted) {
@@ -1280,7 +988,7 @@ if (SpeechRecognition) {
                     true;
 
 
-                const firstQuestion =
+                const question =
                     spoken
                         .replace(
                             /edith/gi,
@@ -1289,7 +997,7 @@ if (SpeechRecognition) {
                         .trim();
 
 
-                if (!firstQuestion) {
+                if (!question) {
 
                     response.textContent =
                         "Yes. How can I assist?";
@@ -1306,7 +1014,7 @@ if (SpeechRecognition) {
 
 
                 await askGemini(
-                    firstQuestion
+                    question
                 );
 
 
@@ -1316,14 +1024,12 @@ if (SpeechRecognition) {
 
 
             /*
-             * AFTER ACTIVATION
+             * Normal conversation.
              *
              * No wake word required.
              */
 
-            if (
-                conversationActive
-            ) {
+            if (conversationActive) {
 
                 await askGemini(
                     spoken
@@ -1338,18 +1044,13 @@ if (SpeechRecognition) {
         (event) => {
 
             console.log(
-                "VOICE ERROR:",
+                "VOICE:",
                 event.error
             );
 
 
             listening = false;
 
-
-            /*
-             * Don't request microphone
-             * permission again.
-             */
 
             if (
                 event.error ===
@@ -1360,12 +1061,10 @@ if (SpeechRecognition) {
             ) {
 
                 voiceStatus.textContent =
-                    "MIC BLOCKED";
+                    "BLOCKED";
 
                 voiceStatus.className =
                     "red";
-
-                return;
 
             }
 
@@ -1375,24 +1074,21 @@ if (SpeechRecognition) {
     recognition.onend =
         () => {
 
-            listening =
-                false;
+            listening = false;
 
 
             /*
-             * Only restart the speech
-             * recognizer.
+             * Restart recognition only.
              *
-             * We DO NOT call getUserMedia().
+             * DO NOT ask for microphone
+             * permission again.
              */
 
-            if (
-                mediaStream
-            ) {
+            if (mediaStream) {
 
                 setTimeout(
                     startListening,
-                    400
+                    500
                 );
 
             }
@@ -1404,24 +1100,12 @@ if (SpeechRecognition) {
 
 function startListening() {
 
-    if (!recognition) {
-
-        voiceStatus.textContent =
-            "NOT SUPPORTED";
-
-        voiceStatus.className =
-            "red";
-
+    if (!recognition)
         return;
 
-    }
 
-
-    if (listening) {
-
+    if (listening)
         return;
-
-    }
 
 
     try {
@@ -1431,7 +1115,6 @@ function startListening() {
     } catch (error) {
 
         console.log(
-            "Recognition:",
             error.message
         );
 
@@ -1441,7 +1124,7 @@ function startListening() {
 
 
 /* =====================================================
-   CAPTURE CAMERA IMAGE
+   CAMERA IMAGE
 ===================================================== */
 
 function captureCamera() {
@@ -1449,8 +1132,7 @@ function captureCamera() {
     if (
         !camera ||
         camera.readyState < 2 ||
-        camera.videoWidth <= 0 ||
-        camera.videoHeight <= 0
+        !camera.videoWidth
     ) {
 
         return null;
@@ -1464,30 +1146,25 @@ function captureCamera() {
         );
 
 
-    const maxWidth =
-        1024;
+    const width =
+        Math.min(
+            1024,
+            camera.videoWidth
+        );
 
 
     const scale =
-        Math.min(
-            1,
-            maxWidth /
-                camera.videoWidth
-        );
+        width /
+        camera.videoWidth;
 
 
     canvas.width =
-        Math.round(
-            camera.videoWidth *
-            scale
-        );
+        width;
 
 
     canvas.height =
-        Math.round(
-            camera.videoHeight *
-            scale
-        );
+        camera.videoHeight *
+        scale;
 
 
     const ctx =
@@ -1508,7 +1185,7 @@ function captureCamera() {
     return canvas
         .toDataURL(
             "image/jpeg",
-            0.75
+            .7
         )
         .split(",")[1];
 
@@ -1526,7 +1203,7 @@ async function askGemini(
     if (!apiKey) {
 
         response.textContent =
-            "Please add your Gemini API key in Settings.";
+            "Add your Gemini API key in Settings.";
 
         settings.style.display =
             "block";
@@ -1543,11 +1220,7 @@ async function askGemini(
         "yellow";
 
 
-    /*
-     * Take a picture NOW.
-     */
-
-    const imageData =
+    const image =
         captureCamera();
 
 
@@ -1559,36 +1232,24 @@ async function askGemini(
 
 `You are E.D.I.T.H., a futuristic personal AI assistant.
 
-The user asked:
+User:
+${question}
 
-"${question}"
+If a camera image is provided, use it to answer
+questions about the user's surroundings.
 
-You have a current image from the user's camera.
+Only describe things actually visible.
 
-Use the image to help answer questions about
-the user's surroundings.
+Do not make things up.
 
-Identify visible objects, people, rooms,
-screens, signs, text, animals, vehicles,
-and other relevant details.
-
-Never invent something that is not visible.
-
-If something cannot be determined, say so.
-
-Keep answers concise and natural.
-Usually answer in 1 to 3 sentences.`
+Keep answers concise and natural.`
 
         }
 
     ];
 
 
-    /*
-     * Add image if available.
-     */
-
-    if (imageData) {
+    if (image) {
 
         parts.push({
 
@@ -1598,7 +1259,7 @@ Usually answer in 1 to 3 sentences.`
                     "image/jpeg",
 
                 data:
-                    imageData
+                    image
 
             }
 
@@ -1615,17 +1276,10 @@ Usually answer in 1 to 3 sentences.`
         );
 
 
-    let result =
-        null;
+    let result = null;
 
+    let errorText = "";
 
-    let lastError =
-        "";
-
-
-    /*
-     * Retry temporary errors.
-     */
 
     for (
         let attempt = 1;
@@ -1633,19 +1287,11 @@ Usually answer in 1 to 3 sentences.`
         attempt++
     ) {
 
-        response.textContent =
-            attempt === 1
-                ? "ANALYSING..."
-                : "GEMINI BUSY — RETRYING...";
-
-
         try {
 
             result =
                 await fetch(
-
                     url,
-
                     {
 
                         method:
@@ -1675,14 +1321,13 @@ Usually answer in 1 to 3 sentences.`
                             })
 
                     }
-
                 );
 
 
-        } catch (networkError) {
+        } catch (error) {
 
-            lastError =
-                networkError.message;
+            errorText =
+                error.message;
 
             break;
 
@@ -1696,23 +1341,9 @@ Usually answer in 1 to 3 sentences.`
         }
 
 
-        lastError =
+        errorText =
             await result.text();
 
-
-        console.error(
-            "GEMINI:",
-            result.status,
-            lastError
-        );
-
-
-        /*
-         * Retry:
-         *
-         * 503 = temporary unavailable
-         * 429 = rate limited
-         */
 
         if (
             result.status === 503 ||
@@ -1738,14 +1369,15 @@ Usually answer in 1 to 3 sentences.`
     }
 
 
-    /* =================================================
-       GEMINI ERROR
-    ================================================= */
-
     if (
         !result ||
         !result.ok
     ) {
+
+        console.error(
+            errorText
+        );
+
 
         aiStatus.textContent =
             "ERROR";
@@ -1760,35 +1392,14 @@ Usually answer in 1 to 3 sentences.`
         ) {
 
             response.textContent =
-                "Gemini is temporarily busy. Try again shortly.";
+                "Gemini is temporarily busy.";
 
-        }
-
-        else if (
-            result &&
-            result.status === 429
-        ) {
+        } else {
 
             response.textContent =
-                "Gemini rate limit reached. Try again shortly.";
+                "Gemini connection error.";
 
         }
-
-        else {
-
-            response.textContent =
-                "Gemini error: HTTP " +
-                (
-                    result
-                        ? result.status
-                        : "UNKNOWN"
-                );
-
-        }
-
-
-        errorBox.textContent =
-            lastError;
 
 
         return;
@@ -1796,20 +1407,10 @@ Usually answer in 1 to 3 sentences.`
     }
 
 
-    /* =================================================
-       READ RESPONSE
-    ================================================= */
-
     try {
 
         const data =
             await result.json();
-
-
-        console.log(
-            "GEMINI RESPONSE:",
-            data
-        );
 
 
         const answer =
@@ -1819,13 +1420,10 @@ Usually answer in 1 to 3 sentences.`
                 ?.text;
 
 
-        if (!answer) {
-
+        if (!answer)
             throw new Error(
-                "Gemini returned no answer."
+                "No AI response"
             );
-
-        }
 
 
         aiStatus.textContent =
@@ -1839,10 +1437,6 @@ Usually answer in 1 to 3 sentences.`
             answer;
 
 
-        /*
-         * Speak answer.
-         */
-
         speak(
             answer
         );
@@ -1851,7 +1445,6 @@ Usually answer in 1 to 3 sentences.`
     } catch (error) {
 
         console.error(
-            "RESPONSE ERROR:",
             error
         );
 
@@ -1862,9 +1455,8 @@ Usually answer in 1 to 3 sentences.`
         aiStatus.className =
             "red";
 
-
         response.textContent =
-            "I couldn't read the AI response.";
+            "E.D.I.T.H. could not process the response.";
 
     }
 
@@ -1881,39 +1473,32 @@ function speak(
 
     if (
         !window.speechSynthesis
-    ) {
-
+    )
         return;
 
-    }
-
-
-    /*
-     * Stop previous answer.
-     */
 
     window.speechSynthesis.cancel();
 
 
-    const utterance =
+    const speech =
         new SpeechSynthesisUtterance(
             text
         );
 
 
-    utterance.lang =
+    speech.lang =
         "en-GB";
 
 
-    utterance.rate =
+    speech.rate =
         1;
 
 
-    utterance.pitch =
-        0.9;
+    speech.pitch =
+        .9;
 
 
-    utterance.onstart =
+    speech.onstart =
         () => {
 
             voiceStatus.textContent =
@@ -1922,7 +1507,7 @@ function speak(
         };
 
 
-    utterance.onend =
+    speech.onend =
         () => {
 
             voiceStatus.textContent =
@@ -1932,7 +1517,7 @@ function speak(
 
 
     window.speechSynthesis.speak(
-        utterance
+        speech
     );
 
 }
@@ -1953,10 +1538,6 @@ startButton.onclick =
             "INITIALIZING...";
 
 
-        /*
-         * One camera/mic permission.
-         */
-
         const ok =
             await startMedia();
 
@@ -1974,60 +1555,38 @@ startButton.onclick =
         }
 
 
-        /*
-         * Hide start screen.
-         */
-
         start.style.display =
             "none";
 
 
-        /*
-         * Begin listening.
-         *
-         * User says E.D.I.T.H. once.
-         */
-
-        if (recognition) {
-
-            startListening();
-
-        }
+        startListening();
 
     };
 
 
 /* =====================================================
-   WEBXR
+   WEBXR MIXED REALITY
 ===================================================== */
 
-let xrSession =
-    null;
+let xrSession = null;
 
+let xrRefSpace = null;
 
-let xrReferenceSpace =
-    null;
-
-
-let xrGL =
-    null;
+let xrGL = null;
 
 
 /*
- * Check whether this browser supports
- * immersive WebXR.
+ * Check immersive-ar.
  */
 
-async function checkWebXR() {
+async function checkXR() {
 
-    if (
-        !navigator.xr
-    ) {
+    if (!navigator.xr) {
 
-        vrStatus.textContent =
+        xrStatus.textContent =
             "NOT AVAILABLE";
 
-        vrStatus.className =
+        xrStatus.className =
             "red";
 
         return;
@@ -2040,16 +1599,16 @@ async function checkWebXR() {
         const supported =
             await navigator.xr
                 .isSessionSupported(
-                    "immersive-vr"
+                    "immersive-ar"
                 );
 
 
         if (supported) {
 
-            vrStatus.textContent =
-                "READY";
+            xrStatus.textContent =
+                "AR READY";
 
-            vrStatus.className =
+            xrStatus.className =
                 "green";
 
 
@@ -2058,27 +1617,47 @@ async function checkWebXR() {
 
         } else {
 
-            vrStatus.textContent =
-                "NOT SUPPORTED";
+            /*
+             * Fallback to VR if AR isn't
+             * available.
+             */
 
-            vrStatus.className =
-                "yellow";
+            const vrSupported =
+                await navigator.xr
+                    .isSessionSupported(
+                        "immersive-vr"
+                    );
+
+
+            if (vrSupported) {
+
+                xrStatus.textContent =
+                    "VR READY";
+
+                xrStatus.className =
+                    "yellow";
+
+
+                vrButton.style.display =
+                    "block";
+
+            } else {
+
+                xrStatus.textContent =
+                    "UNAVAILABLE";
+
+                xrStatus.className =
+                    "red";
+
+            }
 
         }
 
     } catch (error) {
 
         console.error(
-            "WebXR:",
             error
         );
-
-
-        vrStatus.textContent =
-            "UNAVAILABLE";
-
-        vrStatus.className =
-            "red";
 
     }
 
@@ -2086,7 +1665,7 @@ async function checkWebXR() {
 
 
 /* =====================================================
-   ENTER VR
+   ENTER AR
 ===================================================== */
 
 vrButton.onclick =
@@ -2101,48 +1680,113 @@ vrButton.onclick =
         }
 
 
+        if (!navigator.xr) {
+
+            return;
+
+        }
+
+
         try {
 
             /*
-             * Request immersive VR.
+             * FIRST CHOICE:
+             *
+             * Real mixed reality.
              */
+
+            const arSupported =
+                await navigator.xr
+                    .isSessionSupported(
+                        "immersive-ar"
+                    );
+
+
+            let mode =
+                arSupported
+                    ? "immersive-ar"
+                    : "immersive-vr";
+
+
+            /*
+             * DOM overlay means our
+             * HTML HUD remains visible.
+             */
+
+            const options = {
+
+                optionalFeatures: [
+
+                    "local-floor",
+
+                    "bounded-floor",
+
+                    "dom-overlay",
+
+                    "plane-detection"
+
+                ],
+
+                domOverlay: {
+
+                    root:
+                        document.getElementById(
+                            "hud"
+                        )
+
+                }
+
+            };
+
 
             xrSession =
                 await navigator.xr
                     .requestSession(
-                        "immersive-vr",
-                        {
-
-                            optionalFeatures: [
-
-                                "local-floor",
-
-                                "bounded-floor"
-
-                            ]
-
-                        }
+                        mode,
+                        options
                     );
 
 
             xrSession.addEventListener(
                 "end",
-                onXREnd
+                () => {
+
+                    xrSession =
+                        null;
+
+
+                    xrStatus.textContent =
+                        arSupported
+                            ? "AR READY"
+                            : "VR READY";
+
+
+                    xrStatus.className =
+                        "green";
+
+
+                    vrButton.textContent =
+                        "ENTER E.D.I.T.H. AR";
+
+                }
             );
 
 
             vrButton.textContent =
-                "EXIT VR";
+                "EXIT E.D.I.T.H.";
 
 
-            vrStatus.textContent =
-                "ACTIVE";
+            xrStatus.textContent =
+                mode === "immersive-ar"
+                    ? "PASSTHROUGH ACTIVE"
+                    : "VR ACTIVE";
 
-            vrStatus.className =
+
+            xrStatus.className =
                 "green";
 
 
-            await startXR(
+            await setupXR(
                 xrSession
             );
 
@@ -2150,21 +1794,21 @@ vrButton.onclick =
         } catch (error) {
 
             console.error(
-                "WEBXR ERROR:",
+                "XR ERROR:",
                 error
             );
 
 
-            vrStatus.textContent =
+            response.textContent =
+                "XR error: " +
+                error.message;
+
+
+            xrStatus.textContent =
                 "ERROR";
 
-            vrStatus.className =
+            xrStatus.className =
                 "red";
-
-
-            response.textContent =
-                "Could not enter VR: " +
-                error.message;
 
         }
 
@@ -2172,143 +1816,99 @@ vrButton.onclick =
 
 
 /* =====================================================
-   XR END
+   XR WEBGL
 ===================================================== */
 
-function onXREnd() {
-
-    xrSession =
-        null;
-
-
-    xrReferenceSpace =
-        null;
-
-
-    vrButton.textContent =
-        "ENTER VR";
-
-
-    vrStatus.textContent =
-        "READY";
-
-    vrStatus.className =
-        "green";
-
-}
-
-
-/* =====================================================
-   XR START
-===================================================== */
-
-async function startXR(
+async function setupXR(
     session
 ) {
 
-    try {
+    /*
+     * Canvas used by WebXR.
+     */
 
-        /*
-         * Create WebGL canvas.
-         */
-
-        const canvas =
-            document.createElement(
-                "canvas"
-            );
-
-
-        xrGL =
-            canvas.getContext(
-                "webgl",
-                {
-
-                    xrCompatible:
-                        true,
-
-                    alpha:
-                        true
-
-                }
-
-            );
-
-
-        if (!xrGL) {
-
-            throw new Error(
-                "WebGL unavailable."
-            );
-
-        }
-
-
-        await xrGL
-            .makeXRCompatible();
-
-
-        /*
-         * WebXR framebuffer.
-         */
-
-        const layer =
-            new XRWebGLLayer(
-                session,
-                xrGL,
-                {
-
-                    alpha:
-                        true
-
-                }
-            );
-
-
-        session.updateRenderState({
-
-            baseLayer:
-                layer
-
-        });
-
-
-        /*
-         * Tracking space.
-         */
-
-        xrReferenceSpace =
-            await session
-                .requestReferenceSpace(
-                    "local"
-                );
-
-
-        /*
-         * Start render loop.
-         */
-
-        session.requestAnimationFrame(
-            xrFrame
+    const canvas =
+        document.createElement(
+            "canvas"
         );
 
 
-    } catch (error) {
+    xrGL =
+        canvas.getContext(
+            "webgl",
+            {
 
-        console.error(
-            "XR START ERROR:",
-            error
+                xrCompatible:
+                    true,
+
+                alpha:
+                    true
+
+            }
+        );
+
+
+    if (!xrGL) {
+
+        throw new Error(
+            "WebGL unavailable."
         );
 
     }
 
+
+    await xrGL
+        .makeXRCompatible();
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Transparent XR layer.
+     *
+     * Passthrough can appear behind it.
+     */
+
+    const layer =
+        new XRWebGLLayer(
+            session,
+            xrGL,
+            {
+
+                alpha:
+                    true
+
+            }
+        );
+
+
+    session.updateRenderState({
+
+        baseLayer:
+            layer
+
+    });
+
+
+    xrRefSpace =
+        await session
+            .requestReferenceSpace(
+                "local"
+            );
+
+
+    session.requestAnimationFrame(
+        renderXR
+    );
+
 }
 
 
 /* =====================================================
-   XR FRAME
+   XR RENDER LOOP
 ===================================================== */
 
-function xrFrame(
+function renderXR(
     time,
     frame
 ) {
@@ -2318,12 +1918,12 @@ function xrFrame(
 
 
     /*
-     * Get headset pose.
+     * Viewer pose.
      */
 
     const pose =
         frame.getViewerPose(
-            xrReferenceSpace
+            xrRefSpace
         );
 
 
@@ -2341,10 +1941,12 @@ function xrFrame(
 
 
         /*
-         * Transparent background.
+         * CRITICAL:
          *
-         * This is important for future
-         * mixed-reality work.
+         * Clear alpha to ZERO.
+         *
+         * This lets Quest passthrough
+         * show through.
          */
 
         xrGL.clearColor(
@@ -2364,17 +1966,17 @@ function xrFrame(
 
 
     session.requestAnimationFrame(
-        xrFrame
+        renderXR
     );
 
 }
 
 
 /* =====================================================
-   CHECK WEBXR
+   INITIAL CHECK
 ===================================================== */
 
-checkWebXR();
+checkXR();
 
 </script>
 
