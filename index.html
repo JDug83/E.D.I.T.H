@@ -25,9 +25,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* * CRITICAL FOR WEBXR PASSTHROUGH:
- * Removes opaque document canvas when inside headset
- */
+/* Strips solid black background in VR so passthrough is visible */
 :xr-overlay,
 :xr-overlay html,
 :xr-overlay body {
@@ -36,7 +34,7 @@ body {
 }
 
 /* =====================================================
-   CAMERA
+   CAMERA (2D FALLBACK)
 ===================================================== */
 #camera {
     position: fixed;
@@ -61,7 +59,7 @@ body {
 }
 
 /* =====================================================
-   HUD
+   HUD CONTAINER
 ===================================================== */
 #hud {
     position: fixed;
@@ -72,96 +70,56 @@ body {
 }
 
 /* =====================================================
-   LOGO
+   TOP-LEFT TACTICAL CLUSTER
 ===================================================== */
-.logo {
+.top-left-cluster {
     position: absolute;
-    top: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 34px;
+    top: 25px;
+    left: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.logo {
+    font-size: 28px;
     font-weight: bold;
-    letter-spacing: 9px;
+    letter-spacing: 7px;
     color: #00d9ff;
     text-shadow:
         0 0 8px #00d9ff,
         0 0 20px #00d9ff,
-        0 0 40px #008cff;
+        0 0 35px #008cff;
 }
 
 .online {
-    position: absolute;
-    top: 76px;
-    left: 50%;
-    transform: translateX(-50%);
     color: #00ff88;
-    font-size: 12px;
-    letter-spacing: 4px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
 }
 
-/* =====================================================
-   CENTER TARGET
-===================================================== */
-.target {
-    position: absolute;
-    width: 170px;
-    height: 170px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border: 2px solid rgba(0,217,255,0.75);
-    border-radius: 50%;
-    box-shadow:
-        0 0 20px #00d9ff,
-        inset 0 0 20px rgba(0,217,255,0.15);
-}
-
-.target::before {
-    content: "";
-    position: absolute;
-    width: 220px;
-    height: 1px;
-    left: -27px;
-    top: 83px;
-    background: #00d9ff;
-    box-shadow: 0 0 8px #00d9ff;
-}
-
-.target::after {
-    content: "";
-    position: absolute;
-    width: 1px;
-    height: 220px;
-    top: -27px;
-    left: 83px;
-    background: #00d9ff;
-    box-shadow: 0 0 8px #00d9ff;
-}
-
-/* =====================================================
-   STATUS
-===================================================== */
 .status {
-    position: absolute;
-    left: 25px;
-    bottom: 25px;
-    width: 260px;
-    padding: 18px 20px;
-    background: rgba(0,12,20,0.72);
+    width: 250px;
+    padding: 14px 16px;
+    background: rgba(0, 12, 20, 0.65);
     border-left: 2px solid #00d9ff;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px rgba(0,217,255,0.08);
+    border-top: 1px solid rgba(0, 217, 255, 0.2);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.08);
 }
 
 .status h2 {
-    margin: 0 0 13px;
-    font-size: 14px;
-    letter-spacing: 3px;
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 2px;
 }
 
 .status p {
-    margin: 8px 0;
-    font-size: 13px;
+    margin: 6px 0;
+    font-size: 11px;
     color: #aaa;
 }
 
@@ -170,18 +128,57 @@ body {
 .red { color: #ff4050; }
 
 /* =====================================================
+   CENTER TARGET RETICLE
+===================================================== */
+.target {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px dashed rgba(0, 217, 255, 0.7);
+    border-radius: 50%;
+    box-shadow:
+        0 0 15px #00d9ff,
+        inset 0 0 15px rgba(0, 217, 255, 0.15);
+}
+
+.target::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 1px;
+    left: -20px;
+    top: 79px;
+    background: #00d9ff;
+    box-shadow: 0 0 6px #00d9ff;
+}
+
+.target::after {
+    content: "";
+    position: absolute;
+    width: 1px;
+    height: 200px;
+    top: -20px;
+    left: 79px;
+    background: #00d9ff;
+    box-shadow: 0 0 6px #00d9ff;
+}
+
+/* =====================================================
    RESPONSE
 ===================================================== */
 #response {
     position: absolute;
     left: 50%;
-    bottom: 38px;
+    bottom: 35px;
     transform: translateX(-50%);
-    width: 60%;
+    width: 65%;
     max-width: 750px;
     text-align: center;
     color: white;
-    font-size: 18px;
+    font-size: 19px;
     line-height: 1.5;
     text-shadow: 0 0 10px #00d9ff;
 }
@@ -192,16 +189,17 @@ body {
 button {
     padding: 11px 17px;
     color: #00d9ff;
-    background: rgba(0,10,18,0.9);
+    background: rgba(0, 10, 18, 0.9);
     border: 1px solid #00d9ff;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
+    letter-spacing: 1px;
 }
 
 button:hover {
     background: #00d9ff;
     color: #001018;
-    box-shadow: 0 0 20px rgba(0,217,255,0.5);
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
 }
 
 button:disabled {
@@ -209,9 +207,6 @@ button:disabled {
     cursor: wait;
 }
 
-/* =====================================================
-   VR BUTTON
-===================================================== */
 #vrButton {
     position: fixed;
     top: 25px;
@@ -223,9 +218,6 @@ button:disabled {
     display: none;
 }
 
-/* =====================================================
-   SETTINGS BUTTON
-===================================================== */
 #settingsButton {
     position: fixed;
     right: 25px;
@@ -240,30 +232,31 @@ button:disabled {
 #settings {
     position: fixed;
     right: 25px;
-    top: 80px;
+    top: 75px;
     z-index: 50;
-    width: 340px;
-    padding: 20px;
-    background: rgba(2,10,15,0.98);
+    width: 320px;
+    padding: 18px;
+    background: rgba(2, 10, 15, 0.98);
     border: 1px solid #00d9ff;
-    box-shadow: 0 0 30px rgba(0,217,255,0.2);
+    box-shadow: 0 0 25px rgba(0, 217, 255, 0.2);
     display: none;
     pointer-events: auto;
 }
 
 #settings h2 {
     margin-top: 0;
-    letter-spacing: 3px;
+    font-size: 15px;
+    letter-spacing: 2px;
 }
 
 #settings p {
-    font-size: 13px;
+    font-size: 12px;
     color: #aaa;
 }
 
 #apiKey {
     width: 100%;
-    padding: 11px;
+    padding: 10px;
     background: #000;
     color: white;
     border: 1px solid #00d9ff;
@@ -271,7 +264,7 @@ button:disabled {
 }
 
 #error {
-    margin-top: 12px;
+    margin-top: 10px;
     color: #ff4050;
     font-size: 11px;
     line-height: 1.4;
@@ -299,8 +292,8 @@ button:disabled {
 
 #start h1 {
     margin: 0;
-    font-size: 52px;
-    letter-spacing: 11px;
+    font-size: 50px;
+    letter-spacing: 10px;
     color: #00d9ff;
     text-shadow:
         0 0 15px #00d9ff,
@@ -308,16 +301,17 @@ button:disabled {
 }
 
 #start p {
-    margin-top: 20px;
+    margin-top: 18px;
     color: #777;
     line-height: 1.7;
     letter-spacing: 2px;
+    font-size: 13px;
 }
 
 #startButton {
     margin-top: 25px;
-    padding: 15px 30px;
-    font-size: 16px;
+    padding: 14px 28px;
+    font-size: 15px;
     letter-spacing: 3px;
 }
 
@@ -325,7 +319,7 @@ button:disabled {
     margin-top: 20px;
     color: #666;
     font-size: 11px;
-    max-width: 370px;
+    max-width: 360px;
     line-height: 1.5;
 }
 
@@ -351,32 +345,33 @@ button:disabled {
         INITIALIZE E.D.I.T.H.
     </button>
     <div id="vrNotice">
-        After initialization, use ENTER VR to launch mixed-reality passthrough.
+        Once initialized, tap ENTER VR for borderless tactical passthrough.
     </div>
 </div>
 
 <div id="hud">
-    <div class="logo">E.D.I.T.H.</div>
-    <div class="online">● SYSTEM ONLINE</div>
-    <div class="target"></div>
+    <div class="top-left-cluster">
+        <div class="logo">E.D.I.T.H.</div>
+        <div class="online">● SYSTEM ONLINE</div>
 
-    <div class="status">
-        <h2>SYSTEM STATUS</h2>
-        <p>CAMERA: <span id="cameraStatus" class="yellow">STANDBY</span></p>
-        <p>MICROPHONE: <span id="micStatus" class="yellow">STANDBY</span></p>
-        <p>VOICE: <span id="voiceStatus" class="yellow">STANDBY</span></p>
-        <p>AI: <span id="aiStatus" class="yellow">STANDBY</span></p>
-        <p>VR: <span id="vrStatus" class="yellow">CHECKING</span></p>
+        <div class="status">
+            <h2>SYSTEM STATUS</h2>
+            <p>CAMERA: <span id="cameraStatus" class="yellow">STANDBY</span></p>
+            <p>MICROPHONE: <span id="micStatus" class="yellow">STANDBY</span></p>
+            <p>VOICE: <span id="voiceStatus" class="yellow">STANDBY</span></p>
+            <p>AI: <span id="aiStatus" class="yellow">STANDBY</span></p>
+            <p>PASSTHROUGH: <span id="vrStatus" class="yellow">CHECKING</span></p>
+        </div>
     </div>
 
+    <div class="target"></div>
+
     <div id="response">
-        E.D.I.T.H. is ready.
-        Say "E.D.I.T.H." once to begin.
+        E.D.I.T.H. is ready. Say "E.D.I.T.H." once to begin.
     </div>
 </div>
 
 <button id="vrButton">ENTER VR</button>
-
 <button id="settingsButton">⚙ SETTINGS</button>
 
 <div id="settings">
@@ -388,13 +383,13 @@ button:disabled {
     <button id="closeSettings">CLOSE</button>
     <div id="error"></div>
     <p style="font-size:11px;color:#666">
-        Your key is stored locally in this browser. Do not commit your API key to GitHub.
+        Stored locally in this browser.
     </p>
 </div>
 
 <script>
 /* =====================================================
-   ELEMENTS
+   ELEMENT REFERENCES
 ===================================================== */
 const start = document.getElementById("start");
 const startButton = document.getElementById("startButton");
@@ -415,7 +410,7 @@ const errorBox = document.getElementById("error");
 const vrButton = document.getElementById("vrButton");
 
 /* =====================================================
-   API KEY
+   API KEY HANDLING
 ===================================================== */
 let apiKey = localStorage.getItem("edith_gemini_key") || "";
 apiKeyInput.value = apiKey;
@@ -443,7 +438,7 @@ settingsButton.onclick = () => { settings.style.display = "block"; };
 closeSettings.onclick = () => { settings.style.display = "none"; };
 
 /* =====================================================
-   CAMERA + MICROPHONE
+   CAMERA & MICROPHONE (STANDALONE CAPTURE)
 ===================================================== */
 let mediaStream = null;
 
@@ -480,7 +475,7 @@ async function startMedia() {
 }
 
 /* =====================================================
-   CONTINUOUS VOICE
+   SPEECH RECOGNITION (CONTINUOUS WAKE-WORD AI VOICE)
 ===================================================== */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -565,7 +560,7 @@ function startListening() {
 }
 
 /* =====================================================
-   CAPTURE CAMERA IMAGE
+   CAMERA FRAME CAPTURE FOR VISION AI
 ===================================================== */
 function captureCamera() {
     if (!camera || camera.readyState < 2 || camera.videoWidth <= 0 || camera.videoHeight <= 0) {
@@ -586,7 +581,7 @@ function captureCamera() {
 }
 
 /* =====================================================
-   GEMINI
+   GEMINI API MULTIMODAL QUERY
 ===================================================== */
 async function askGemini(question) {
     if (!apiKey) {
@@ -601,16 +596,11 @@ async function askGemini(question) {
     const imageData = captureCamera();
     const parts = [
         {
-            text: `You are E.D.I.T.H., a futuristic personal AI assistant.
+            text: `You are E.D.I.T.H., a futuristic tactical augmented AI assistant.
 The user asked:
 "${question}"
-You have a current image from the user's camera.
-Use the image to help answer questions about the user's surroundings.
-Identify visible objects, people, rooms, screens, signs, text, animals, vehicles, and other relevant details.
-Never invent something that is not visible.
-If something cannot be determined, say so.
-Keep answers concise and natural.
-Usually answer in 1 to 3 sentences.`
+If an image is attached, evaluate the visual input to identify objects, threats, or context in surroundings.
+Keep answers concise, robotic, and natural (1 to 2 sentences).`
         }
     ];
 
@@ -656,14 +646,9 @@ Usually answer in 1 to 3 sentences.`
     if (!result || !result.ok) {
         aiStatus.textContent = "ERROR";
         aiStatus.className = "red";
-
-        if (result && result.status === 503) {
-            response.textContent = "Gemini is temporarily busy. Try again shortly.";
-        } else if (result && result.status === 429) {
-            response.textContent = "Gemini rate limit reached. Try again shortly.";
-        } else {
-            response.textContent = "Gemini error: HTTP " + (result ? result.status : "UNKNOWN");
-        }
+        response.textContent = result && result.status === 503
+            ? "Gemini is temporarily busy. Try again shortly."
+            : "Gemini error: HTTP " + (result ? result.status : "UNKNOWN");
         errorBox.textContent = lastError;
         return;
     }
@@ -695,21 +680,17 @@ function speak(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-GB";
-    utterance.rate = 1;
-    utterance.pitch = 0.9;
+    utterance.rate = 1.05;
+    utterance.pitch = 0.92;
 
-    utterance.onstart = () => {
-        voiceStatus.textContent = "SPEAKING";
-    };
-    utterance.onend = () => {
-        voiceStatus.textContent = "LISTENING";
-    };
+    utterance.onstart = () => { voiceStatus.textContent = "SPEAKING"; };
+    utterance.onend = () => { voiceStatus.textContent = "LISTENING"; };
 
     window.speechSynthesis.speak(utterance);
 }
 
 /* =====================================================
-   START E.D.I.T.H.
+   INITIALIZATION
 ===================================================== */
 startButton.onclick = async () => {
     startButton.disabled = true;
@@ -730,7 +711,7 @@ startButton.onclick = async () => {
 };
 
 /* =====================================================
-   WEBXR PASSTHROUGH (QUEST 3S COMPATIBLE)
+   WEBXR: BOUNDARY-FREE PASSTHROUGH
 ===================================================== */
 let xrSession = null;
 let xrReferenceSpace = null;
@@ -745,7 +726,6 @@ async function checkWebXR() {
     }
 
     try {
-        // Quest mixed-reality passthrough requires checking immersive-ar first
         const arSupported = await navigator.xr.isSessionSupported("immersive-ar");
         const vrSupported = await navigator.xr.isSessionSupported("immersive-vr");
 
@@ -759,7 +739,7 @@ async function checkWebXR() {
             vrStatus.className = "yellow";
         }
     } catch (error) {
-        console.error("WebXR:", error);
+        console.error("WebXR check error:", error);
         vrStatus.textContent = "UNAVAILABLE";
         vrStatus.className = "red";
     }
@@ -768,7 +748,6 @@ async function checkWebXR() {
 vrButton.onclick = async (e) => {
     e.preventDefault();
 
-    // Prevent double-click race condition on Quest 3S controllers
     if (xrStarting) return;
     xrStarting = true;
 
@@ -788,17 +767,17 @@ vrButton.onclick = async (e) => {
         const arSupported = await navigator.xr.isSessionSupported("immersive-ar").catch(() => false);
         const mode = arSupported ? "immersive-ar" : "immersive-vr";
 
-        // Required features to unblock stereo camera passthrough and project HUD on Quest
+        // "unbounded" disables the Guardian boundary grid on Quest headsets
         const sessionOptions = {
             requiredFeatures: ["local-floor"],
-            optionalFeatures: ["dom-overlay"],
+            optionalFeatures: ["unbounded", "dom-overlay"],
             domOverlay: { root: document.getElementById("hud") }
         };
 
         const session = await navigator.xr.requestSession(mode, sessionOptions);
         xrSession = session;
 
-        // Strip non-transparent layers so real-world video feed shows through
+        // Clear solid background so hardware camera feed shines through
         document.body.style.background = "transparent";
         document.documentElement.style.background = "transparent";
         camera.style.display = "none";
@@ -807,7 +786,7 @@ vrButton.onclick = async (e) => {
         session.addEventListener("end", onXREnd);
 
         vrButton.textContent = "EXIT VR";
-        vrStatus.textContent = arSupported ? "PASSTHROUGH ACTIVE" : "VR ACTIVE";
+        vrStatus.textContent = "PASSTHROUGH ACTIVE";
         vrStatus.className = "green";
 
         await startXR(session);
@@ -826,7 +805,6 @@ function onXREnd() {
     xrReferenceSpace = null;
     xrStarting = false;
 
-    // Restore desktop / phone UI theme
     document.body.style.background = "#020609";
     document.documentElement.style.background = "#020609";
     if (mediaStream) {
@@ -834,7 +812,7 @@ function onXREnd() {
         cameraOverlay.style.display = "block";
     }
 
-    vrButton.textContent = "ENTER VR";
+    vrButton.textContent = "ENTER PASSTHROUGH";
     vrStatus.textContent = "READY";
     vrStatus.className = "green";
 }
@@ -848,20 +826,22 @@ async function startXR(session) {
             premultipliedAlpha: false
         });
 
-        if (!xrGL) {
-            throw new Error("WebGL unavailable.");
-        }
+        if (!xrGL) throw new Error("WebGL unavailable.");
 
         await xrGL.makeXRCompatible();
 
-        // Transparent render base layer
         const layer = new XRWebGLLayer(session, xrGL, { alpha: true });
         session.updateRenderState({ baseLayer: layer });
 
+        // Try "unbounded" reference space first to eliminate the boundary wall
         try {
-            xrReferenceSpace = await session.requestReferenceSpace("local-floor");
+            xrReferenceSpace = await session.requestReferenceSpace("unbounded");
         } catch (e) {
-            xrReferenceSpace = await session.requestReferenceSpace("local");
+            try {
+                xrReferenceSpace = await session.requestReferenceSpace("local-floor");
+            } catch (err) {
+                xrReferenceSpace = await session.requestReferenceSpace("local");
+            }
         }
 
         session.requestAnimationFrame(xrFrame);
@@ -880,7 +860,7 @@ function xrFrame(time, frame) {
         const layer = session.renderState.baseLayer;
         xrGL.bindFramebuffer(xrGL.FRAMEBUFFER, layer.framebuffer);
 
-        // Alpha clear to 0 is mandatory for Quest 3S color passthrough cameras
+        // Alpha clear to 0 renders the real-world surroundings through headset cameras
         xrGL.clearColor(0, 0, 0, 0);
         xrGL.clear(xrGL.COLOR_BUFFER_BIT | xrGL.DEPTH_BUFFER_BIT);
     }
@@ -888,12 +868,8 @@ function xrFrame(time, frame) {
     session.requestAnimationFrame(xrFrame);
 }
 
-/* =====================================================
-   CHECK WEBXR
-===================================================== */
 checkWebXR();
 </script>
 
 </body>
-
 </html>
