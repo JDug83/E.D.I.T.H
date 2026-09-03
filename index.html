@@ -50,37 +50,30 @@
     <h1>E.D.I.T.H.</h1>
     <p>TACTICAL HUD // HOMECOMING PROTOCOL</p>
     <div class="config-box">
-        <input type="password" id="apiKeyInput" placeholder="LOCAL GEMINI API KEY">
-        <input type="text" id="proxyUrlInput" placeholder="OR SERVERLESS PROXY URL">
+        <input type="password" id="apiKeyInput" placeholder="PASTE GEMINI API KEY HERE">
     </div>
-    <button id="btnInit">INITIALIZE SYSTEM</button>
+    <button id="btnInit">INITIALIZE SUIT OPTICS</button>
 </div>
 
 <canvas id="canvasXR"></canvas>
 
 <script>
 let apiKey = localStorage.getItem("stark_edith_key") || "";
-let proxyUrl = localStorage.getItem("stark_proxy_url") || "";
-
 const apiKeyInput = document.getElementById("apiKeyInput");
-const proxyUrlInput = document.getElementById("proxyUrlInput");
-
 apiKeyInput.value = apiKey;
-proxyUrlInput.value = proxyUrl;
 
 let systemStatus = "ONLINE";
-let edithResponse = "E.D.I.T.H. online. Audio link established.";
+let edithResponse = "E.D.I.T.H. initialized. Standing by for voice input.";
 let micStream = null;
 let audioContext = null;
-let mediaRecorder = null;
-let recordedChunks = [];
+let scriptProcessor = null;
+let pcmSamples = [];
 let voiceDetected = false;
 let isSpeaking = false;
 let silenceTimer = null;
 let voiceEnergy = 0;
 let selectedVoice = null;
 
-// Populate voices specifically for Quest Browser support
 function loadVoices() {
     if (!window.speechSynthesis) return;
     const voices = window.speechSynthesis.getVoices();
@@ -92,7 +85,7 @@ if (window.speechSynthesis) {
 }
 
 /* =================================================================
-   ACCURATE FILM HUD RENDERER (Clean, Small, Cinema-Matched)
+   ACCURATE FILM HUD RENDERER
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
@@ -107,17 +100,14 @@ const CRIMSON_SHADOW = "rgba(180, 10, 30, 0.5)";
 function renderHomecomingDisplay(time) {
     ctx.clearRect(0, 0, 1024, 1024);
     const cx = 512, cy = 512;
-    const pulse = Math.sin(time * 0.003);
 
-    /* -------------------------------------------------------------
-       1. EYE APERTURE VIGNETTE (Left & Right Film Cutouts)
-    ------------------------------------------------------------- */
+    /* 1. EYE APERTURE VIGNETTE */
     ctx.save();
     ctx.strokeStyle = CRIMSON;
     ctx.shadowColor = CRIMSON_SHADOW;
     ctx.shadowBlur = 20;
 
-    // Left Vignette Mask Frame
+    // Left Vignette
     ctx.lineWidth = 14;
     ctx.beginPath();
     ctx.moveTo(80, 40);
@@ -132,7 +122,7 @@ function renderHomecomingDisplay(time) {
     ctx.lineTo(105, 934);
     ctx.stroke();
 
-    // Right Vignette Mask Frame
+    // Right Vignette
     ctx.lineWidth = 14;
     ctx.beginPath();
     ctx.moveTo(944, 40);
@@ -148,9 +138,7 @@ function renderHomecomingDisplay(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* -------------------------------------------------------------
-       2. TOP AIRCRAFT ATTITUDE / PITCH LADDER (Small & Tight)
-    ------------------------------------------------------------- */
+    /* 2. TOP AIRCRAFT PITCH LADDER */
     ctx.save();
     const ladderCenterY = 90;
     ctx.strokeStyle = CYAN;
@@ -159,13 +147,11 @@ function renderHomecomingDisplay(time) {
     ctx.font = "bold 8px monospace";
     ctx.textAlign = "center";
 
-    // Central line
     ctx.beginPath();
     ctx.moveTo(cx, ladderCenterY - 45);
     ctx.lineTo(cx, ladderCenterY + 45);
     ctx.stroke();
 
-    // Small pitch steps
     for (let i = -3; i <= 3; i++) {
         const y = ladderCenterY + (i * 11);
         const w = (i === 0) ? 28 : 16 - Math.abs(i * 2);
@@ -186,7 +172,6 @@ function renderHomecomingDisplay(time) {
         }
     }
 
-    // Red calibration dots at base of the ladder
     ctx.fillStyle = "#ff1a35";
     ctx.beginPath();
     ctx.arc(cx - 8, ladderCenterY + 52, 2, 0, Math.PI * 2);
@@ -194,9 +179,7 @@ function renderHomecomingDisplay(time) {
     ctx.fill();
     ctx.restore();
 
-    /* -------------------------------------------------------------
-       3. TOP TARGETING HEADING ARC (Dotted Guidance Curve)
-    ------------------------------------------------------------- */
+    /* 3. TOP TARGETING DOTTED ARC */
     ctx.save();
     ctx.strokeStyle = CYAN_DIM;
     ctx.lineWidth = 1.5;
@@ -206,9 +189,7 @@ function renderHomecomingDisplay(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* -------------------------------------------------------------
-       4. TOP-RIGHT E.D.I.T.H. AUDIO WAVEFORM SPEAKER
-    ------------------------------------------------------------- */
+    /* 4. TOP-RIGHT E.D.I.T.H. AUDIO NODE */
     ctx.save();
     const speakX = 760;
     const speakY = 85;
@@ -218,7 +199,6 @@ function renderHomecomingDisplay(time) {
     ctx.textAlign = "left";
     ctx.fillText("E.D.I.T.H. // VOICE", speakX, speakY - 12);
 
-    // Audio Waveform Visualizer Node
     for (let b = 0; b < 8; b++) {
         const barHeight = isSpeaking 
             ? Math.abs(Math.sin(time * 0.015 + b)) * 18 + 4
@@ -229,9 +209,7 @@ function renderHomecomingDisplay(time) {
     }
     ctx.restore();
 
-    /* -------------------------------------------------------------
-       5. CENTRAL ERGONOMIC RETICLE & CAPTION CLUSTER
-    ------------------------------------------------------------- */
+    /* 5. CENTRAL MYOPIA CLUSTER */
     ctx.save();
     const reticleColor = voiceDetected ? "#ff1a35" : CYAN;
     ctx.strokeStyle = reticleColor;
@@ -239,32 +217,28 @@ function renderHomecomingDisplay(time) {
     ctx.shadowColor = reticleColor;
     ctx.shadowBlur = 6;
 
-    // Small, tight central aim reticle
     const dynamicRadius = 24 + (voiceEnergy * 18);
     ctx.beginPath();
     ctx.arc(cx, cy, dynamicRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Cross-hairs
     ctx.beginPath();
     ctx.moveTo(cx - 12, cy); ctx.lineTo(cx - 4, cy);
     ctx.moveTo(cx + 4, cy); ctx.lineTo(cx + 12, cy);
-    ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy - 4);
+    ctx.moveTo(cx, cy - 12); ctx.lineTo(cx - 4, cy);
     ctx.moveTo(cx, cy + 4); ctx.lineTo(cx, cy + 12);
     ctx.stroke();
 
-    // Status line directly below reticle (No eye strain)
     ctx.fillStyle = voiceDetected ? "#ff1a35" : (systemStatus === "TRANSMITTING" ? "#ffaa00" : CYAN);
     ctx.font = "bold 11px monospace";
     ctx.textAlign = "center";
     ctx.fillText(voiceDetected ? "● RECORDING DIRECTIVE..." : `● ${systemStatus}`, cx, cy + 48);
 
-    // E.D.I.T.H. Captions (Centered in clear focus)
     ctx.fillStyle = "#ffffff";
     ctx.font = "16px 'Courier New', monospace";
     ctx.shadowColor = CYAN;
     ctx.shadowBlur = 4;
-    wrapCenteredText(ctx, edithResponse, cx, cy + 78, 440, 20);
+    wrapCenteredText(ctx, edithResponse, cx, cy + 78, 460, 20);
     ctx.restore();
 }
 
@@ -286,27 +260,68 @@ function wrapCenteredText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   HANDS-FREE AMBIENT VAD WITH SPEECH OUTPUT
+   DIRECT 16kHz WAV ENCODER (Gemini Audio Compliance)
+================================================================= */
+function encodeWAV(samples, sampleRate) {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+
+    function writeString(view, offset, string) {
+        for (let i = 0; i < string.length; i++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+        }
+    }
+
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, 1, true); // Mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true); // Block align
+    view.setUint16(34, 16, true); // Bits per sample
+    writeString(view, 36, 'data');
+    view.setUint32(40, samples.length * 2, true);
+
+    let offset = 44;
+    for (let i = 0; i < samples.length; i++) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+    }
+
+    return new Uint8Array(buffer);
+}
+
+/* =================================================================
+   ROBUST HANDS-FREE AUDIO CAPTURE
 ================================================================= */
 async function setupVAD() {
     micStream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
 
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
     const source = audioContext.createMediaStreamSource(micStream);
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
+    
+    scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+    
     source.connect(analyser);
+    source.connect(scriptProcessor);
+    scriptProcessor.connect(audioContext.destination);
 
-    let mimeType = 'audio/webm';
-    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/mp4';
-
-    mediaRecorder = new MediaRecorder(micStream, { mimeType });
-    mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
+    scriptProcessor.onaudioprocess = (e) => {
+        if (!voiceDetected) return;
+        const channelData = e.inputBuffer.getChannelData(0);
+        for (let i = 0; i < channelData.length; i++) {
+            pcmSamples.push(channelData[i]);
+        }
     };
-    mediaRecorder.onstop = sendVocalData;
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
@@ -317,20 +332,18 @@ async function setupVAD() {
         const avg = sum / dataArray.length;
         voiceEnergy = avg / 128.0;
 
-        // Sound triggers listener automatically
-        if (avg > 24 && !isSpeaking) {
-            if (!voiceDetected && mediaRecorder.state === "inactive") {
-                recordedChunks = [];
-                mediaRecorder.start();
+        if (avg > 25 && !isSpeaking) {
+            if (!voiceDetected) {
+                pcmSamples = [];
                 voiceDetected = true;
                 systemStatus = "LISTENING";
             }
             clearTimeout(silenceTimer);
             silenceTimer = setTimeout(() => {
-                if (voiceDetected && mediaRecorder.state === "recording") {
-                    mediaRecorder.stop();
+                if (voiceDetected) {
                     voiceDetected = false;
                     systemStatus = "TRANSMITTING";
+                    sendVocalData();
                 }
             }, 1000);
         }
@@ -340,56 +353,53 @@ async function setupVAD() {
 }
 
 async function sendVocalData() {
-    if (!recordedChunks.length) return;
-    const audioBlob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
-    const reader = new FileReader();
-    reader.readAsDataURL(audioBlob);
-    reader.onloadend = async () => {
-        const base64Audio = reader.result.split(',')[1];
-        try {
-            let res;
-            if (proxyUrl) {
-                res = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        audio: base64Audio,
-                        mimeType: mediaRecorder.mimeType.split(';')[0]
-                    })
-                });
-            } else if (apiKey) {
-                res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Provide a concise, clear, 1-2 sentence response." },
-                                { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
-                            ]
-                        }]
-                    })
-                });
-            } else {
-                throw new Error("Missing Key");
-            }
+    if (pcmSamples.length < 8000) {
+        systemStatus = "ONLINE";
+        return;
+    }
 
-            const data = await res.json();
-            const reply = data.reply || data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal resolved.";
-            edithResponse = reply;
-            systemStatus = "ONLINE";
-            speakResponse(reply);
-        } catch (err) {
-            edithResponse = "Connection failure. Check network or key.";
-            systemStatus = "ERROR";
+    const wavBytes = encodeWAV(pcmSamples, 16000);
+    pcmSamples = [];
+    
+    let binary = '';
+    for (let i = 0; i < wavBytes.byteLength; i++) {
+        binary += String.fromCharCode(wavBytes[i]);
+    }
+    const base64Audio = btoa(binary);
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Keep answers concise, direct, tactical, and 1 to 2 short sentences." },
+                        { inline_data: { mime_type: "audio/wav", data: base64Audio } }
+                    ]
+                }]
+            })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(`[${res.status}] ${errData.error?.message || 'API Rejected'}`);
         }
-    };
+
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal resolved. No verbal advisory.";
+        edithResponse = reply;
+        systemStatus = "ONLINE";
+        speakResponse(reply);
+    } catch (err) {
+        edithResponse = `ERROR: ${err.message}`;
+        systemStatus = "ERR_RETRY";
+    }
 }
 
 function speakResponse(text) {
     if (!window.speechSynthesis) return;
 
-    // Wake audio playback context
     if (audioContext && audioContext.state === "suspended") {
         audioContext.resume();
     }
@@ -477,13 +487,10 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 ================================================================= */
 document.getElementById("btnInit").onclick = async () => {
     apiKey = apiKeyInput.value.trim();
-    proxyUrl = proxyUrlInput.value.trim();
-
     localStorage.setItem("stark_edith_key", apiKey);
-    localStorage.setItem("stark_proxy_url", proxyUrl);
 
-    if (!apiKey && !proxyUrl) {
-        alert("Provide either a local API key or a Serverless Proxy URL.");
+    if (!apiKey) {
+        alert("Enter your Gemini API key.");
         return;
     }
 
