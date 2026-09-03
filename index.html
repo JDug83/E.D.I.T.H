@@ -80,7 +80,7 @@ function unlockQuestAudio() {
     }
     const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
-    gain.gain.value = 0.0001; // Silent tone prevents headset from putting audio to sleep
+    gain.gain.value = 0.0001;
     osc.connect(gain);
     gain.connect(audioContext.destination);
     osc.start();
@@ -88,7 +88,7 @@ function unlockQuestAudio() {
 
 function playBeep(freq = 880) {
     try {
-        if (audioContext.state === "suspended") audioContext.resume();
+        if (audioContext && audioContext.state === "suspended") audioContext.resume();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.frequency.setValueAtTime(freq, audioContext.currentTime);
@@ -118,7 +118,7 @@ function renderDisplay(time) {
     ctx.clearRect(0, 0, 1024, 1024);
     const cx = 512, cy = 512;
 
-    /* 1. EYE MASK VIGNETTE (Frame from film screenshot) */
+    /* 1. EYE MASK VIGNETTE */
     ctx.save();
     ctx.strokeStyle = CRIMSON;
     ctx.shadowColor = CRIMSON_SHADOW;
@@ -243,7 +243,7 @@ function renderDisplay(time) {
     ctx.moveTo(cx, cy + 5); ctx.lineTo(cx, cy + 14);
     ctx.stroke();
 
-    // Live Mic Meter (Bar expands when you speak)
+    // Live Mic Meter
     const meterW = 140, meterH = 4;
     ctx.fillStyle = "rgba(0, 229, 255, 0.2)";
     ctx.fillRect(cx - (meterW / 2), cy + 44, meterW, meterH);
