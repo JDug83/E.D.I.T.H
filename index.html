@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>E.D.I.T.H. Tactical XR</title>
+    <title>E.D.I.T.H. Spider-Vision HUD</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -16,17 +16,17 @@
             background: radial-gradient(circle, #051a29 0%, #010408 85%);
             text-align: center; padding: 20px;
         }
-        h1 { font-size: 40px; letter-spacing: 10px; margin-bottom: 8px; text-shadow: 0 0 15px #00d9ff; }
-        p { color: #8899aa; font-size: 13px; letter-spacing: 2px; margin-bottom: 24px; }
+        h1 { font-size: 40px; letter-spacing: 12px; margin-bottom: 6px; text-shadow: 0 0 18px #00d9ff; }
+        p { color: #8899aa; font-size: 12px; letter-spacing: 2px; margin-bottom: 24px; }
         input {
-            width: min(400px, 90%); padding: 12px; margin-bottom: 16px;
+            width: min(420px, 90%); padding: 14px; margin-bottom: 18px;
             background: rgba(0,0,0,0.8); border: 1px solid #00d9ff; color: #fff;
             text-align: center; outline: none; font-size: 14px;
         }
         button {
-            padding: 14px 28px; background: rgba(0, 217, 255, 0.2);
+            padding: 14px 32px; background: rgba(0, 217, 255, 0.2);
             border: 1px solid #00d9ff; color: #00d9ff; font-weight: bold;
-            font-size: 14px; letter-spacing: 2px; cursor: pointer;
+            font-size: 13px; letter-spacing: 2px; cursor: pointer; transition: 0.2s all;
         }
         button:hover { background: #00d9ff; color: #000; }
         #canvasXR { position: fixed; inset: 0; width: 100%; height: 100%; }
@@ -36,9 +36,9 @@
 
 <div id="setupScreen">
     <h1>E.D.I.T.H.</h1>
-    <p>AUGMENTED THREAT SYSTEM</p>
+    <p>SPIDER-VISION // TACTICAL AR HUD</p>
     <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key">
-    <button id="btnInit">ENTER PASSTHROUGH</button>
+    <button id="btnInit">INITIALIZE HUD</button>
 </div>
 
 <canvas id="canvasXR"></canvas>
@@ -49,14 +49,24 @@ const apiKeyInput = document.getElementById("apiKeyInput");
 apiKeyInput.value = apiKey;
 
 let statusMsg = "STANDBY";
-let responseText = "E.D.I.T.H. ONLINE. PULL TRIGGER TO SPEAK.";
-let isRecording = false;
-let mediaRecorder = null;
-let audioChunks = [];
+let responseText = "SPIDER-VISION ONLINE. LISTENING FOR DIRECTIVES.";
 let micStream = null;
+let audioContext = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isVoiceActive = false;
+let silenceTimer = null;
+let voiceEnergy = 0;
+
+// Dynamic Hitbox System
+const hitboxes = [
+    { x: 260, y: 380, w: 120, h: 140, label: "OBJ_ALPHA // THREAT: LOW", dist: "1.4m", pulse: 0 },
+    { x: 680, y: 320, w: 140, h: 180, label: "OBJ_BETA // ANOMALY", dist: "2.1m", pulse: 1 },
+    { x: 480, y: 640, w: 90, h: 70, label: "SURFACE // ELEVATION 0", dist: "0.8m", pulse: 2 }
+];
 
 /* =================================================================
-   2D HUD ENGINE (Drawn to Offscreen Texture)
+   2D HUD ENGINE (Spider-Vision Aesthetics + Spatial Hitboxes)
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
@@ -66,58 +76,110 @@ const ctx = hudCanvas.getContext("2d");
 function drawHUD(time) {
     ctx.clearRect(0, 0, 1024, 1024);
     const cx = 512, cy = 512;
-    const pulse = Math.sin(time * 0.003) * 8;
+    const pulse = Math.sin(time * 0.003) * 6;
 
-    // Outer Target Reticle
-    ctx.strokeStyle = isRecording ? "rgba(255, 60, 80, 0.95)" : "rgba(0, 217, 255, 0.9)";
-    ctx.lineWidth = 6;
+    // --- Spider-Vision Outer Hexagonal Mask Bounds ---
+    ctx.strokeStyle = "rgba(0, 217, 255, 0.25)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(cx, cy, 140 + pulse, 0, Math.PI * 2);
+    ctx.moveTo(180, 140); ctx.lineTo(844, 140);
+    ctx.lineTo(940, 512); ctx.lineTo(844, 884);
+    ctx.lineTo(180, 884); ctx.lineTo(84, 512);
+    ctx.closePath();
     ctx.stroke();
 
-    // Inner Aim Circle
-    ctx.strokeStyle = "rgba(0, 217, 255, 0.5)";
-    ctx.lineWidth = 3;
+    // --- Dynamic Target Reticle (Changes on Voice Detection) ---
+    const reticleColor = isVoiceActive ? "rgba(255, 60, 80, 0.95)" : "rgba(0, 217, 255, 0.85)";
+    ctx.strokeStyle = reticleColor;
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(cx, cy, 85, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 110 + pulse + (voiceEnergy * 40), 0, Math.PI * 2);
     ctx.stroke();
 
-    // Crosshairs
-    ctx.strokeStyle = "#00d9ff";
-    ctx.lineWidth = 3;
+    // Inner Tri-Blade Reticle
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 0.001);
+    for (let i = 0; i < 3; i++) {
+        ctx.rotate((Math.PI * 2) / 3);
+        ctx.strokeStyle = "#00d9ff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 75, 0, 0.5);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Center Pip
+    ctx.fillStyle = isVoiceActive ? "#ff4050" : "#00ff88";
     ctx.beginPath();
-    ctx.moveTo(cx - 200, cy); ctx.lineTo(cx + 200, cy);
-    ctx.moveTo(cx, cy - 200); ctx.lineTo(cx, cy + 200);
-    ctx.stroke();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fill();
 
-    // HUD Corner Accents
-    const b = 250, len = 45;
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = "#00d9ff";
-    // TL
-    ctx.beginPath(); ctx.moveTo(cx - b, cy - b + len); ctx.lineTo(cx - b, cy - b); ctx.lineTo(cx - b + len, cy - b); ctx.stroke();
-    // TR
-    ctx.beginPath(); ctx.moveTo(cx + b - len, cy - b); ctx.lineTo(cx + b, cy - b); ctx.lineTo(cx + b, cy - b + len); ctx.stroke();
-    // BL
-    ctx.beginPath(); ctx.moveTo(cx - b, cy + b - len); ctx.lineTo(cx - b, cy + b); ctx.lineTo(cx - b + len, cy + b); ctx.stroke();
-    // BR
-    ctx.beginPath(); ctx.moveTo(cx + b - len, cy + b); ctx.lineTo(cx + b, cy + b); ctx.lineTo(cx + b, cy + b - len); ctx.stroke();
+    // --- Angular Tactical Corner Brackets ---
+    const corners = [
+        { x: 120, y: 180, sx: 1, sy: 1 },
+        { x: 904, y: 180, sx: -1, sy: 1 },
+        { x: 120, y: 844, sx: 1, sy: -1 },
+        { x: 904, y: 844, sx: -1, sy: -1 }
+    ];
+    corners.forEach(c => {
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.scale(c.sx, c.sy);
+        ctx.strokeStyle = "#00d9ff";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 40); ctx.lineTo(0, 0); ctx.lineTo(40, 0);
+        ctx.stroke();
+        ctx.restore();
+    });
 
-    // Top Header
+    // --- Autonomous Spatial Hitboxes ---
+    hitboxes.forEach((box, index) => {
+        const osc = Math.sin(time * 0.002 + box.pulse) * 3;
+        const bx = box.x + osc;
+        const by = box.y;
+
+        // Bounding Rectangle
+        ctx.strokeStyle = "rgba(0, 217, 255, 0.7)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 4]);
+        ctx.strokeRect(bx, by, box.w, box.h);
+        ctx.setLineDash([]);
+
+        // Bracket Corners on Hitbox
+        const bLen = 10;
+        ctx.strokeStyle = "#00ff88";
+        ctx.lineWidth = 2;
+        // TL
+        ctx.beginPath(); ctx.moveTo(bx, by + bLen); ctx.lineTo(bx, by); ctx.lineTo(bx + bLen, by); ctx.stroke();
+        // BR
+        ctx.beginPath(); ctx.moveTo(bx + box.w - bLen, by + box.h); ctx.lineTo(bx + box.w, by + box.h); ctx.lineTo(bx + box.w, by + box.h - bLen); ctx.stroke();
+
+        // Data Tags
+        ctx.fillStyle = "rgba(0, 20, 30, 0.7)";
+        ctx.fillRect(bx, by - 24, box.w + 40, 20);
+        ctx.fillStyle = "#00d9ff";
+        ctx.font = "bold 11px monospace";
+        ctx.fillText(`${box.label} [${box.dist}]`, bx + 4, by - 10);
+    });
+
+    // --- Telemetry & System Header ---
     ctx.fillStyle = "#00d9ff";
-    ctx.font = "bold 34px monospace";
+    ctx.font = "bold 30px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("E.D.I.T.H.", cx, cy - 300);
+    ctx.fillText("E.D.I.T.H.", cx, cy - 260);
 
-    ctx.fillStyle = isRecording ? "#ff4050" : (statusMsg === "THINKING" ? "#ffbb00" : "#00ff88");
-    ctx.font = "bold 22px monospace";
-    ctx.fillText(isRecording ? "● TRANSMITTING..." : `● STATUS: ${statusMsg}`, cx, cy - 260);
+    ctx.fillStyle = isVoiceActive ? "#ff4050" : (statusMsg === "THINKING" ? "#ffbb00" : "#00ff88");
+    ctx.font = "14px monospace";
+    ctx.fillText(isVoiceActive ? "● AUDIO DETECTED // STREAMING DIRECTIVE" : `● STATUS: ${statusMsg}`, cx, cy - 230);
 
-    // AI Response Box
+    // AI Response Stream
     ctx.fillStyle = "#ffffff";
-    ctx.font = "26px sans-serif";
+    ctx.font = "22px sans-serif";
     ctx.textAlign = "center";
-    wrapText(ctx, responseText, cx, cy + 220, 850, 36);
+    wrapText(ctx, responseText, cx, cy + 200, 800, 30);
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {
@@ -138,46 +200,64 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   DIRECT MICROPHONE RECORDING (Bypasses missing SpeechRecognition)
+   HANDS-FREE VOICE ACTIVITY DETECTION (VAD)
 ================================================================= */
-async function initMic() {
-    try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        // Pick optimal mimeType supported by Meta Quest
-        let mimeType = 'audio/webm';
-        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/mp4';
+async function setupHandsFreeVoice() {
+    micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    });
 
-        mediaRecorder = new MediaRecorder(micStream, { mimeType });
-        mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) audioChunks.push(e.data);
-        };
-        mediaRecorder.onstop = sendAudioToGemini;
-        statusMsg = "READY";
-    } catch(err) {
-        statusMsg = "MIC BLOCKED";
-        responseText = "Allow microphone permissions in Quest Browser settings.";
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(micStream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 512;
+    source.connect(analyser);
+
+    let mimeType = 'audio/webm';
+    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/mp4';
+
+    mediaRecorder = new MediaRecorder(micStream, { mimeType });
+    mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+    mediaRecorder.onstop = processVoiceQuery;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function checkEnergy() {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+        const avg = sum / bufferLength;
+        voiceEnergy = avg / 128.0;
+
+        // Sound detected above background threshold
+        if (avg > 24) {
+            if (!isVoiceActive && mediaRecorder.state === "inactive") {
+                recordedChunks = [];
+                mediaRecorder.start();
+                isVoiceActive = true;
+                statusMsg = "LISTENING";
+            }
+            clearTimeout(silenceTimer);
+            // 1.2s trailing silence triggers auto-send
+            silenceTimer = setTimeout(() => {
+                if (isVoiceActive && mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                    isVoiceActive = false;
+                    statusMsg = "THINKING";
+                }
+            }, 1200);
+        }
+        requestAnimationFrame(checkEnergy);
     }
+    checkEnergy();
 }
 
-function toggleVoice() {
-    if (!mediaRecorder) return;
-    if (!isRecording) {
-        audioChunks = [];
-        mediaRecorder.start();
-        isRecording = true;
-        statusMsg = "LISTENING";
-        responseText = "Listening to vocal directive...";
-    } else {
-        isRecording = false;
-        mediaRecorder.stop();
-        statusMsg = "THINKING";
-        responseText = "Processing command with Gemini...";
-    }
-}
-
-async function sendAudioToGemini() {
-    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+async function processVoiceQuery() {
+    if (!recordedChunks.length) return;
+    const audioBlob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
     const reader = new FileReader();
     reader.readAsDataURL(audioBlob);
     reader.onloadend = async () => {
@@ -189,19 +269,19 @@ async function sendAudioToGemini() {
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: "You are E.D.I.T.H. from Spider-Man / Iron Man. Give a short, tactical 1-2 sentence response." },
+                            { text: "You are E.D.I.T.H., Tony Stark's augmented intelligence. Answer in 1 to 2 brief tactical sentences." },
                             { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
                         ]
                     }]
                 })
             });
             const data = await res.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No actionable data.";
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No intelligence payload returned.";
             responseText = reply;
             statusMsg = "ONLINE";
             speak(reply);
         } catch (err) {
-            responseText = "Connection failure. Verify API Key.";
+            responseText = "Neural link failed. Verify Gemini API key.";
             statusMsg = "ERROR";
         }
     };
@@ -226,11 +306,10 @@ const vsSrc = `
     attribute vec3 aPos;
     attribute vec2 aTex;
     uniform mat4 uProj;
-    uniform mat4 uView;
     varying vec2 vTex;
     void main() {
-        // Offset quad 1.5 meters directly forward into your field of view
-        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.5, 1.0);
+        // Spatial anchor: 1.4m directly forward in eye space
+        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.4, 1.0);
         gl_Position = uProj * pos;
         vTex = aTex;
     }
@@ -258,14 +337,14 @@ gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vsSrc));
 gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fsSrc));
 gl.linkProgram(prog);
 
-// 1.2m x 1.2m Quad centered at Z = 0
+// 1.3m x 1.3m Quad centered at Z = 0
 const vertices = new Float32Array([
-    -0.6, -0.6, 0.0,   0.0, 1.0,
-     0.6, -0.6, 0.0,   1.0, 1.0,
-    -0.6,  0.6, 0.0,   0.0, 0.0,
-    -0.6,  0.6, 0.0,   0.0, 0.0,
-     0.6, -0.6, 0.0,   1.0, 1.0,
-     0.6,  0.6, 0.0,   1.0, 0.0
+    -0.65, -0.65, 0.0,   0.0, 1.0,
+     0.65, -0.65, 0.0,   1.0, 1.0,
+    -0.65,  0.65, 0.0,   0.0, 0.0,
+    -0.65,  0.65, 0.0,   0.0, 0.0,
+     0.65, -0.65, 0.0,   1.0, 1.0,
+     0.65,  0.65, 0.0,   1.0, 0.0
 ]);
 
 const vbo = gl.createBuffer();
@@ -284,7 +363,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* =================================================================
-   WEBXR SESSION PIPELINE
+   WEBXR SESSION INITIALIZATION
 ================================================================= */
 document.getElementById("btnInit").onclick = async () => {
     apiKey = apiKeyInput.value.trim();
@@ -295,10 +374,10 @@ document.getElementById("btnInit").onclick = async () => {
     }
 
     document.getElementById("setupScreen").style.display = "none";
-    await initMic();
+    await setupHandsFreeVoice();
 
     if (!navigator.xr) {
-        alert("WebXR unavailable. Launch inside Meta Quest Browser.");
+        alert("Launch inside the Meta Quest Browser over HTTPS.");
         return;
     }
 
@@ -311,16 +390,11 @@ document.getElementById("btnInit").onclick = async () => {
     session.updateRenderState({ baseLayer: xrLayer });
     const refSpace = await session.requestReferenceSpace("viewer");
 
-    // Pull controller trigger or click screen to toggle mic
-    session.addEventListener("select", toggleVoice);
-    window.addEventListener("pointerdown", toggleVoice);
-
     session.requestAnimationFrame(function onFrame(time, frame) {
         session.requestAnimationFrame(onFrame);
         const pose = frame.getViewerPose(refSpace);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-        // Alpha 0.0 is MANDATORY to allow Quest passthrough through
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -342,7 +416,6 @@ document.getElementById("btnInit").onclick = async () => {
         gl.enableVertexAttribArray(texLoc);
         gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 20, 12);
 
-        // Draw quad in both stereoscopic eyes
         for (const view of pose.views) {
             const vp = xrLayer.getViewport(view);
             gl.viewport(vp.x, vp.y, vp.width, vp.height);
