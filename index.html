@@ -39,61 +39,7 @@ body {
 
 
 /* =====================================================
-   WEBXR HUD
-===================================================== */
-
-#hud {
-
-    position: fixed;
-
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    pointer-events: none;
-
-    z-index: 5;
-
-    background: transparent;
-
-    color: #00d9ff;
-
-    visibility: visible !important;
-}
-
-
-/*
- * IMPORTANT:
- *
- * When Quest enters WebXR, keep the HUD transparent.
- * The headset supplies the passthrough background.
- */
-
-#hud * {
-    pointer-events: none;
-}
-
-
-/*
- * Controls that need to be clickable.
- */
-
-#settingsButton,
-#vrButton,
-#sendButton,
-#manualInput,
-#saveKey,
-#closeSettings,
-#settings input,
-#settings button {
-
-    pointer-events: auto;
-}
-
-
-/* =====================================================
-   CAMERA PREVIEW
+   NORMAL CAMERA
 ===================================================== */
 
 #camera {
@@ -114,7 +60,25 @@ body {
 
 
 /* =====================================================
-   E.D.I.T.H. LOGO
+   NORMAL HUD
+===================================================== */
+
+#hud {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 5;
+
+    pointer-events: none;
+
+    background: transparent;
+}
+
+
+/* =====================================================
+   LOGO
 ===================================================== */
 
 .logo {
@@ -133,6 +97,8 @@ body {
     font-weight: bold;
 
     letter-spacing: 9px;
+
+    color: #00d9ff;
 
     text-shadow:
         0 0 8px #00d9ff,
@@ -187,6 +153,9 @@ body {
         0 0 20px #00d9ff,
         inset 0 0 20px
         rgba(0,217,255,.15);
+
+    animation:
+        targetPulse 2s infinite;
 }
 
 
@@ -203,6 +172,9 @@ body {
     top: 78px;
 
     background: #00d9ff;
+
+    box-shadow:
+        0 0 8px #00d9ff;
 }
 
 
@@ -219,6 +191,168 @@ body {
     left: 78px;
 
     background: #00d9ff;
+
+    box-shadow:
+        0 0 8px #00d9ff;
+}
+
+
+@keyframes targetPulse {
+
+    0%,100% {
+        opacity: .65;
+        transform:
+            translate(-50%,-50%)
+            scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform:
+            translate(-50%,-50%)
+            scale(1.04);
+    }
+
+}
+
+
+/* =====================================================
+   SPIDER-VISION STYLE CORNERS
+===================================================== */
+
+.vision {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 330px;
+    height: 330px;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: none;
+}
+
+
+.corner {
+
+    position: absolute;
+
+    width: 42px;
+    height: 42px;
+
+    border-color:
+        rgba(0,217,255,.9);
+
+    border-style: solid;
+
+    filter:
+        drop-shadow(
+            0 0 7px #00d9ff
+        );
+}
+
+
+.corner.tl {
+
+    top: 0;
+    left: 0;
+
+    border-width:
+        2px 0 0 2px;
+}
+
+
+.corner.tr {
+
+    top: 0;
+    right: 0;
+
+    border-width:
+        2px 2px 0 0;
+}
+
+
+.corner.bl {
+
+    bottom: 0;
+    left: 0;
+
+    border-width:
+        0 0 2px 2px;
+}
+
+
+.corner.br {
+
+    bottom: 0;
+    right: 0;
+
+    border-width:
+        0 2px 2px 0;
+}
+
+
+/* =====================================================
+   SCAN LINE
+===================================================== */
+
+.scanLine {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    width: 360px;
+
+    height: 2px;
+
+    transform:
+        translate(-50%, -50%);
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #00d9ff,
+            transparent
+        );
+
+    box-shadow:
+        0 0 12px #00d9ff;
+
+    animation:
+        scan 2.8s infinite;
+}
+
+
+@keyframes scan {
+
+    0% {
+        transform:
+            translate(-50%, -160px);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            translate(-50%, 160px);
+        opacity: 0;
+    }
+
 }
 
 
@@ -238,7 +372,7 @@ body {
     padding: 18px;
 
     background:
-        rgba(0,10,18,.72);
+        rgba(0,10,18,.76);
 
     border-left:
         2px solid #00d9ff;
@@ -250,7 +384,8 @@ body {
 
 .status h2 {
 
-    margin: 0 0 13px;
+    margin:
+        0 0 13px;
 
     font-size: 13px;
 
@@ -282,7 +417,42 @@ body {
 
 
 /* =====================================================
-   AI RESPONSE
+   TELEMETRY
+===================================================== */
+
+.telemetry {
+
+    position: absolute;
+
+    right: 25px;
+
+    top: 115px;
+
+    width: 190px;
+
+    padding: 14px;
+
+    color: #00d9ff;
+
+    font-size: 10px;
+
+    line-height: 1.8;
+
+    letter-spacing: 1px;
+
+    text-align: right;
+
+    opacity: .85;
+}
+
+
+.telemetry span {
+    color: #00ff88;
+}
+
+
+/* =====================================================
+   RESPONSE
 ===================================================== */
 
 #response {
@@ -296,9 +466,9 @@ body {
     transform:
         translateX(-50%);
 
-    width: 60%;
+    width: 65%;
 
-    max-width: 700px;
+    max-width: 750px;
 
     text-align: center;
 
@@ -309,6 +479,7 @@ body {
     line-height: 1.5;
 
     text-shadow:
+        0 0 5px #000,
         0 0 10px #00d9ff;
 
     max-height: 180px;
@@ -332,7 +503,8 @@ body {
     transform:
         translateX(-50%);
 
-    width: min(650px, 70%);
+    width:
+        min(650px, 70%);
 
     display: flex;
 
@@ -346,43 +518,31 @@ body {
 
     flex: 1;
 
-    min-width: 0;
-
-    padding: 12px 14px;
-
-    border:
-        1px solid
-        rgba(0,217,255,.7);
+    padding: 12px;
 
     background:
-        rgba(0,10,18,.85);
+        rgba(0,10,18,.9);
 
     color: white;
 
+    border:
+        1px solid #00d9ff;
+
     outline: none;
-
-    font-size: 14px;
-
-    pointer-events: auto;
-}
-
-
-#manualInput::placeholder {
-    color: #66808a;
 }
 
 
 #sendButton {
 
     padding:
-        12px 18px;
+        12px 20px;
 
     pointer-events: auto;
 }
 
 
 /* =====================================================
-   START SCREEN
+   START
 ===================================================== */
 
 #start {
@@ -436,10 +596,6 @@ body {
 }
 
 
-/* =====================================================
-   BUTTON
-===================================================== */
-
 button {
 
     padding:
@@ -462,14 +618,6 @@ button:hover {
     background: #00d9ff;
 
     color: #001018;
-}
-
-
-button:disabled {
-
-    opacity: .5;
-
-    cursor: default;
 }
 
 
@@ -560,85 +708,16 @@ button:disabled {
 
 
 /* =====================================================
-   XR OVERLAY STYLING
+   MOBILE
 ===================================================== */
 
-/*
- * Quest can apply the :xr-overlay state to
- * the DOM overlay root.
- */
-
-#hud:where(:xr-overlay) {
-
-    background: transparent !important;
-
-    visibility: visible !important;
-}
-
-
-/*
- * In passthrough, make the HUD slightly easier
- * to see against the real world.
- */
-
-#hud:where(:xr-overlay) .status {
-
-    background:
-        rgba(0,8,15,.78);
-
-    border:
-        1px solid
-        rgba(0,217,255,.35);
-
-    border-left:
-        2px solid #00d9ff;
-}
-
-
-#hud:where(:xr-overlay) #response {
-
-    text-shadow:
-        0 0 5px #000,
-        0 0 12px #00d9ff;
-}
-
-
-/*
- * Keep manual input usable in XR.
- */
-
-#hud:where(:xr-overlay) #manualInputBox {
-
-    pointer-events: auto;
-}
-
-
-#hud:where(:xr-overlay) #manualInput,
-#hud:where(:xr-overlay) #sendButton {
-
-    pointer-events: auto;
-}
-
-
-/* =====================================================
-   MOBILE / QUEST SIZING
-===================================================== */
-
-@media (max-width: 700px) {
+@media(max-width:700px){
 
     .logo {
 
         font-size: 25px;
 
         letter-spacing: 6px;
-
-        top: 18px;
-    }
-
-
-    .online {
-
-        top: 55px;
     }
 
 
@@ -669,9 +748,16 @@ button:disabled {
     }
 
 
+    .vision {
+
+        width: 270px;
+        height: 270px;
+    }
+
+
     .status {
 
-        left: 12px;
+        left: 10px;
 
         bottom: 85px;
 
@@ -681,17 +767,21 @@ button:disabled {
     }
 
 
-    .status p {
+    .telemetry {
 
-        margin: 5px 0;
+        right: 10px;
 
-        font-size: 10px;
+        top: 90px;
+
+        width: 150px;
+
+        font-size: 8px;
     }
 
 
     #response {
 
-        width: 85%;
+        width: 90%;
 
         bottom: 145px;
 
@@ -704,29 +794,6 @@ button:disabled {
         width: 90%;
 
         bottom: 25px;
-    }
-
-
-    #settings {
-
-        right: 10px;
-
-        width:
-            calc(100% - 20px);
-    }
-
-}
-
-
-/* =====================================================
-   XR: MAKE EVERYTHING VISIBLE
-===================================================== */
-
-@media (display-mode: fullscreen) {
-
-    #hud {
-
-        visibility: visible !important;
     }
 
 }
@@ -776,7 +843,7 @@ button:disabled {
 
 
 <!-- =====================================================
-     E.D.I.T.H. HUD
+     NORMAL HUD
 ===================================================== -->
 
 <div id="hud">
@@ -792,6 +859,30 @@ button:disabled {
 
 
     <div class="target"></div>
+
+
+    <div class="vision">
+
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+
+    </div>
+
+
+    <div class="scanLine"></div>
+
+
+    <div class="telemetry">
+
+        OPTICAL SYSTEM <span>ONLINE</span><br>
+        TRACKING <span>ACTIVE</span><br>
+        ENVIRONMENT <span>VISIBLE</span><br>
+        NEURAL LINK <span>CONNECTED</span><br>
+        HUD CORE <span>ONLINE</span>
+
+    </div>
 
 
     <div class="status">
@@ -847,13 +938,11 @@ button:disabled {
 
 
     <div id="response">
+
         E.D.I.T.H. is ready.
+
     </div>
 
-
-    <!-- =================================================
-         MANUAL AI INPUT
-    ================================================= -->
 
     <div id="manualInputBox">
 
@@ -920,6 +1009,16 @@ button:disabled {
 </div>
 
 
+<!-- =====================================================
+     XR CANVAS
+===================================================== -->
+
+<canvas
+    id="xrCanvas"
+    style="display:none">
+</canvas>
+
+
 <script>
 
 /* =====================================================
@@ -980,6 +1079,9 @@ const manualInput =
 const sendButton =
     document.getElementById("sendButton");
 
+const xrCanvas =
+    document.getElementById("xrCanvas");
+
 
 /* =====================================================
    GEMINI KEY
@@ -1005,63 +1107,69 @@ if(apiKey){
 }
 
 
-saveKey.onclick = () => {
+saveKey.onclick =
+    () => {
 
-    const key =
-        apiKeyInput.value.trim();
-
-
-    if(!key){
-
-        errorBox.textContent =
-            "Enter a Gemini API key.";
-
-        return;
-    }
+        const key =
+            apiKeyInput.value.trim();
 
 
-    apiKey =
-        key;
+        if(!key){
+
+            errorBox.textContent =
+                "Enter a Gemini API key.";
+
+            return;
+        }
 
 
-    localStorage.setItem(
-        "edith_gemini_key",
-        key
-    );
+        apiKey =
+            key;
 
 
-    aiStatus.textContent =
-        "READY";
-
-    aiStatus.className =
-        "green";
-
-
-    settings.style.display =
-        "none";
-
-};
+        localStorage.setItem(
+            "edith_gemini_key",
+            key
+        );
 
 
-settingsButton.onclick = () => {
+        aiStatus.textContent =
+            "READY";
 
-    settings.style.display =
-        "block";
-};
+        aiStatus.className =
+            "green";
 
 
-closeSettings.onclick = () => {
+        settings.style.display =
+            "none";
 
-    settings.style.display =
-        "none";
-};
+    };
+
+
+settingsButton.onclick =
+    () => {
+
+        settings.style.display =
+            "block";
+
+    };
+
+
+closeSettings.onclick =
+    () => {
+
+        settings.style.display =
+            "none";
+
+    };
 
 
 /* =====================================================
-   CAMERA + MICROPHONE
+   CAMERA / MICROPHONE
 ===================================================== */
 
-let mediaStream = null;
+let mediaStream =
+    null;
 
 
 async function startMedia(){
@@ -1073,14 +1181,14 @@ async function startMedia(){
                 .mediaDevices
                 .getUserMedia({
 
-                    video:{
+                    video: {
 
                         facingMode:
                             "environment"
 
                     },
 
-                    audio:{
+                    audio: {
 
                         echoCancellation:
                             true,
@@ -1101,9 +1209,12 @@ async function startMedia(){
 
 
         /*
-         * Keep camera available for Gemini
-         * image analysis, but don't show it
-         * over Quest passthrough.
+         * IMPORTANT:
+         *
+         * We do NOT show this camera feed
+         * in XR.
+         *
+         * Quest provides its own passthrough.
          */
 
         camera.style.display =
@@ -1135,10 +1246,6 @@ async function startMedia(){
         );
 
 
-        response.textContent =
-            "Please allow the camera and microphone.";
-
-
         cameraStatus.textContent =
             "DENIED";
 
@@ -1153,14 +1260,18 @@ async function startMedia(){
             "red";
 
 
+        response.textContent =
+            "Camera/microphone permission was denied.";
+
         return false;
+
     }
 
 }
 
 
 /* =====================================================
-   VOICE RECOGNITION
+   SPEECH RECOGNITION
 ===================================================== */
 
 const SpeechRecognition =
@@ -1216,6 +1327,7 @@ if(SpeechRecognition){
 
             voiceStatus.className =
                 "green";
+
         };
 
 
@@ -1238,19 +1350,15 @@ if(SpeechRecognition){
                     .trim();
 
 
-            console.log(
-                "HEARD:",
-                spoken
-            );
-
-
             if(!spoken)
                 return;
 
 
-            /*
-             * FIRST ACTIVATION
-             */
+            console.log(
+                "E.D.I.T.H. HEARD:",
+                spoken
+            );
+
 
             if(!edithStarted){
 
@@ -1305,25 +1413,22 @@ if(SpeechRecognition){
             }
 
 
-            /*
-             * NORMAL CONVERSATION
-             */
-
             if(conversationActive){
 
                 await askGemini(
                     spoken
                 );
+
             }
 
         };
 
 
     recognition.onerror =
-        (event) => {
+        event => {
 
             console.log(
-                "VOICE ERROR:",
+                "VOICE:",
                 event.error
             );
 
@@ -1343,9 +1448,9 @@ if(SpeechRecognition){
                 voiceStatus.textContent =
                     "BLOCKED";
 
-
                 voiceStatus.className =
                     "red";
+
             }
 
         };
@@ -1362,7 +1467,7 @@ if(SpeechRecognition){
 
                 setTimeout(
                     startListening,
-                    700
+                    800
                 );
 
             }
@@ -1371,24 +1476,14 @@ if(SpeechRecognition){
 
 }else{
 
-    /*
-     * Quest Browser may not expose the
-     * SpeechRecognition API.
-     *
-     * Manual input still works.
-     */
-
     voiceStatus.textContent =
         "MANUAL";
 
     voiceStatus.className =
         "yellow";
+
 }
 
-
-/* =====================================================
-   START LISTENING
-===================================================== */
 
 function startListening(){
 
@@ -1407,19 +1502,20 @@ function startListening(){
     }catch(error){
 
         console.log(
-            "Recognition:",
+            "Speech:",
             error.message
         );
+
     }
 
 }
 
 
 /* =====================================================
-   MANUAL QUESTION
+   MANUAL INPUT
 ===================================================== */
 
-async function sendManualQuestion(){
+async function sendManual(){
 
     const question =
         manualInput.value.trim();
@@ -1449,7 +1545,7 @@ async function sendManualQuestion(){
 
 
 sendButton.onclick =
-    sendManualQuestion;
+    sendManual;
 
 
 manualInput.addEventListener(
@@ -1460,7 +1556,8 @@ manualInput.addEventListener(
 
             event.preventDefault();
 
-            sendManualQuestion();
+            sendManual();
+
         }
 
     }
@@ -1468,7 +1565,7 @@ manualInput.addEventListener(
 
 
 /* =====================================================
-   CAMERA IMAGE
+   CAMERA CAPTURE
 ===================================================== */
 
 function captureCamera(){
@@ -1548,10 +1645,8 @@ async function askGemini(
         response.textContent =
             "Add your Gemini API key in Settings.";
 
-
         settings.style.display =
             "block";
-
 
         return;
     }
@@ -1597,7 +1692,7 @@ Keep answers concise and natural.`
 
         parts.push({
 
-            inline_data:{
+            inline_data: {
 
                 mime_type:
                     "image/jpeg",
@@ -1643,7 +1738,7 @@ Keep answers concise and natural.`
                         method:
                             "POST",
 
-                        headers:{
+                        headers: {
 
                             "Content-Type":
                                 "application/json"
@@ -1653,7 +1748,7 @@ Keep answers concise and natural.`
                         body:
                             JSON.stringify({
 
-                                contents:[
+                                contents: [
 
                                     {
 
@@ -1676,6 +1771,7 @@ Keep answers concise and natural.`
                 error.message;
 
             break;
+
         }
 
 
@@ -1688,8 +1784,8 @@ Keep answers concise and natural.`
 
 
         if(
-            result.status === 503 ||
-            result.status === 429
+            result.status === 429 ||
+            result.status === 503
         ){
 
             await new Promise(
@@ -1700,8 +1796,8 @@ Keep answers concise and natural.`
                     )
             );
 
-
             continue;
+
         }
 
 
@@ -1723,28 +1819,15 @@ Keep answers concise and natural.`
         aiStatus.textContent =
             "ERROR";
 
-
         aiStatus.className =
             "red";
 
 
-        if(
-            result &&
-            result.status === 503
-        ){
-
-            response.textContent =
-                "Gemini is temporarily busy.";
-
-        }else{
-
-            response.textContent =
-                "Gemini connection error.";
-
-        }
-
+        response.textContent =
+            "Gemini connection error.";
 
         return;
+
     }
 
 
@@ -1773,7 +1856,6 @@ Keep answers concise and natural.`
         aiStatus.textContent =
             "ONLINE";
 
-
         aiStatus.className =
             "green";
 
@@ -1797,7 +1879,6 @@ Keep answers concise and natural.`
         aiStatus.textContent =
             "ERROR";
 
-
         aiStatus.className =
             "red";
 
@@ -1814,20 +1895,14 @@ Keep answers concise and natural.`
    TEXT TO SPEECH
 ===================================================== */
 
-function speak(text){
+function speak(
+    text
+){
 
     if(
         !window.speechSynthesis
-    ){
-
-        voiceStatus.textContent =
-            "UNAVAILABLE";
-
-        voiceStatus.className =
-            "red";
-
+    )
         return;
-    }
 
 
     try{
@@ -1835,41 +1910,41 @@ function speak(text){
         window.speechSynthesis.cancel();
 
 
-        const speech =
+        const utterance =
             new SpeechSynthesisUtterance(
                 text
             );
 
 
-        speech.lang =
+        utterance.lang =
             "en-GB";
 
 
-        speech.rate =
+        utterance.rate =
             1;
 
 
-        speech.pitch =
+        utterance.pitch =
             .9;
 
 
-        speech.volume =
+        utterance.volume =
             1;
 
 
-        speech.onstart =
+        utterance.onstart =
             () => {
 
                 voiceStatus.textContent =
                     "SPEAKING";
 
-
                 voiceStatus.className =
                     "green";
+
             };
 
 
-        speech.onend =
+        utterance.onend =
             () => {
 
                 voiceStatus.textContent =
@@ -1880,26 +1955,15 @@ function speak(text){
             };
 
 
-        speech.onerror =
-            error => {
-
-                console.log(
-                    "TTS ERROR:",
-                    error
-                );
-
-            };
-
-
         window.speechSynthesis.speak(
-            speech
+            utterance
         );
 
 
     }catch(error){
 
         console.error(
-            "SPEECH ERROR:",
+            "TTS:",
             error
         );
 
@@ -1909,7 +1973,7 @@ function speak(text){
 
 
 /* =====================================================
-   START E.D.I.T.H.
+   START
 ===================================================== */
 
 startButton.onclick =
@@ -1932,12 +1996,11 @@ startButton.onclick =
             startButton.disabled =
                 false;
 
-
             startButton.textContent =
                 "TRY AGAIN";
 
-
             return;
+
         }
 
 
@@ -1945,24 +2008,19 @@ startButton.onclick =
             "none";
 
 
-        /*
-         * Start voice recognition if Quest
-         * provides it.
-         */
-
         startListening();
 
     };
 
 
 /* =====================================================
-   WEBXR
+   WEBXR VARIABLES
 ===================================================== */
 
 let xrSession =
     null;
 
-let xrRefSpace =
+let xrReferenceSpace =
     null;
 
 let xrGL =
@@ -1971,92 +2029,91 @@ let xrGL =
 let xrLayer =
     null;
 
+let xrProgram =
+    null;
+
+let xrTexture =
+    null;
+
+let xrPositionBuffer =
+    null;
+
+let xrTexcoordBuffer =
+    null;
+
+let xrCanvas2D =
+    null;
+
+let xrContext2D =
+    null;
+
 
 /* =====================================================
-   CHECK WEBXR
+   CHECK PASSTHROUGH
 ===================================================== */
 
 async function checkXR(){
 
-    if(!navigator.xr){
+    if(
+        !navigator.xr
+    ){
 
         xrStatus.textContent =
             "NOT AVAILABLE";
 
-
         xrStatus.className =
             "red";
 
-
         return;
+
     }
 
 
     try{
 
-        const arSupported =
+        const supported =
             await navigator.xr
                 .isSessionSupported(
                     "immersive-ar"
                 );
 
 
-        if(arSupported){
+        if(!supported){
 
             xrStatus.textContent =
-                "PASSTHROUGH READY";
-
+                "PASSTHROUGH UNAVAILABLE";
 
             xrStatus.className =
-                "green";
-
+                "red";
 
             vrButton.style.display =
-                "block";
-
-
-            vrButton.textContent =
-                "ENTER E.D.I.T.H. PASSTHROUGH";
-
+                "none";
 
             return;
+
         }
 
 
-        /*
-         * We deliberately do NOT fall back to
-         * immersive-vr here.
-         *
-         * immersive-vr normally replaces the
-         * real world with an opaque VR view.
-         *
-         * You specifically want to see your
-         * surroundings.
-         */
-
         xrStatus.textContent =
-            "PASSTHROUGH UNAVAILABLE";
-
+            "PASSTHROUGH READY";
 
         xrStatus.className =
-            "red";
+            "green";
 
 
         vrButton.style.display =
-            "none";
+            "block";
 
 
     }catch(error){
 
         console.error(
-            "XR CHECK:",
             error
         );
 
 
         xrStatus.textContent =
             "XR ERROR";
-
 
         xrStatus.className =
             "red";
@@ -2067,14 +2124,1467 @@ async function checkXR(){
 
 
 /* =====================================================
-   ENTER PASSTHROUGH
+   SHADERS
+===================================================== */
+
+const vertexShaderSource = `
+
+attribute vec2 a_position;
+
+attribute vec2 a_texcoord;
+
+varying vec2 v_texcoord;
+
+void main(){
+
+    gl_Position =
+        vec4(
+            a_position,
+            0.0,
+            1.0
+        );
+
+    v_texcoord =
+        a_texcoord;
+
+}
+
+`;
+
+
+const fragmentShaderSource = `
+
+precision mediump float;
+
+uniform sampler2D u_texture;
+
+varying vec2 v_texcoord;
+
+void main(){
+
+    vec4 color =
+        texture2D(
+            u_texture,
+            v_texcoord
+        );
+
+    gl_FragColor =
+        color;
+
+}
+
+`;
+
+
+/* =====================================================
+   CREATE SHADER
+===================================================== */
+
+function createShader(
+    gl,
+    type,
+    source
+){
+
+    const shader =
+        gl.createShader(
+            type
+        );
+
+
+    gl.shaderSource(
+        shader,
+        source
+    );
+
+
+    gl.compileShader(
+        shader
+    );
+
+
+    if(
+        !gl.getShaderParameter(
+            shader,
+            gl.COMPILE_STATUS
+        )
+    ){
+
+        throw new Error(
+            gl.getShaderInfoLog(
+                shader
+            )
+        );
+
+    }
+
+
+    return shader;
+
+}
+
+
+/* =====================================================
+   CREATE PROGRAM
+===================================================== */
+
+function createProgram(
+    gl
+){
+
+    const vertex =
+        createShader(
+            gl,
+            gl.VERTEX_SHADER,
+            vertexShaderSource
+        );
+
+
+    const fragment =
+        createShader(
+            gl,
+            gl.FRAGMENT_SHADER,
+            fragmentShaderSource
+        );
+
+
+    const program =
+        gl.createProgram();
+
+
+    gl.attachShader(
+        program,
+        vertex
+    );
+
+
+    gl.attachShader(
+        program,
+        fragment
+    );
+
+
+    gl.linkProgram(
+        program
+    );
+
+
+    if(
+        !gl.getProgramParameter(
+            program,
+            gl.LINK_STATUS
+        )
+    ){
+
+        throw new Error(
+            gl.getProgramInfoLog(
+                program
+            )
+        );
+
+    }
+
+
+    return program;
+
+}
+
+
+/* =====================================================
+   BUILD XR HUD CANVAS
+===================================================== */
+
+function createXRHUD(){
+
+    xrCanvas2D =
+        document.createElement(
+            "canvas"
+        );
+
+
+    /*
+     * High-resolution HUD.
+     */
+
+    xrCanvas2D.width =
+        2048;
+
+
+    xrCanvas2D.height =
+        2048;
+
+
+    xrContext2D =
+        xrCanvas2D.getContext(
+            "2d"
+        );
+
+
+    xrContext2D.clearRect(
+        0,
+        0,
+        2048,
+        2048
+    );
+
+}
+
+
+/* =====================================================
+   DRAW XR HUD
+===================================================== */
+
+function drawXRHUD(
+    time
+){
+
+    if(!xrContext2D)
+        return;
+
+
+    const ctx =
+        xrContext2D;
+
+
+    const W =
+        xrCanvas2D.width;
+
+
+    const H =
+        xrCanvas2D.height;
+
+
+    /*
+     * Completely transparent background.
+     */
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /*
+     * HUD scaling.
+     */
+
+    const cx =
+        W / 2;
+
+
+    const cy =
+        H / 2;
+
+
+    /* =================================================
+       LOGO
+    ================================================= */
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.font =
+        "bold 82px Arial";
+
+
+    ctx.fillStyle =
+        "#00d9ff";
+
+
+    ctx.shadowColor =
+        "#00d9ff";
+
+
+    ctx.shadowBlur =
+        25;
+
+
+    ctx.fillText(
+        "E.D.I.T.H.",
+        cx,
+        120
+    );
+
+
+    ctx.shadowBlur =
+        0;
+
+
+    ctx.font =
+        "24px Arial";
+
+
+    ctx.fillStyle =
+        "#00ff88";
+
+
+    ctx.fillText(
+        "● SYSTEM ONLINE",
+        cx,
+        165
+    );
+
+
+    /* =================================================
+       MAIN TARGET
+    ================================================= */
+
+    const pulse =
+        Math.sin(
+            time * .002
+        ) * 5;
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        cx,
+        cy,
+        210 + pulse,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.strokeStyle =
+        "rgba(0,217,255,.85)";
+
+
+    ctx.lineWidth =
+        5;
+
+
+    ctx.shadowColor =
+        "#00d9ff";
+
+
+    ctx.shadowBlur =
+        18;
+
+
+    ctx.stroke();
+
+
+    ctx.shadowBlur =
+        0;
+
+
+    /*
+     * Inner circle.
+     */
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        cx,
+        cy,
+        170,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.strokeStyle =
+        "rgba(0,217,255,.45)";
+
+
+    ctx.lineWidth =
+        2;
+
+
+    ctx.stroke();
+
+
+    /* =================================================
+       CROSSHAIR
+    ================================================= */
+
+    ctx.strokeStyle =
+        "#00d9ff";
+
+
+    ctx.lineWidth =
+        2;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx - 310,
+        cy
+    );
+
+    ctx.lineTo(
+        cx + 310,
+        cy
+    );
+
+    ctx.moveTo(
+        cx,
+        cy - 310
+    );
+
+    ctx.lineTo(
+        cx,
+        cy + 310
+    );
+
+    ctx.stroke();
+
+
+    /* =================================================
+       CORNERS
+    ================================================= */
+
+    const size =
+        420;
+
+
+    const left =
+        cx - size / 2;
+
+
+    const right =
+        cx + size / 2;
+
+
+    const top =
+        cy - size / 2;
+
+
+    const bottom =
+        cy + size / 2;
+
+
+    const corner =
+        65;
+
+
+    ctx.strokeStyle =
+        "#00d9ff";
+
+
+    ctx.lineWidth =
+        5;
+
+
+    ctx.shadowColor =
+        "#00d9ff";
+
+
+    ctx.shadowBlur =
+        12;
+
+
+    /* TL */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        left,
+        top + corner
+    );
+
+    ctx.lineTo(
+        left,
+        top
+    );
+
+    ctx.lineTo(
+        left + corner,
+        top
+    );
+
+    ctx.stroke();
+
+
+    /* TR */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        right - corner,
+        top
+    );
+
+    ctx.lineTo(
+        right,
+        top
+    );
+
+    ctx.lineTo(
+        right,
+        top + corner
+    );
+
+    ctx.stroke();
+
+
+    /* BL */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        left,
+        bottom - corner
+    );
+
+    ctx.lineTo(
+        left,
+        bottom
+    );
+
+    ctx.lineTo(
+        left + corner,
+        bottom
+    );
+
+    ctx.stroke();
+
+
+    /* BR */
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        right - corner,
+        bottom
+    );
+
+    ctx.lineTo(
+        right,
+        bottom
+    );
+
+    ctx.lineTo(
+        right,
+        bottom - corner
+    );
+
+    ctx.stroke();
+
+
+    ctx.shadowBlur =
+        0;
+
+
+    /* =================================================
+       ROTATING SCANNER
+    ================================================= */
+
+    const angle =
+        time * .001;
+
+
+    ctx.save();
+
+
+    ctx.translate(
+        cx,
+        cy
+    );
+
+
+    ctx.rotate(
+        angle
+    );
+
+
+    ctx.strokeStyle =
+        "rgba(0,217,255,.65)";
+
+
+    ctx.lineWidth =
+        3;
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        0,
+        0,
+        260,
+        -0.25,
+        0.25
+    );
+
+
+    ctx.stroke();
+
+
+    ctx.restore();
+
+
+    /* =================================================
+       SCAN LINE
+    ================================================= */
+
+    const scan =
+        ((time * .0008) % 2) - 1;
+
+
+    const scanY =
+        cy + scan * 300;
+
+
+    const gradient =
+        ctx.createLinearGradient(
+            cx - 380,
+            scanY,
+            cx + 380,
+            scanY
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "transparent"
+    );
+
+
+    gradient.addColorStop(
+        .5,
+        "#00d9ff"
+    );
+
+
+    gradient.addColorStop(
+        1,
+        "transparent"
+    );
+
+
+    ctx.strokeStyle =
+        gradient;
+
+
+    ctx.lineWidth =
+        4;
+
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+        cx - 380,
+        scanY
+    );
+
+
+    ctx.lineTo(
+        cx + 380,
+        scanY
+    );
+
+
+    ctx.stroke();
+
+
+    /* =================================================
+       TOP RIGHT TELEMETRY
+    ================================================= */
+
+    ctx.textAlign =
+        "right";
+
+
+    ctx.font =
+        "22px monospace";
+
+
+    ctx.fillStyle =
+        "#00d9ff";
+
+
+    const telemetryX =
+        W - 80;
+
+
+    let ty =
+        270;
+
+
+    ctx.fillText(
+        "OPTICAL SYSTEM",
+        telemetryX,
+        ty
+    );
+
+
+    ty += 34;
+
+
+    ctx.fillStyle =
+        "#00ff88";
+
+
+    ctx.fillText(
+        "ONLINE",
+        telemetryX,
+        ty
+    );
+
+
+    ty += 42;
+
+
+    ctx.fillStyle =
+        "#00d9ff";
+
+
+    ctx.fillText(
+        "TRACKING",
+        telemetryX,
+        ty
+    );
+
+
+    ty += 34;
+
+
+    ctx.fillStyle =
+        "#00ff88";
+
+
+    ctx.fillText(
+        "ACTIVE",
+        telemetryX,
+        ty
+    );
+
+
+    ty += 42;
+
+
+    ctx.fillStyle =
+        "#00d9ff";
+
+
+    ctx.fillText(
+        "ENVIRONMENT",
+        telemetryX,
+        ty
+    );
+
+
+    ty += 34;
+
+
+    ctx.fillStyle =
+        "#00ff88";
+
+
+    ctx.fillText(
+        "VISIBLE",
+        telemetryX,
+        ty
+    );
+
+
+    /* =================================================
+       BOTTOM LEFT STATUS
+    ================================================= */
+
+    const boxX =
+        70;
+
+
+    const boxY =
+        H - 500;
+
+
+    const boxW =
+        450;
+
+
+    const boxH =
+        380;
+
+
+    ctx.fillStyle =
+        "rgba(0,8,15,.72)";
+
+
+    ctx.fillRect(
+        boxX,
+        boxY,
+        boxW,
+        boxH
+    );
+
+
+    ctx.strokeStyle =
+        "rgba(0,217,255,.65)";
+
+
+    ctx.lineWidth =
+        3;
+
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+        boxX,
+        boxY
+    );
+
+
+    ctx.lineTo(
+        boxX,
+        boxY + boxH
+    );
+
+
+    ctx.lineTo(
+        boxX + 8,
+        boxY + boxH
+    );
+
+
+    ctx.stroke();
+
+
+    ctx.textAlign =
+        "left";
+
+
+    ctx.font =
+        "bold 24px Arial";
+
+
+    ctx.fillStyle =
+        "#00d9ff";
+
+
+    ctx.fillText(
+        "SYSTEM STATUS",
+        boxX + 25,
+        boxY + 42
+    );
+
+
+    ctx.font =
+        "20px Arial";
+
+
+    let sy =
+        boxY + 90;
+
+
+    function statusLine(
+        name,
+        value,
+        color
+    ){
+
+        ctx.fillStyle =
+            "#999";
+
+
+        ctx.fillText(
+            name,
+            boxX + 25,
+            sy
+        );
+
+
+        ctx.fillStyle =
+            color;
+
+
+        ctx.fillText(
+            value,
+            boxX + 235,
+            sy
+        );
+
+
+        sy += 48;
+
+    }
+
+
+    statusLine(
+        "CAMERA",
+        cameraStatus.textContent,
+        cameraStatus.classList.contains("green")
+            ? "#00ff88"
+            : "#ffff00"
+    );
+
+
+    statusLine(
+        "MIC",
+        micStatus.textContent,
+        micStatus.classList.contains("green")
+            ? "#00ff88"
+            : "#ffff00"
+    );
+
+
+    statusLine(
+        "VOICE",
+        voiceStatus.textContent,
+        voiceStatus.classList.contains("green")
+            ? "#00ff88"
+            : "#ffff00"
+    );
+
+
+    statusLine(
+        "AI",
+        aiStatus.textContent,
+        aiStatus.classList.contains("green")
+            ? "#00ff88"
+            : "#ffff00"
+    );
+
+
+    statusLine(
+        "XR",
+        "PASSTHROUGH",
+        "#00ff88"
+    );
+
+
+    /* =================================================
+       RESPONSE
+    ================================================= */
+
+    if(response.textContent){
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.font =
+            "26px Arial";
+
+
+        ctx.fillStyle =
+            "white";
+
+
+        ctx.shadowColor =
+            "#00d9ff";
+
+
+        ctx.shadowBlur =
+            10;
+
+
+        const maxWidth =
+            1050;
+
+
+        const words =
+            response.textContent
+                .split(" ");
+
+
+        let line =
+            "";
+
+
+        let ry =
+            H - 150;
+
+
+        for(
+            let i = 0;
+            i < words.length;
+            i++
+        ){
+
+            const test =
+                line +
+                words[i] +
+                " ";
+
+
+            if(
+                ctx.measureText(
+                    test
+                ).width >
+                    maxWidth
+            ){
+
+                ctx.fillText(
+                    line,
+                    cx,
+                    ry
+                );
+
+
+                line =
+                    words[i] + " ";
+
+
+                ry += 34;
+
+            }else{
+
+                line =
+                    test;
+
+            }
+
+
+            if(
+                ry > H - 30
+            ){
+
+                break;
+
+            }
+
+        }
+
+
+        if(line){
+
+            ctx.fillText(
+                line,
+                cx,
+                ry
+            );
+
+        }
+
+
+        ctx.shadowBlur =
+            0;
+
+    }
+
+}
+
+
+/* =====================================================
+   CREATE XR GL
+===================================================== */
+
+async function setupXRGL(){
+
+    xrGL =
+        xrCanvas.getContext(
+            "webgl",
+            {
+
+                xrCompatible:
+                    true,
+
+                alpha:
+                    true,
+
+                antialias:
+                    true,
+
+                depth:
+                    false,
+
+                stencil:
+                    false,
+
+                premultipliedAlpha:
+                    true
+
+            }
+        );
+
+
+    if(!xrGL){
+
+        throw new Error(
+            "WebGL is unavailable."
+        );
+
+    }
+
+
+    await xrGL
+        .makeXRCompatible();
+
+
+    xrProgram =
+        createProgram(
+            xrGL
+        );
+
+
+    /*
+     * Full-screen quad.
+     */
+
+    xrPositionBuffer =
+        xrGL.createBuffer();
+
+
+    xrGL.bindBuffer(
+        xrGL.ARRAY_BUFFER,
+        xrPositionBuffer
+    );
+
+
+    xrGL.bufferData(
+        xrGL.ARRAY_BUFFER,
+        new Float32Array([
+
+            -1, -1,
+             1, -1,
+            -1,  1,
+
+            -1,  1,
+             1, -1,
+             1,  1
+
+        ]),
+        xrGL.STATIC_DRAW
+    );
+
+
+    xrTexcoordBuffer =
+        xrGL.createBuffer();
+
+
+    xrGL.bindBuffer(
+        xrGL.ARRAY_BUFFER,
+        xrTexcoordBuffer
+    );
+
+
+    xrGL.bufferData(
+        xrGL.ARRAY_BUFFER,
+        new Float32Array([
+
+            0, 1,
+            1, 1,
+            0, 0,
+
+            0, 0,
+            1, 1,
+            1, 0
+
+        ]),
+        xrGL.STATIC_DRAW
+    );
+
+
+    /*
+     * HUD texture.
+     */
+
+    xrTexture =
+        xrGL.createTexture();
+
+
+    xrGL.bindTexture(
+        xrGL.TEXTURE_2D,
+        xrTexture
+    );
+
+
+    xrGL.texParameteri(
+        xrGL.TEXTURE_2D,
+        xrGL.TEXTURE_MIN_FILTER,
+        xrGL.LINEAR
+    );
+
+
+    xrGL.texParameteri(
+        xrGL.TEXTURE_2D,
+        xrGL.TEXTURE_MAG_FILTER,
+        xrGL.LINEAR
+    );
+
+
+    xrGL.texParameteri(
+        xrGL.TEXTURE_2D,
+        xrGL.TEXTURE_WRAP_S,
+        xrGL.CLAMP_TO_EDGE
+    );
+
+
+    xrGL.texParameteri(
+        xrGL.TEXTURE_2D,
+        xrGL.TEXTURE_WRAP_T,
+        xrGL.CLAMP_TO_EDGE
+    );
+
+
+    xrGL.bindTexture(
+        xrGL.TEXTURE_2D,
+        null
+    );
+
+}
+
+
+/* =====================================================
+   UPLOAD HUD TEXTURE
+===================================================== */
+
+function uploadXRHUD(){
+
+    if(
+        !xrGL ||
+        !xrTexture ||
+        !xrCanvas2D
+    )
+        return;
+
+
+    xrGL.bindTexture(
+        xrGL.TEXTURE_2D,
+        xrTexture
+    );
+
+
+    xrGL.pixelStorei(
+        xrGL.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+        true
+    );
+
+
+    xrGL.texImage2D(
+        xrGL.TEXTURE_2D,
+        0,
+        xrGL.RGBA,
+        xrGL.RGBA,
+        xrGL.UNSIGNED_BYTE,
+        xrCanvas2D
+    );
+
+
+    xrGL.bindTexture(
+        xrGL.TEXTURE_2D,
+        null
+    );
+
+}
+
+
+/* =====================================================
+   DRAW XR HUD
+===================================================== */
+
+function renderXR(
+    time,
+    frame
+){
+
+    const session =
+        frame.session;
+
+
+    session.requestAnimationFrame(
+        renderXR
+    );
+
+
+    if(
+        !xrGL ||
+        !xrLayer
+    )
+        return;
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Transparent clear.
+     *
+     * We never paint black over
+     * the Quest passthrough.
+     */
+
+    xrGL.bindFramebuffer(
+        xrGL.FRAMEBUFFER,
+        xrLayer.framebuffer
+    );
+
+
+    xrGL.clearColor(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    xrGL.clear(
+        xrGL.COLOR_BUFFER_BIT
+    );
+
+
+    /*
+     * Draw the HUD.
+     */
+
+    drawXRHUD(
+        time
+    );
+
+
+    uploadXRHUD();
+
+
+    xrGL.viewport(
+        0,
+        0,
+        xrLayer.framebufferWidth,
+        xrLayer.framebufferHeight
+    );
+
+
+    xrGL.enable(
+        xrGL.BLEND
+    );
+
+
+    xrGL.blendFunc(
+        xrGL.ONE,
+        xrGL.ONE_MINUS_SRC_ALPHA
+    );
+
+
+    xrGL.useProgram(
+        xrProgram
+    );
+
+
+    /*
+     * Position.
+     */
+
+    const positionLocation =
+        xrGL.getAttribLocation(
+            xrProgram,
+            "a_position"
+        );
+
+
+    xrGL.bindBuffer(
+        xrGL.ARRAY_BUFFER,
+        xrPositionBuffer
+    );
+
+
+    xrGL.enableVertexAttribArray(
+        positionLocation
+    );
+
+
+    xrGL.vertexAttribPointer(
+        positionLocation,
+        2,
+        xrGL.FLOAT,
+        false,
+        0,
+        0
+    );
+
+
+    /*
+     * Texture coordinates.
+     */
+
+    const texcoordLocation =
+        xrGL.getAttribLocation(
+            xrProgram,
+            "a_texcoord"
+        );
+
+
+    xrGL.bindBuffer(
+        xrGL.ARRAY_BUFFER,
+        xrTexcoordBuffer
+    );
+
+
+    xrGL.enableVertexAttribArray(
+        texcoordLocation
+    );
+
+
+    xrGL.vertexAttribPointer(
+        texcoordLocation,
+        2,
+        xrGL.FLOAT,
+        false,
+        0,
+        0
+    );
+
+
+    /*
+     * Texture.
+     */
+
+    const textureLocation =
+        xrGL.getUniformLocation(
+            xrProgram,
+            "u_texture"
+        );
+
+
+    xrGL.activeTexture(
+        xrGL.TEXTURE0
+    );
+
+
+    xrGL.bindTexture(
+        xrGL.TEXTURE_2D,
+        xrTexture
+    );
+
+
+    xrGL.uniform1i(
+        textureLocation,
+        0
+    );
+
+
+    /*
+     * Draw transparent HUD.
+     */
+
+    xrGL.drawArrays(
+        xrGL.TRIANGLES,
+        0,
+        6
+    );
+
+
+    xrGL.bindTexture(
+        xrGL.TEXTURE_2D,
+        null
+    );
+
+
+    xrGL.disable(
+        xrGL.BLEND
+    );
+
+}
+
+
+/* =====================================================
+   ENTER QUEST PASSTHROUGH
 ===================================================== */
 
 vrButton.onclick =
     async() => {
 
         /*
-         * Exit current session.
+         * Exit.
          */
 
         if(xrSession){
@@ -2092,95 +3602,77 @@ vrButton.onclick =
             }
 
             return;
+
         }
 
 
-        if(!navigator.xr){
+        if(
+            !navigator.xr
+        ){
 
             response.textContent =
-                "WebXR is not available.";
+                "WebXR is unavailable.";
 
             return;
+
         }
 
 
         try{
 
             /*
-             * Only use immersive-ar.
+             * ONLY immersive-ar.
              *
-             * This is the important part for
-             * Quest 3S passthrough.
+             * NO immersive-vr fallback.
              */
 
-            const arSupported =
+            const supported =
                 await navigator.xr
                     .isSessionSupported(
                         "immersive-ar"
                     );
 
 
-            if(!arSupported){
+            if(!supported){
 
                 throw new Error(
-                    "immersive-ar passthrough is not available in this browser."
+                    "Quest Browser does not report immersive-ar support."
                 );
 
             }
 
 
-            /*
-             * DOM overlay is OPTIONAL.
-             *
-             * We don't make anything required,
-             * which avoids the invalid-required-
-             * feature error you previously got.
-             */
-
-            const sessionOptions = {
-
-                optionalFeatures: [
-
-                    "dom-overlay",
-
-                    "local-floor"
-
-                ],
-
-                domOverlay: {
-
-                    root:
-                        document.getElementById(
-                            "hud"
-                        )
-
-                }
-
-            };
-
-
             xrStatus.textContent =
-                "STARTING PASSTHROUGH...";
-
+                "ENTERING PASSTHROUGH...";
 
             xrStatus.className =
                 "yellow";
 
 
             /*
-             * Start the immersive AR session.
+             * Do NOT require DOM overlay.
+             *
+             * The E.D.I.T.H. HUD is rendered
+             * directly with WebGL.
              */
 
             xrSession =
                 await navigator.xr
                     .requestSession(
                         "immersive-ar",
-                        sessionOptions
+                        {
+
+                            optionalFeatures: [
+                                "local-floor"
+                            ]
+
+                        }
                     );
 
 
             console.log(
-                "XR SESSION STARTED"
+                "XR SESSION:",
+                xrSession
             );
 
 
@@ -2190,102 +3682,134 @@ vrButton.onclick =
             );
 
 
-            console.log(
-                "DOM OVERLAY:",
-                xrSession.domOverlayState
-            );
-
-
-            console.log(
-                "ENABLED FEATURES:",
-                xrSession.enabledFeatures
-            );
-
-
             /*
-             * Make absolutely sure the HTML
-             * HUD remains visible.
-             */
-
-            const hud =
-                document.getElementById(
-                    "hud"
-                );
-
-
-            hud.style.display =
-                "block";
-
-
-            hud.style.visibility =
-                "visible";
-
-
-            hud.style.opacity =
-                "1";
-
-
-            hud.style.background =
-                "transparent";
-
-
-            /*
-             * Check whether Quest actually
-             * enabled DOM overlay.
+             * Quest passthrough should be
+             * non-opaque.
              */
 
             if(
-                xrSession.domOverlayState
+                xrSession.environmentBlendMode ===
+                    "opaque"
             ){
-
-                console.log(
-                    "DOM overlay active:",
-                    xrSession.domOverlayState.type
-                );
-
-            }else{
 
                 console.warn(
-                    "DOM overlay was not enabled."
+                    "XR reported opaque blend mode."
                 );
 
             }
 
 
+            xrSession.addEventListener(
+                "end",
+                onXREnd
+            );
+
+
+            await setupXRGL();
+
+
+            createXRHUD();
+
+
             /*
-             * Check the actual blend mode.
+             * Create transparent XR layer.
+             */
+
+            const layerOptions = {
+
+                alpha:
+                    true,
+
+                antialias:
+                    true,
+
+                depth:
+                    false,
+
+                stencil:
+                    false
+
+            };
+
+
+            /*
+             * Native framebuffer scale if
+             * Quest exposes the method.
              */
 
             if(
-                xrSession.environmentBlendMode ===
-                    "alpha-blend" ||
-
-                xrSession.environmentBlendMode ===
-                    "additive"
+                typeof XRWebGLLayer
+                    .getNativeFramebufferScaleFactor ===
+                    "function"
             ){
 
-                xrStatus.textContent =
-                    "PASSTHROUGH ACTIVE";
+                try{
 
+                    layerOptions.framebufferScaleFactor =
+                        XRWebGLLayer
+                            .getNativeFramebufferScaleFactor(
+                                xrSession
+                            );
 
-                xrStatus.className =
-                    "green";
+                }catch(error){
 
-            }else{
+                    console.log(
+                        "Native scale unavailable."
+                    );
 
-                /*
-                 * If Quest reports opaque,
-                 * this is not a passthrough
-                 * session.
-                 */
-
-                xrStatus.textContent =
-                    "XR ACTIVE";
-
-                xrStatus.className =
-                    "yellow";
+                }
 
             }
+
+
+            xrLayer =
+                new XRWebGLLayer(
+                    xrSession,
+                    xrGL,
+                    layerOptions
+                );
+
+
+            xrSession.updateRenderState({
+
+                baseLayer:
+                    xrLayer
+
+            });
+
+
+            /*
+             * Reference space.
+             */
+
+            try{
+
+                xrReferenceSpace =
+                    await xrSession
+                        .requestReferenceSpace(
+                            "local-floor"
+                        );
+
+            }catch(error){
+
+                xrReferenceSpace =
+                    await xrSession
+                        .requestReferenceSpace(
+                            "local"
+                        );
+
+            }
+
+
+            /*
+             * Update UI.
+             */
+
+            xrStatus.textContent =
+                "PASSTHROUGH ACTIVE";
+
+            xrStatus.className =
+                "green";
 
 
             vrButton.textContent =
@@ -2293,7 +3817,16 @@ vrButton.onclick =
 
 
             /*
-             * Keep voice alive after entering XR.
+             * Start XR rendering.
+             */
+
+            xrSession.requestAnimationFrame(
+                renderXR
+            );
+
+
+            /*
+             * Restart voice.
              */
 
             setTimeout(
@@ -2301,10 +3834,6 @@ vrButton.onclick =
 
                     startListening();
 
-                    /*
-                     * Some browsers suspend speech
-                     * synthesis during page transitions.
-                     */
 
                     if(
                         window.speechSynthesis
@@ -2314,68 +3843,12 @@ vrButton.onclick =
 
                             window.speechSynthesis.resume();
 
-                        }catch(error){
-
-                            console.log(
-                                error
-                            );
-
-                        }
+                        }catch(error){}
 
                     }
 
                 },
                 500
-            );
-
-
-            xrSession.addEventListener(
-                "end",
-                () => {
-
-                    console.log(
-                        "XR SESSION ENDED"
-                    );
-
-
-                    xrSession =
-                        null;
-
-
-                    xrRefSpace =
-                        null;
-
-
-                    xrGL =
-                        null;
-
-
-                    xrLayer =
-                        null;
-
-
-                    vrButton.textContent =
-                        "ENTER E.D.I.T.H. PASSTHROUGH";
-
-
-                    checkXR();
-
-
-                    /*
-                     * Restart voice after leaving XR.
-                     */
-
-                    setTimeout(
-                        startListening,
-                        500
-                    );
-
-                }
-            );
-
-
-            await setupXR(
-                xrSession
             );
 
 
@@ -2387,13 +3860,25 @@ vrButton.onclick =
             );
 
 
+            if(
+                xrSession
+            ){
+
+                try{
+
+                    await xrSession.end();
+
+                }catch(endError){}
+
+            }
+
+
             xrSession =
                 null;
 
 
             xrStatus.textContent =
                 "XR ERROR";
-
 
             xrStatus.className =
                 "red";
@@ -2409,261 +3894,65 @@ vrButton.onclick =
 
 
 /* =====================================================
-   XR WEBGL
+   XR END
 ===================================================== */
 
-async function setupXR(
-    session
-){
+function onXREnd(){
 
-    /*
-     * Create a WebGL canvas.
-     */
-
-    const canvas =
-        document.createElement(
-            "canvas"
-        );
-
-
-    xrGL =
-        canvas.getContext(
-            "webgl",
-            {
-
-                xrCompatible:
-                    true,
-
-                alpha:
-                    true,
-
-                antialias:
-                    true,
-
-                depth:
-                    true,
-
-                stencil:
-                    false,
-
-                premultipliedAlpha:
-                    false
-
-            }
-        );
-
-
-    if(!xrGL){
-
-        throw new Error(
-            "WebGL unavailable."
-        );
-
-    }
-
-
-    /*
-     * Make WebGL XR-compatible.
-     */
-
-    await xrGL
-        .makeXRCompatible();
-
-
-    /*
-     * Transparent XR layer.
-     *
-     * In an alpha-blended AR session,
-     * transparent pixels allow the real-world
-     * passthrough to remain visible.
-     */
-
-    xrLayer =
-        new XRWebGLLayer(
-            session,
-            xrGL,
-            {
-
-                alpha:
-                    true,
-
-                antialias:
-                    true,
-
-                depth:
-                    true
-
-            }
-        );
-
-
-    session.updateRenderState({
-
-        baseLayer:
-            xrLayer
-
-    });
-
-
-    /*
-     * Prefer local-floor.
-     *
-     * Fall back to local if necessary.
-     */
-
-    try{
-
-        xrRefSpace =
-            await session
-                .requestReferenceSpace(
-                    "local-floor"
-                );
-
-    }catch(error){
-
-        console.log(
-            "local-floor unavailable, using local"
-        );
-
-
-        xrRefSpace =
-            await session
-                .requestReferenceSpace(
-                    "local"
-                );
-
-    }
-
-
-    /*
-     * Start XR rendering.
-     */
-
-    session.requestAnimationFrame(
-        renderXR
-    );
-
-}
-
-
-/* =====================================================
-   XR RENDER LOOP
-===================================================== */
-
-function renderXR(
-    time,
-    frame
-){
-
-    const session =
-        frame.session;
-
-
-    /*
-     * Continue the XR frame loop.
-     */
-
-    session.requestAnimationFrame(
-        renderXR
-    );
-
-
-    if(
-        !xrGL ||
-        !xrLayer
-    ){
-
-        return;
-    }
-
-
-    /*
-     * Get viewer pose.
-     */
-
-    let pose =
+    xrSession =
         null;
 
 
-    try{
-
-        if(xrRefSpace){
-
-            pose =
-                frame.getViewerPose(
-                    xrRefSpace
-                );
-
-        }
-
-    }catch(error){
-
-        console.warn(
-            "XR POSE:",
-            error
-        );
-
-    }
+    xrReferenceSpace =
+        null;
 
 
-    /*
-     * Bind XR framebuffer.
-     */
+    xrLayer =
+        null;
 
-    xrGL.bindFramebuffer(
-        xrGL.FRAMEBUFFER,
-        xrLayer.framebuffer
+
+    xrGL =
+        null;
+
+
+    xrProgram =
+        null;
+
+
+    xrTexture =
+        null;
+
+
+    xrPositionBuffer =
+        null;
+
+
+    xrTexcoordBuffer =
+        null;
+
+
+    xrStatus.textContent =
+        "PASSTHROUGH READY";
+
+
+    xrStatus.className =
+        "green";
+
+
+    vrButton.textContent =
+        "ENTER E.D.I.T.H. PASSTHROUGH";
+
+
+    setTimeout(
+        startListening,
+        500
     );
-
-
-    /*
-     * Use the correct viewport.
-     */
-
-    xrGL.viewport(
-        0,
-        0,
-        xrLayer.framebufferWidth,
-        xrLayer.framebufferHeight
-    );
-
-
-    /*
-     * CRITICAL:
-     *
-     * Transparent clear.
-     *
-     * We NEVER draw a black background.
-     */
-
-    xrGL.clearColor(
-        0,
-        0,
-        0,
-        0
-    );
-
-
-    xrGL.clear(
-        xrGL.COLOR_BUFFER_BIT |
-        xrGL.DEPTH_BUFFER_BIT
-    );
-
-
-    /*
-     * No opaque scene is rendered here.
-     *
-     * Quest supplies the passthrough image.
-     *
-     * The E.D.I.T.H. HTML interface is supplied
-     * by the WebXR DOM overlay.
-     */
 
 }
 
 
 /* =====================================================
-   KEEP VOICE/TTS ALIVE
+   VISIBILITY
 ===================================================== */
 
 document.addEventListener(
@@ -2677,7 +3966,7 @@ document.addEventListener(
 
             setTimeout(
                 startListening,
-                500
+                700
             );
 
 
@@ -2689,13 +3978,7 @@ document.addEventListener(
 
                     window.speechSynthesis.resume();
 
-                }catch(error){
-
-                    console.log(
-                        error
-                    );
-
-                }
+                }catch(error){}
 
             }
 
