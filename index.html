@@ -3,43 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stark Industries K.A.R.E.N. Interface</title>
+    <title>Stark HUD - Homecoming Lens Vision</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background: #000; color: #ff4422; font-family: 'Consolas', 'Courier New', monospace;
+            background: #000; color: #00e5ff; font-family: 'Consolas', 'Courier New', monospace;
             overflow: hidden; width: 100vw; height: 100vh;
         }
         #setupScreen {
             position: fixed; inset: 0; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #2a0a00 0%, #050100 85%);
+            background: radial-gradient(circle, #1a0505 0%, #000000 85%);
             text-align: center; padding: 20px;
         }
-        h1 { font-size: 38px; letter-spacing: 14px; margin-bottom: 6px; color: #ff4422; text-shadow: 0 0 15px #ff4422; font-weight: bold; }
-        p { color: #aa8877; font-size: 11px; letter-spacing: 3px; margin-bottom: 30px; }
+        h1 { font-size: 34px; letter-spacing: 12px; margin-bottom: 8px; color: #ff2233; text-shadow: 0 0 15px #ff2233; }
+        p { color: #887777; font-size: 11px; letter-spacing: 3px; margin-bottom: 24px; }
         input {
-            width: min(450px, 95%); padding: 16px; margin-bottom: 20px;
-            background: rgba(10, 2, 0, 0.9); border: 2px solid #ff4422; color: #fff;
-            text-align: center; outline: none; font-size: 14px; box-shadow: 0 0 10px rgba(255, 68, 34, 0.3);
+            width: min(420px, 90%); padding: 14px; margin-bottom: 18px;
+            background: rgba(10, 0, 0, 0.85); border: 2px solid #ff2233; color: #fff;
+            text-align: center; outline: none; font-size: 14px;
         }
         button {
-            padding: 16px 36px; background: rgba(255, 68, 34, 0.2);
-            border: 2px solid #ff4422; color: #ff4422; font-weight: bold;
+            padding: 14px 32px; background: rgba(255, 34, 51, 0.2);
+            border: 2px solid #ff2233; color: #ff2233; font-weight: bold;
             font-size: 13px; letter-spacing: 3px; cursor: pointer; transition: 0.2s all;
         }
-        button:hover { background: #ff4422; color: #000; box-shadow: 0 0 20px #ff4422; }
+        button:hover { background: #ff2233; color: #000; box-shadow: 0 0 20px #ff2233; }
         #canvasXR { position: fixed; inset: 0; width: 100%; height: 100%; }
     </style>
 </head>
 <body>
 
 <div id="setupScreen">
-    <div style="font-size: 10px; color: #666; margin-bottom: 5px;">PROTOCOL: K.A.R.E.N.</div>
-    <h1>STARK INDUSTRIES</h1>
-    <p>HOMECOMING // DRONE_VISION v4.1</p>
-    <input type="password" id="apiKeyInput" placeholder="Initialize Gemini API Key">
-    <button id="btnInit">ACTIVATE SUIT HUD</button>
+    <h1>STARK EYES</h1>
+    <p>SUIT VISION // PROTOCOL K.A.R.E.N.</p>
+    <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key">
+    <button id="btnInit">INITIALIZE EYE SYSTEM</button>
 </div>
 
 <canvas id="canvasXR"></canvas>
@@ -49,8 +48,8 @@ let apiKey = localStorage.getItem("stark_edith_key") || "";
 const apiKeyInput = document.getElementById("apiKeyInput");
 apiKeyInput.value = apiKey;
 
-let systemStatus = "IDLE";
-let karenResponse = "System initialized. Standing by for voice prompt.";
+let systemStatus = "STANDBY";
+let karenResponse = "Eyes adjusted. Audio stream active.";
 let micStream = null;
 let audioContext = null;
 let mediaRecorder = null;
@@ -59,164 +58,191 @@ let voiceDetected = false;
 let silenceTimer = null;
 let voiceEnergy = 0;
 
-// --- Homecoming Object Detection & Hitbox Data ---
-const detectedObjects = [
-    { x: 310, y: 350, w: 100, h: 160, id: "TGT_001", type: "HUMAN_VAR", threat: "LOW", color: "#ffaa00", range: "2.5m" },
-    { x: 550, y: 220, w: 220, h: 130, id: "VUL_99", type: "VULTURE_TECH_SIG", threat: "CRITICAL", color: "#ff4422", range: "12.1m" },
-    { x: 420, y: 600, w: 190, h: 50, id: "STR_A", type: "WEB_WING_ASSEMBLY", threat: "N/A", color: "#ffff00", range: "0.9m" }
+// Dynamic tracked objects in environment (like the bin tracker in the screenshot)
+const trackedTargets = [
+    { x: 395, y: 560, radius: 14, label: "CONTAINER_01", distance: "2.4M", type: "SOLID" },
+    { x: 575, y: 720, radius: 10, label: "GROUND_REF", distance: "1.1M", type: "SURFACE" }
 ];
 
 /* =================================================================
-   HOMECOMING HUD ENGINE (Red/Orange Palette, Myopia Layout)
+   EXACT HOMECOMING HUD RENDERING
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
 hudCanvas.height = 1024;
 const ctx = hudCanvas.getContext("2d");
 
-const STARK_RED = "#ff4422";
-const STARK_ORANGE = "#ffaa00";
-const STARK_AMBER = "rgba(255, 180, 0, 0.7)";
+const CYAN_HUD = "rgba(0, 229, 255, 0.85)";
+const CYAN_FAINT = "rgba(0, 229, 255, 0.3)";
+const RED_MASK = "rgba(220, 20, 40, 0.75)";
+const RED_GLOW = "rgba(255, 30, 50, 0.4)";
 
-function drawHomecomingHUD(time) {
+function drawHomecomingExact(time) {
     ctx.clearRect(0, 0, 1024, 1024);
     const cx = 512, cy = 512;
-    const slowPulse = Math.sin(time * 0.002) * 4;
-    const fastPulse = Math.sin(time * 0.01) * 2;
+    const pulse = Math.sin(time * 0.003) * 4;
 
-    // --- Object Hitboxes (Spatial Boxing) ---
-    // Rendered first so HUD elements draw on top
-    detectedObjects.forEach(obj => {
-        const drift = Math.sin(time * 0.001 + parseFloat(obj.id)) * 2;
-        const ox = obj.x + drift;
-        const oy = obj.y;
-
-        ctx.strokeStyle = obj.threat === "CRITICAL" ? STARK_RED : STARK_ORANGE;
-        ctx.lineWidth = 3;
-        ctx.setLineDash([10, 5]); // Dash patterns characteristic of Homecoming IDing
-        ctx.strokeRect(ox, oy, obj.w, obj.h);
-        ctx.setLineDash([]);
-
-        // Label Tag
-        ctx.fillStyle = obj.threat === "CRITICAL" ? "rgba(100, 10, 0, 0.8)" : "rgba(30, 20, 0, 0.7)";
-        ctx.fillRect(ox + obj.w + 5, oy, 130, 42);
-        
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 11px 'Courier New'";
-        ctx.fillText(`ID: ${obj.id}`, ox + obj.w + 12, oy + 15);
-        ctx.fillText(`TYPE: ${obj.type}`, ox + obj.w + 12, oy + 26);
-        
-        ctx.fillStyle = obj.threat === "CRITICAL" ? "#ff8888" : STARK_ORANGE;
-        ctx.fillText(`THREAT: ${obj.threat}`, ox + obj.w + 12, oy + 37);
-        
-        // Range Indicator below box
-        ctx.font = "12px monospace";
-        ctx.fillText(`DST: ${obj.range}`, ox, oy + obj.h + 15);
-    });
-
-    // --- Central Stark Attitude Indicator (Homecoming Pitch/Roll) ---
-    // Instead of static crosshairs, this reacts to simulated suit motion
-    const rollAngle = Math.sin(time * 0.0005) * 0.1; // Simulated slight roll
-    const pitchOffset = Math.sin(time * 0.0008) * 15; // Simulated slight pitch
-
+    /* -------------------------------------------------------------
+       1. EYE APERTURE VIGNETTE (Mask Edge Frame from Screenshot)
+    ------------------------------------------------------------- */
     ctx.save();
-    ctx.translate(cx, cy + pitchOffset);
-    ctx.rotate(rollAngle);
-    
-    // Pitch Ladder
-    ctx.strokeStyle = STARK_RED;
-    ctx.lineWidth = 2;
-    ctx.font = "10px monospace";
-    ctx.fillStyle = STARK_RED;
-    ctx.textAlign = "center";
-    
-    for (let i = -2; i <= 2; i++) {
-        if (i === 0) continue;
-        const yPos = i * 40;
-        const barLen = 60 - Math.abs(i) * 10;
-        ctx.beginPath();
-        ctx.moveTo(-barLen, yPos); ctx.lineTo(barLen, yPos);
-        ctx.stroke();
-        ctx.fillText(`${Math.abs(i*10)}`, -barLen - 15, yPos + 3);
-        ctx.fillText(`${Math.abs(i*10)}`, barLen + 15, yPos + 3);
-    }
-    
-    // Central Horizon Bar
+    // Left eye red shell contour
+    ctx.strokeStyle = RED_MASK;
+    ctx.lineWidth = 14;
+    ctx.shadowColor = RED_GLOW;
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.moveTo(70, 60);
+    ctx.bezierCurveTo(40, 300, 40, 724, 70, 964);
+    ctx.stroke();
+
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(-80, 0); ctx.lineTo(-20, 0);
-    ctx.moveTo(20, 0); ctx.lineTo(80, 0);
+    ctx.moveTo(90, 100);
+    ctx.lineTo(60, 220);
+    ctx.lineTo(60, 804);
+    ctx.lineTo(90, 924);
     ctx.stroke();
-    
+
+    // Right eye red shell contour
+    ctx.beginPath();
+    ctx.moveTo(954, 60);
+    ctx.bezierCurveTo(984, 300, 984, 724, 954, 964);
+    ctx.stroke();
+
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(934, 100);
+    ctx.lineTo(964, 220);
+    ctx.lineTo(964, 804);
+    ctx.lineTo(934, 924);
+    ctx.stroke();
     ctx.restore();
 
-    // --- Dynamic Target Reticle (Homecoming style hexagon/circle hybrid) ---
-    const reticleColor = voiceDetected ? STARK_RED : STARK_AMBER;
-    ctx.strokeStyle = reticleColor;
-    ctx.lineWidth = 3;
-    
-    // Hexagonal guide
+    /* -------------------------------------------------------------
+       2. TOP FLIGHT ATTITUDE / PITCH LADDER (Directly from Movie)
+    ------------------------------------------------------------- */
     ctx.save();
-    ctx.translate(cx, cy);
+    const ladderY = 120;
+    ctx.strokeStyle = CYAN_HUD;
+    ctx.lineWidth = 2;
+    ctx.fillStyle = CYAN_HUD;
+    ctx.font = "9px monospace";
+    ctx.textAlign = "center";
+
+    // Center vertical index line
     ctx.beginPath();
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 6; i++) {
-        ctx.rotate(Math.PI / 3);
-        ctx.moveTo(0, -115 - slowPulse); ctx.lineTo(0, -100);
+    ctx.moveTo(cx, ladderY - 70);
+    ctx.lineTo(cx, ladderY + 60);
+    ctx.stroke();
+
+    // Horizontal graduated pitch ticks
+    for (let i = -4; i <= 4; i++) {
+        const y = ladderY + (i * 14);
+        const w = (i === 0) ? 36 : 18 - Math.abs(i * 2);
+        ctx.beginPath();
+        ctx.moveTo(cx - w, y);
+        ctx.lineTo(cx + w, y);
+        ctx.stroke();
+
+        // Tick marks at the edges
+        if (i !== 0) {
+            ctx.beginPath();
+            ctx.moveTo(cx - w, y);
+            ctx.lineTo(cx - w, y + (i > 0 ? -3 : 3));
+            ctx.moveTo(cx + w, y);
+            ctx.lineTo(cx + w, y + (i > 0 ? -3 : 3));
+            ctx.stroke();
+        }
     }
+
+    // Small red alignment indicator dots at ladder base
+    ctx.fillStyle = "#ff2233";
+    ctx.beginPath();
+    ctx.arc(cx - 10, ladderY + 68, 2, 0, Math.PI * 2);
+    ctx.arc(cx + 10, ladderY + 68, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    /* -------------------------------------------------------------
+       3. TOP CURVED DOTTED TARGETING ARC
+    ------------------------------------------------------------- */
+    ctx.save();
+    ctx.strokeStyle = CYAN_FAINT;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 6]);
+    ctx.beginPath();
+    ctx.arc(cx, cy - 220, 280, Math.PI * 1.15, Math.PI * 1.85);
     ctx.stroke();
     ctx.restore();
 
-    // Main Circle
+    /* -------------------------------------------------------------
+       4. BLUE HOLOGRAPHIC OBJECT TRACKERS (Dumpster Target)
+    ------------------------------------------------------------- */
+    trackedTargets.forEach(tgt => {
+        ctx.save();
+        // Inner glowing solid node
+        ctx.fillStyle = "#00e5ff";
+        ctx.shadowColor = "#00e5ff";
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(tgt.x, tgt.y, tgt.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Concentric tracking ring
+        ctx.strokeStyle = CYAN_HUD;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(tgt.x, tgt.y, tgt.radius + 8 + (pulse * 0.5), 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Range line and tag
+        ctx.beginPath();
+        ctx.moveTo(tgt.x + tgt.radius + 10, tgt.y);
+        ctx.lineTo(tgt.x + tgt.radius + 35, tgt.y - 12);
+        ctx.lineTo(tgt.x + tgt.radius + 80, tgt.y - 12);
+        ctx.stroke();
+
+        ctx.fillStyle = "#00e5ff";
+        ctx.font = "bold 10px monospace";
+        ctx.fillText(`${tgt.label} [${tgt.distance}]`, tgt.x + tgt.radius + 20, tgt.y - 16);
+        ctx.restore();
+    });
+
+    /* -------------------------------------------------------------
+       5. MYOPIA COMFORT CLUSTER (Voice + Dialogue Centered)
+    ------------------------------------------------------------- */
+    // Central Aim Reticle
+    ctx.save();
+    const reticleColor = voiceDetected ? "#ff3344" : CYAN_HUD;
+    ctx.strokeStyle = reticleColor;
+    ctx.lineWidth = 2;
+
     ctx.beginPath();
-    ctx.arc(cx, cy, 95 + fastPulse + (voiceEnergy * 30), 0, Math.PI * 2);
+    ctx.arc(cx, cy, 32 + (voiceEnergy * 25), 0, Math.PI * 2);
     ctx.stroke();
 
-    // Center Dot (Active State)
-    ctx.fillStyle = voiceDetected ? STARK_RED : (systemStatus === "ANALYZING" ? "#fff" : "#ff0000");
+    // Center Cross-hairs
     ctx.beginPath();
-    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(cx - 14, cy); ctx.lineTo(cx - 5, cy);
+    ctx.moveTo(cx + 5, cy); ctx.lineTo(cx + 14, cy);
+    ctx.moveTo(cx, cy - 14); ctx.lineTo(cx, cy - 5);
+    ctx.moveTo(cx, cy + 5); ctx.lineTo(cx, cy + 14);
+    ctx.stroke();
 
-    /* =================================================================
-       ERGONOMIC CENTRAL STACK (Myopia Solution)
-       All critical data grouped tightly in center 20% of view
-    ================================================================= */
-    
-    // Header Stack
-    ctx.fillStyle = STARK_RED;
-    ctx.font = "bold 24px 'Courier New'";
+    // K.A.R.E.N. Audio / System Status
+    ctx.fillStyle = voiceDetected ? "#ff3344" : (systemStatus === "LISTENING" ? "#00ff88" : CYAN_HUD);
+    ctx.font = "bold 12px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("K.A.R.E.N.", cx, cy - 150);
+    ctx.fillText(voiceDetected ? "● AUDIO DETECTED // STREAMING" : `● K.A.R.E.N. // ${systemStatus}`, cx, cy + 62);
 
-    ctx.fillStyle = voiceDetected ? "#fff" : (systemStatus === "ANALYZING" ? STARK_ORANGE : STARK_AMBER);
-    ctx.font = "11px monospace";
-    ctx.fillText(voiceDetected ? "● AUDIO ACTIVE // STREAMING" : `● SUIT_STATUS: ${systemStatus}`, cx, cy - 130);
-
-    // Response Stack (Grouped under reticle)
+    // AI Response (Comfortably right in central eyesight)
     ctx.fillStyle = "#ffffff";
-    ctx.font = "18px sans-serif";
-    ctx.textAlign = "center";
-    ctx.shadowColor = STARK_RED;
-    ctx.shadowBlur = voiceDetected ? 10 : 0;
-    wrapText(ctx, karenResponse, cx, cy + 140, 450, 24);
-    ctx.shadowBlur = 0;
-    
-    // --- Corner Brackets (Homecoming Style) ---
-    // Positioned further in to stay within myopia lens clear-zone
-    const inset = 150;
-    const bLen = 35;
-    ctx.strokeStyle = STARK_RED;
-    ctx.lineWidth = 3;
-    
-    // TL
-    ctx.beginPath(); ctx.moveTo(inset, inset + bLen); ctx.lineTo(inset, inset); ctx.lineTo(inset + bLen, inset); ctx.stroke();
-    // TR
-    ctx.beginPath(); ctx.moveTo(1024 - inset, inset + bLen); ctx.lineTo(1024 - inset, inset); ctx.lineTo(1024 - inset - bLen, inset); ctx.stroke();
-    // BL
-    ctx.beginPath(); ctx.moveTo(inset, 1024 - inset - bLen); ctx.lineTo(inset, 1024 - inset); ctx.lineTo(inset + bLen, 1024 - inset); ctx.stroke();
-    // BR
-    ctx.beginPath(); ctx.moveTo(1024 - inset, 1024 - inset - bLen); ctx.lineTo(1024 - inset, 1024 - inset); ctx.lineTo(1024 - inset - bLen, 1024 - inset); ctx.stroke();
+    ctx.font = "18px 'Courier New', monospace";
+    ctx.shadowColor = "#00e5ff";
+    ctx.shadowBlur = 6;
+    wrapText(ctx, karenResponse, cx, cy + 96, 480, 22);
+    ctx.restore();
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {
@@ -237,9 +263,9 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   STARK INDUSTRIES HANDS-FREE VAD (Vocal Activation System)
+   HANDS-FREE AUDIO CAPTURE SYSTEM (VAD)
 ================================================================= */
-async function setupHandsFreeKAREN() {
+async function setupVoiceEngine() {
     micStream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
@@ -257,19 +283,18 @@ async function setupHandsFreeKAREN() {
     mediaRecorder.ondataavailable = e => {
         if (e.data.size > 0) recordedChunks.push(e.data);
     };
-    mediaRecorder.onstop = processVocalDirective;
+    mediaRecorder.onstop = sendVocalData;
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-    function runVAD() {
+    function trackVoiceActivity() {
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
         const avg = sum / dataArray.length;
         voiceEnergy = avg / 128.0;
 
-        // VAD Logic (Homecoming style: responsive to voice)
-        if (avg > 25) { // Sound detected threshold
+        if (avg > 25) {
             if (!voiceDetected && mediaRecorder.state === "inactive") {
                 recordedChunks = [];
                 mediaRecorder.start();
@@ -281,16 +306,16 @@ async function setupHandsFreeKAREN() {
                 if (voiceDetected && mediaRecorder.state === "recording") {
                     mediaRecorder.stop();
                     voiceDetected = false;
-                    systemStatus = "ANALYZING";
+                    systemStatus = "PROCESSING";
                 }
-            }, 1000); // 1.0s trailing silence to auto-send
+            }, 1100);
         }
-        requestAnimationFrame(runVAD);
+        requestAnimationFrame(trackVoiceActivity);
     }
-    runVAD();
+    trackVoiceActivity();
 }
 
-async function processVocalDirective() {
+async function sendVocalData() {
     if (!recordedChunks.length) return;
     const audioBlob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
     const reader = new FileReader();
@@ -304,19 +329,19 @@ async function processVocalDirective() {
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: "You are Peter Parker's suit AI, Karen from Spider-Man: Homecoming. Keep answers concise, supportive, tactical, and 1 to 2 short sentences." },
+                            { text: "You are Karen, Peter Parker's suit AI from Spider-Man: Homecoming. Answer tactically, supportively, and in 1-2 brief sentences." },
                             { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
                         ]
                     }]
                 })
             });
             const data = await res.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Telemetry processed. No vocal synthesis required.";
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Target locked. No comment necessary.";
             karenResponse = reply;
-            systemStatus = "ACTIVE";
+            systemStatus = "ONLINE";
             speak(reply);
         } catch (err) {
-            karenResponse = "Core link failure. Check Gemini API configuration.";
+            karenResponse = "Network disconnected. Check API Key.";
             systemStatus = "ERROR";
         }
     };
@@ -327,13 +352,13 @@ function speak(text) {
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     utt.lang = "en-US";
-    utt.pitch = 1.1; // Slightly higher pitch for Karen
-    utt.rate = 1.1;
+    utt.pitch = 1.05;
+    utt.rate = 1.08;
     window.speechSynthesis.speak(utt);
 }
 
 /* =================================================================
-   WEBGL STEREOSCOPIC VIEWPORT ENGINE
+   WEBGL STEREOSCOPIC IMMERSIVE ENGINE
 ================================================================= */
 const canvas = document.getElementById("canvasXR");
 const gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
@@ -344,8 +369,8 @@ const vsSrc = `
     uniform mat4 uProj;
     varying vec2 vTex;
     void main() {
-        // Spatial anchor: 1.5m directly forward in eye space
-        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.5, 1.0);
+        // Positioned 1.4m away directly in front of the viewer
+        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.4, 1.0);
         gl_Position = uProj * pos;
         vTex = aTex;
     }
@@ -373,14 +398,14 @@ gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vsSrc));
 gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fsSrc));
 gl.linkProgram(prog);
 
-// 1.4m x 1.4m Quad centered at Z = 0
+// 1.5m wide x 1.5m tall quad
 const vertices = new Float32Array([
-    -0.7, -0.7, 0.0,   0.0, 1.0,
-     0.7, -0.7, 0.0,   1.0, 1.0,
-    -0.7,  0.7, 0.0,   0.0, 0.0,
-    -0.7,  0.7, 0.0,   0.0, 0.0,
-     0.7, -0.7, 0.0,   1.0, 1.0,
-     0.7,  0.7, 0.0,   1.0, 0.0
+    -0.75, -0.75, 0.0,   0.0, 1.0,
+     0.75, -0.75, 0.0,   1.0, 1.0,
+    -0.75,  0.75, 0.0,   0.0, 0.0,
+    -0.75,  0.75, 0.0,   0.0, 0.0,
+     0.75, -0.75, 0.0,   1.0, 1.0,
+     0.75,  0.75, 0.0,   1.0, 0.0
 ]);
 
 const vbo = gl.createBuffer();
@@ -399,21 +424,21 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* =================================================================
-   WEBXR SUIT PROTOCOL
+   WEBXR SESSION PIPELINE
 ================================================================= */
 document.getElementById("btnInit").onclick = async () => {
     apiKey = apiKeyInput.value.trim();
     localStorage.setItem("stark_edith_key", apiKey);
     if (!apiKey) {
-        alert("Initialize your Gemini API key protocol.");
+        alert("Enter your Gemini API key.");
         return;
     }
 
     document.getElementById("setupScreen").style.display = "none";
-    await setupHandsFreeKAREN();
+    await setupVoiceEngine();
 
     if (!navigator.xr) {
-        alert("Launch inside the Meta Quest Browser over HTTPS.");
+        alert("Run inside the Meta Quest Browser using HTTPS.");
         return;
     }
 
@@ -431,13 +456,13 @@ document.getElementById("btnInit").onclick = async () => {
         const pose = frame.getViewerPose(refSpace);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-        // Alpha 0.0 allows Quest passthrough to shine through
+        // Alpha 0.0 is critical so passthrough remains visible
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (!pose) return;
 
-        drawHomecomingHUD(time);
+        drawHomecomingExact(time);
 
         gl.bindTexture(gl.TEXTURE_2D, hudTex);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
