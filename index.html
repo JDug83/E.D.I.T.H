@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>E.D.I.T.H. - Tactical XR HUD</title>
+    <title>E.D.I.T.H. - Quest Tactical HUD</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -56,53 +56,72 @@ let apiKey = localStorage.getItem("edith_gemini_key") || "";
 const apiKeyInput = document.getElementById("apiKeyInput");
 apiKeyInput.value = apiKey;
 
-let systemStatus = "ONLINE";
-let edithResponse = "E.D.I.T.H. online. Speak into your headset.";
+let systemStatus = "IDLE (PULL TRIGGER TO TALK)";
+let edithResponse = "E.D.I.T.H. online. Pull controller trigger to speak.";
+let debugLog = "SYSTEM BOOT OK";
+
 let audioContext = null;
 let micStream = null;
-let scriptProcessor = null;
-let pcmSamples = [];
-let voiceDetected = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
 let isSpeaking = false;
-let silenceTimer = null;
-let voiceEnergy = 0;
-let liveLevel = 0;
 
 /* =================================================================
-   QUEST HARDWARE AUDIO KEEPALIVE
+   AUDIO OUTPUT & FEEDBACK (QUEST NATIVE SYNTH)
 ================================================================= */
-function unlockQuestAudio() {
+function initAudioHardware() {
     if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     if (audioContext.state === "suspended") {
         audioContext.resume();
     }
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    gain.gain.value = 0.0001;
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-    osc.start();
 }
 
-function playBeep(freq = 880) {
+function playTone(freq, duration, type = "sine") {
     try {
-        if (audioContext && audioContext.state === "suspended") audioContext.resume();
+        initAudioHardware();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
+        osc.type = type;
         osc.frequency.setValueAtTime(freq, audioContext.currentTime);
-        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioContext.destination);
         osc.start();
-        osc.stop(audioContext.currentTime + 0.11);
-    } catch (e) {}
+        osc.stop(audioContext.currentTime + duration);
+    } catch (e) {
+        debugLog = "AUDIO ERR: " + e.message;
+    }
+}
+
+function speakText(text) {
+    if (!window.speechSynthesis) {
+        debugLog = "TTS NOT SUPPORTED";
+        return;
+    }
+    initAudioHardware();
+    window.speechSynthesis.cancel();
+
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = "en-US";
+    utt.rate = 1.05;
+    utt.pitch = 1.0;
+
+    utt.onstart = () => { isSpeaking = true; };
+    utt.onend = () => { isSpeaking = false; };
+    utt.onerror = (e) => { 
+        isSpeaking = false;
+        debugLog = "TTS ERR: " + e.error; 
+    };
+
+    window.speechSynthesis.speak(utt);
 }
 
 /* =================================================================
-   HOMECOMING CINEMATIC HUD
+   HUD RENDERING ENGINE
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
@@ -172,28 +191,11 @@ function renderDisplay(time) {
     for (let i = -3; i <= 3; i++) {
         const y = ladderY + (i * 11);
         const w = (i === 0) ? 30 : 16 - Math.abs(i * 2);
-
         ctx.beginPath();
         ctx.moveTo(cx - w, y);
         ctx.lineTo(cx + w, y);
         ctx.stroke();
-
-        if (i !== 0) {
-            const tickH = i > 0 ? -3 : 3;
-            ctx.beginPath();
-            ctx.moveTo(cx - w, y);
-            ctx.lineTo(cx - w, y + tickH);
-            ctx.moveTo(cx + w, y);
-            ctx.lineTo(cx + w, y + tickH);
-            ctx.stroke();
-        }
     }
-
-    ctx.fillStyle = "#ff1a35";
-    ctx.beginPath();
-    ctx.arc(cx - 8, ladderY + 52, 2, 0, Math.PI * 2);
-    ctx.arc(cx + 8, ladderY + 52, 2, 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
 
     /* 3. DOTTED CURVED GUIDANCE ARC */
@@ -216,22 +218,21 @@ function renderDisplay(time) {
     for (let b = 0; b < 9; b++) {
         const barHeight = isSpeaking 
             ? Math.abs(Math.sin(time * 0.015 + b)) * 20 + 4
-            : (voiceDetected ? Math.abs(Math.sin(time * 0.02 + b)) * 24 * voiceEnergy + 3 : 3);
-
-        ctx.fillStyle = isSpeaking ? "#00ff88" : (voiceDetected ? "#ff1a35" : CYAN);
+            : (isRecording ? Math.abs(Math.sin(time * 0.02 + b)) * 22 + 4 : 3);
+        ctx.fillStyle = isSpeaking ? "#00ff88" : (isRecording ? "#ff1a35" : CYAN);
         ctx.fillRect(spkX + (b * 8), spkY - (barHeight / 2), 4, barHeight);
     }
     ctx.restore();
 
-    /* 5. CENTRAL MYOPIA CLUSTER & LIVE MIC DB METER */
+    /* 5. CENTRAL MYOPIA CLUSTER */
     ctx.save();
-    const reticleColor = voiceDetected ? "#ff1a35" : (isSpeaking ? "#00ff88" : CYAN);
+    const reticleColor = isRecording ? "#ff1a35" : (isSpeaking ? "#00ff88" : CYAN);
     ctx.strokeStyle = reticleColor;
     ctx.lineWidth = 2;
     ctx.shadowColor = reticleColor;
     ctx.shadowBlur = 8;
 
-    const dynamicRadius = 26 + (voiceEnergy * 24);
+    const dynamicRadius = isRecording ? 35 + Math.sin(time * 0.01) * 4 : 26;
     ctx.beginPath();
     ctx.arc(cx, cy, dynamicRadius, 0, Math.PI * 2);
     ctx.stroke();
@@ -243,24 +244,23 @@ function renderDisplay(time) {
     ctx.moveTo(cx, cy + 5); ctx.lineTo(cx, cy + 14);
     ctx.stroke();
 
-    // Live Mic Meter
-    const meterW = 140, meterH = 4;
-    ctx.fillStyle = "rgba(0, 229, 255, 0.2)";
-    ctx.fillRect(cx - (meterW / 2), cy + 44, meterW, meterH);
-    ctx.fillStyle = voiceDetected ? "#ff1a35" : "#00e5ff";
-    ctx.fillRect(cx - (meterW / 2), cy + 44, Math.min(meterW, meterW * (liveLevel * 2)), meterH);
-
-    ctx.fillStyle = voiceDetected ? "#ff1a35" : (systemStatus === "PROCESSING" ? "#ffaa00" : CYAN);
+    // Status Line
+    ctx.fillStyle = isRecording ? "#ff1a35" : CYAN;
     ctx.font = "bold 11px monospace";
     ctx.textAlign = "center";
-    ctx.fillText(voiceDetected ? "● RECORDING DIRECTIVE..." : `● ${systemStatus}`, cx, cy + 64);
+    ctx.fillText(`● ${systemStatus}`, cx, cy + 54);
 
-    // Centered E.D.I.T.H. Captions
+    // Live Debug Terminal
+    ctx.fillStyle = "#ffbb00";
+    ctx.font = "9px monospace";
+    ctx.fillText(`DEBUG: ${debugLog}`, cx, cy + 72);
+
+    // Centered E.D.I.T.H. Response Text
     ctx.fillStyle = "#ffffff";
     ctx.font = "16px 'Courier New', monospace";
     ctx.shadowColor = CYAN;
     ctx.shadowBlur = 4;
-    wrapCenteredText(ctx, edithResponse, cx, cy + 96, 460, 22);
+    wrapCenteredText(ctx, edithResponse, cx, cy + 104, 480, 22);
     ctx.restore();
 }
 
@@ -282,166 +282,114 @@ function wrapCenteredText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   WAV ENCODER (16kHz 16-Bit Mono)
+   QUEST RECORDING & GEMINI TRANSMISSION (TRIGGER CONTROLLED)
 ================================================================= */
-function encodeWAV(samples, sampleRate) {
-    const buffer = new ArrayBuffer(44 + samples.length * 2);
-    const view = new DataView(buffer);
-
-    function writeString(view, offset, string) {
-        for (let i = 0; i < string.length; i++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
-        }
-    }
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + samples.length * 2, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, samples.length * 2, true);
-
-    let offset = 44;
-    for (let i = 0; i < samples.length; i++) {
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-        offset += 2;
-    }
-
-    return new Uint8Array(buffer);
-}
-
-/* =================================================================
-   VOICE RECORDING ENGINE
-================================================================= */
-async function setupVAD() {
-    micStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-    });
-
-    unlockQuestAudio();
-
-    const source = audioContext.createMediaStreamSource(micStream);
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    
-    scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-    
-    source.connect(analyser);
-    source.connect(scriptProcessor);
-    scriptProcessor.connect(audioContext.destination);
-
-    scriptProcessor.onaudioprocess = (e) => {
-        if (!voiceDetected) return;
-        const channelData = e.inputBuffer.getChannelData(0);
-        for (let i = 0; i < channelData.length; i++) {
-            pcmSamples.push(channelData[i]);
-        }
-    };
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-    function pollMicEnergy() {
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        const avg = sum / dataArray.length;
-        voiceEnergy = avg / 128.0;
-        liveLevel = avg / 70.0;
-
-        if (avg > 15 && !isSpeaking) {
-            if (!voiceDetected) {
-                pcmSamples = [];
-                voiceDetected = true;
-                systemStatus = "RECORDING";
-            }
-            clearTimeout(silenceTimer);
-            silenceTimer = setTimeout(() => {
-                if (voiceDetected) {
-                    voiceDetected = false;
-                    systemStatus = "PROCESSING";
-                    sendVocalDirective();
-                }
-            }, 1000);
-        }
-        requestAnimationFrame(pollMicEnergy);
-    }
-    pollMicEnergy();
-}
-
-async function sendVocalDirective() {
-    if (pcmSamples.length < 6000) {
-        systemStatus = "ONLINE";
-        return;
-    }
-
-    const wavBytes = encodeWAV(pcmSamples, 16000);
-    pcmSamples = [];
-    
-    let binary = '';
-    for (let i = 0; i < wavBytes.byteLength; i++) {
-        binary += String.fromCharCode(wavBytes[i]);
-    }
-    const base64Audio = btoa(binary);
-
+async function setupMic() {
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        micStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                channelCount: 1,
+                sampleRate: 16000,
+                echoCancellation: true,
+                noiseSuppression: true
+            }
+        });
+
+        // Determine browser supported format
+        let mimeType = 'audio/webm;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm';
+        }
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = '';
+        }
+
+        mediaRecorder = new MediaRecorder(micStream, mimeType ? { mimeType } : {});
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+                audioChunks.push(e.data);
+            }
+        };
+
+        mediaRecorder.onstop = async () => {
+            systemStatus = "TRANSMITTING TO GEMINI...";
+            debugLog = `PACKAGING AUDIO (${audioChunks.length} chunks)`;
+            
+            const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+            audioChunks = [];
+
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                const base64Audio = reader.result.split(',')[1];
+                const rawMime = mediaRecorder.mimeType.split(';')[0] || 'audio/webm';
+                sendToGemini(base64Audio, rawMime);
+            };
+        };
+
+        debugLog = "MIC CONNECTED (" + (mediaRecorder.mimeType || "default") + ")";
+    } catch (e) {
+        debugLog = "MIC DENIED: " + e.message;
+        systemStatus = "MIC ERROR";
+    }
+}
+
+function toggleRecording() {
+    if (!mediaRecorder) return;
+    initAudioHardware();
+
+    if (!isRecording) {
+        audioChunks = [];
+        mediaRecorder.start();
+        isRecording = true;
+        systemStatus = "RECORDING DIRECTIVE...";
+        debugLog = "LISTENING (RELEASE TRIGGER TO SEND)";
+        playTone(600, 0.08, "triangle");
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        systemStatus = "PROCESSING AUDIO...";
+        playTone(900, 0.08, "triangle");
+    }
+}
+
+async function sendToGemini(base64Audio, mimeType) {
+    debugLog = "SENDING " + Math.round(base64Audio.length / 1024) + " KB";
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
                     parts: [
-                        { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Speak concisely, tactically, and warmly in 1 to 2 short sentences." },
-                        { inline_data: { mime_type: "audio/wav", data: base64Audio } }
+                        { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Answer the user's voice command concisely in 1 or 2 crisp sentences." },
+                        { inline_data: { mime_type: mimeType, data: base64Audio } }
                     ]
                 }]
             })
         });
 
-        if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(`[${res.status}] ${errData.error?.message || 'API Rejected'}`);
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error ? err.error.message : `HTTP ${response.status}`);
         }
 
-        const data = await res.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Directive acknowledged.";
+        const data = await response.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Directive logged. No response.";
+        
         edithResponse = reply;
-        systemStatus = "ONLINE";
-        speakResponse(reply);
+        systemStatus = "IDLE (PULL TRIGGER TO TALK)";
+        debugLog = "GEMINI SUCCESS (200 OK)";
+
+        playTone(1200, 0.15, "sine");
+        speakText(reply);
     } catch (err) {
-        edithResponse = `ERROR: ${err.message}`;
-        systemStatus = "ERR_RETRY";
-        playBeep(440);
+        debugLog = "API FAIL: " + err.message;
+        edithResponse = "Transmission failure: " + err.message;
+        systemStatus = "ERROR - RETRY";
+        playTone(300, 0.3, "sawtooth");
     }
-}
-
-/* =================================================================
-   HEADSET SPEECH SYNTHESIS
-================================================================= */
-function speakResponse(text) {
-    if (!window.speechSynthesis) return;
-
-    unlockQuestAudio();
-    playBeep(1200);
-
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = "en-GB";
-    utt.rate = 1.05;
-    utt.pitch = 0.95;
-
-    utt.onstart = () => { isSpeaking = true; };
-    utt.onend = () => { isSpeaking = false; };
-    utt.onerror = () => { isSpeaking = false; };
-
-    window.speechSynthesis.speak(utt);
 }
 
 /* =================================================================
@@ -509,7 +457,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* =================================================================
-   WEBXR SESSION INITIALIZATION
+   WEBXR SESSION & CONTROLLER EVENT BINDINGS
 ================================================================= */
 document.getElementById("btnInit").onclick = async () => {
     apiKey = apiKeyInput.value.trim();
@@ -521,56 +469,68 @@ document.getElementById("btnInit").onclick = async () => {
     }
 
     document.getElementById("setupScreen").style.display = "none";
-    await setupVAD();
-    playBeep(880);
+    initAudioHardware();
+    await setupMic();
 
     if (!navigator.xr) {
         alert("Launch inside Meta Quest Browser over HTTPS.");
         return;
     }
 
-    const session = await navigator.xr.requestSession("immersive-ar", {
-        requiredFeatures: [],
-        optionalFeatures: ["local-floor"]
-    });
+    try {
+        const session = await navigator.xr.requestSession("immersive-ar", {
+            requiredFeatures: [],
+            optionalFeatures: ["local-floor"]
+        });
 
-    const xrLayer = new XRWebGLLayer(session, gl, { alpha: true });
-    session.updateRenderState({ baseLayer: xrLayer });
-    const refSpace = await session.requestReferenceSpace("viewer");
+        const xrLayer = new XRWebGLLayer(session, gl, { alpha: true });
+        session.updateRenderState({ baseLayer: xrLayer });
+        const refSpace = await session.requestReferenceSpace("viewer");
 
-    session.requestAnimationFrame(function onFrame(time, frame) {
-        session.requestAnimationFrame(onFrame);
-        const pose = frame.getViewerPose(refSpace);
+        // Use controller trigger or touch to toggle Push-to-Talk
+        session.addEventListener("selectstart", toggleRecording);
+        session.addEventListener("selectend", toggleRecording);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        // Fallback for screen tap
+        window.addEventListener("pointerdown", toggleRecording);
+        window.addEventListener("pointerup", toggleRecording);
 
-        if (!pose) return;
+        session.requestAnimationFrame(function onFrame(time, frame) {
+            session.requestAnimationFrame(onFrame);
+            const pose = frame.getViewerPose(refSpace);
 
-        renderDisplay(time);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        gl.bindTexture(gl.TEXTURE_2D, hudTex);
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hudCanvas);
+            if (!pose) return;
 
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        gl.useProgram(prog);
+            renderDisplay(time);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.enableVertexAttribArray(posLoc);
-        gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 20, 0);
-        gl.enableVertexAttribArray(texLoc);
-        gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 20, 12);
+            gl.bindTexture(gl.TEXTURE_2D, hudTex);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hudCanvas);
 
-        for (const view of pose.views) {
-            const vp = xrLayer.getViewport(view);
-            gl.viewport(vp.x, vp.y, vp.width, vp.height);
-            gl.uniformMatrix4fv(projLoc, false, view.projectionMatrix);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-        }
-    });
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            gl.useProgram(prog);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 20, 0);
+            gl.enableVertexAttribArray(texLoc);
+            gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 20, 12);
+
+            for (const view of pose.views) {
+                const vp = xrLayer.getViewport(view);
+                gl.viewport(vp.x, vp.y, vp.width, vp.height);
+                gl.uniformMatrix4fv(projLoc, false, view.projectionMatrix);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+            }
+        });
+    } catch (e) {
+        alert("WebXR session failed: " + e.message);
+    }
 };
 </script>
 </body>
