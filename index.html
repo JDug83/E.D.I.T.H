@@ -3,13 +3,13 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>E.D.I.T.H.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E.D.I.T.H. AI</title>
 
 <style>
-/* ==============================
-   BASE
-============================== */
+/* =====================================================
+   GLOBAL
+===================================================== */
 * {
     box-sizing: border-box;
 }
@@ -22,26 +22,22 @@ body {
     overflow: hidden;
     background: #020609;
     color: #00d9ff;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
+/* * CRITICAL FOR WEBXR PASSTHROUGH:
+ * Removes opaque document canvas when inside headset
+ */
 :xr-overlay,
+:xr-overlay html,
 :xr-overlay body {
     background: transparent !important;
     background-color: rgba(0, 0, 0, 0) !important;
 }
 
-#hud {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-    background: transparent !important;
-}
-
-/* ==============================
-   CAMERA PREVIEW (NON-XR MODE)
-============================== */
+/* =====================================================
+   CAMERA
+===================================================== */
 #camera {
     position: fixed;
     inset: 0;
@@ -52,17 +48,41 @@ body {
     z-index: 0;
 }
 
-/* ==============================
-   E.D.I.T.H. LOGO & TARGET
-============================== */
+#cameraOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    display: none;
+    background: linear-gradient(
+        rgba(0,20,30,0.05),
+        rgba(0,10,20,0.18)
+    );
+}
+
+/* =====================================================
+   HUD
+===================================================== */
+#hud {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: transparent !important;
+}
+
+/* =====================================================
+   LOGO
+===================================================== */
 .logo {
     position: absolute;
-    top: 25px;
+    top: 28px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 34px;
     font-weight: bold;
     letter-spacing: 9px;
+    color: #00d9ff;
     text-shadow:
         0 0 8px #00d9ff,
         0 0 20px #00d9ff,
@@ -71,229 +91,247 @@ body {
 
 .online {
     position: absolute;
-    top: 73px;
+    top: 76px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 11px;
-    letter-spacing: 4px;
     color: #00ff88;
+    font-size: 12px;
+    letter-spacing: 4px;
 }
 
+/* =====================================================
+   CENTER TARGET
+===================================================== */
 .target {
     position: absolute;
+    width: 170px;
+    height: 170px;
     left: 50%;
     top: 50%;
-    width: 160px;
-    height: 160px;
     transform: translate(-50%, -50%);
-    border: 2px solid rgba(0,217,255,.75);
+    border: 2px solid rgba(0,217,255,0.75);
     border-radius: 50%;
     box-shadow:
         0 0 20px #00d9ff,
-        inset 0 0 20px rgba(0,217,255,.15);
+        inset 0 0 20px rgba(0,217,255,0.15);
 }
 
-.target:before {
+.target::before {
     content: "";
     position: absolute;
     width: 220px;
     height: 1px;
-    left: -32px;
-    top: 78px;
+    left: -27px;
+    top: 83px;
     background: #00d9ff;
+    box-shadow: 0 0 8px #00d9ff;
 }
 
-.target:after {
+.target::after {
     content: "";
     position: absolute;
     width: 1px;
     height: 220px;
-    top: -32px;
-    left: 78px;
+    top: -27px;
+    left: 83px;
     background: #00d9ff;
+    box-shadow: 0 0 8px #00d9ff;
 }
 
-/* ==============================
+/* =====================================================
    STATUS
-============================== */
+===================================================== */
 .status {
     position: absolute;
     left: 25px;
     bottom: 25px;
-    width: 270px;
-    padding: 18px;
-    background: rgba(0,10,18,.72);
+    width: 260px;
+    padding: 18px 20px;
+    background: rgba(0,12,20,0.72);
     border-left: 2px solid #00d9ff;
     backdrop-filter: blur(10px);
-    pointer-events: auto;
+    box-shadow: 0 0 20px rgba(0,217,255,0.08);
 }
 
 .status h2 {
     margin: 0 0 13px;
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 3px;
 }
 
 .status p {
     margin: 8px 0;
+    font-size: 13px;
     color: #aaa;
-    font-size: 12px;
 }
 
 .green { color: #00ff88; }
 .yellow { color: #ffff00; }
 .red { color: #ff4050; }
 
-/* ==============================
-   AI RESPONSE
-============================== */
+/* =====================================================
+   RESPONSE
+===================================================== */
 #response {
     position: absolute;
     left: 50%;
-    bottom: 90px;
+    bottom: 38px;
     transform: translateX(-50%);
-    width: 70%;
+    width: 60%;
     max-width: 750px;
     text-align: center;
     color: white;
     font-size: 18px;
     line-height: 1.5;
     text-shadow: 0 0 10px #00d9ff;
-    pointer-events: auto;
 }
 
-/* ==============================
-   MANUAL PROMPT BAR (VR & DESKTOP)
-============================== */
-#manualInputContainer {
-    position: absolute;
-    left: 50%;
-    bottom: 25px;
-    transform: translateX(-50%);
-    width: 60%;
-    max-width: 600px;
-    display: flex;
-    gap: 10px;
-    pointer-events: auto;
-}
-
-#manualText {
-    flex: 1;
-    padding: 10px 14px;
-    background: rgba(0, 10, 18, 0.85);
+/* =====================================================
+   BUTTONS
+===================================================== */
+button {
+    padding: 11px 17px;
+    color: #00d9ff;
+    background: rgba(0,10,18,0.9);
     border: 1px solid #00d9ff;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+button:hover {
+    background: #00d9ff;
+    color: #001018;
+    box-shadow: 0 0 20px rgba(0,217,255,0.5);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+/* =====================================================
+   VR BUTTON
+===================================================== */
+#vrButton {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 30;
+    pointer-events: auto;
+    font-weight: bold;
+    letter-spacing: 2px;
+    display: none;
+}
+
+/* =====================================================
+   SETTINGS BUTTON
+===================================================== */
+#settingsButton {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    z-index: 30;
+    pointer-events: auto;
+}
+
+/* =====================================================
+   SETTINGS
+===================================================== */
+#settings {
+    position: fixed;
+    right: 25px;
+    top: 80px;
+    z-index: 50;
+    width: 340px;
+    padding: 20px;
+    background: rgba(2,10,15,0.98);
+    border: 1px solid #00d9ff;
+    box-shadow: 0 0 30px rgba(0,217,255,0.2);
+    display: none;
+    pointer-events: auto;
+}
+
+#settings h2 {
+    margin-top: 0;
+    letter-spacing: 3px;
+}
+
+#settings p {
+    font-size: 13px;
+    color: #aaa;
+}
+
+#apiKey {
+    width: 100%;
+    padding: 11px;
+    background: #000;
     color: white;
-    font-size: 14px;
-    border-radius: 4px;
+    border: 1px solid #00d9ff;
     outline: none;
 }
 
-#manualSubmit {
-    padding: 10px 18px;
-    background: rgba(0, 217, 255, 0.2);
-    border: 1px solid #00d9ff;
-    color: #00d9ff;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: bold;
+#error {
+    margin-top: 12px;
+    color: #ff4050;
+    font-size: 11px;
+    line-height: 1.4;
+    word-break: break-word;
 }
 
-#manualSubmit:hover {
-    background: #00d9ff;
-    color: #001018;
-}
-
-/* ==============================
+/* =====================================================
    START SCREEN
-============================== */
+===================================================== */
 #start {
     position: fixed;
     inset: 0;
     z-index: 100;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    background: radial-gradient(circle, #041824, #020609 70%);
+    background: radial-gradient(
+        circle at center,
+        #041824,
+        #020609 65%
+    );
 }
 
 #start h1 {
     margin: 0;
     font-size: 52px;
     letter-spacing: 11px;
+    color: #00d9ff;
     text-shadow:
         0 0 15px #00d9ff,
         0 0 40px #00d9ff;
 }
 
 #start p {
+    margin-top: 20px;
     color: #777;
     line-height: 1.7;
     letter-spacing: 2px;
 }
 
-button {
-    padding: 12px 18px;
-    color: #00d9ff;
-    background: rgba(0,10,18,.9);
-    border: 1px solid #00d9ff;
-    cursor: pointer;
+#startButton {
+    margin-top: 25px;
+    padding: 15px 30px;
+    font-size: 16px;
+    letter-spacing: 3px;
 }
 
-button:hover {
-    background: #00d9ff;
-    color: #001018;
-}
-
-/* ==============================
-   BUTTONS
-============================== */
-#vrButton {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 200;
-    display: none;
-    pointer-events: auto;
-}
-
-#settingsButton {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 200;
-    pointer-events: auto;
-}
-
-#settings {
-    position: fixed;
-    right: 20px;
-    top: 70px;
-    z-index: 300;
-    width: 330px;
-    padding: 20px;
-    display: none;
-    background: rgba(2,10,15,.98);
-    border: 1px solid #00d9ff;
-}
-
-#apiKey {
-    width: 100%;
-    padding: 10px;
-    background: #000;
-    color: white;
-    border: 1px solid #00d9ff;
-}
-
-#error {
-    color: #ff4050;
+#vrNotice {
+    margin-top: 20px;
+    color: #666;
     font-size: 11px;
-    margin-top: 10px;
+    max-width: 370px;
+    line-height: 1.5;
 }
 
-:xr-overlay #settingsButton {
-    display: none;
+:xr-overlay #settingsButton,
+:xr-overlay #start {
+    display: none !important;
 }
 </style>
 </head>
@@ -301,6 +339,7 @@ button:hover {
 <body>
 
 <video id="camera" autoplay muted playsinline></video>
+<div id="cameraOverlay"></div>
 
 <div id="start">
     <h1>E.D.I.T.H.</h1>
@@ -308,10 +347,12 @@ button:hover {
         ENHANCED DEFENCE<br>
         INTELLIGENCE &amp; THREAT SYSTEM
     </p>
-    <button id="startButton">INITIALIZE E.D.I.T.H.</button>
-    <p style="font-size:11px;color:#555">
-        Say "E.D.I.T.H." or use the command line below.
-    </p>
+    <button id="startButton">
+        INITIALIZE E.D.I.T.H.
+    </button>
+    <div id="vrNotice">
+        After initialization, use ENTER VR to launch mixed-reality passthrough.
+    </div>
 </div>
 
 <div id="hud">
@@ -325,28 +366,30 @@ button:hover {
         <p>MICROPHONE: <span id="micStatus" class="yellow">STANDBY</span></p>
         <p>VOICE: <span id="voiceStatus" class="yellow">STANDBY</span></p>
         <p>AI: <span id="aiStatus" class="yellow">STANDBY</span></p>
-        <p>XR: <span id="xrStatus" class="yellow">CHECKING</span></p>
+        <p>VR: <span id="vrStatus" class="yellow">CHECKING</span></p>
     </div>
 
-    <div id="response">E.D.I.T.H. is ready.</div>
-
-    <div id="manualInputContainer">
-        <input id="manualText" type="text" placeholder="Direct terminal command to E.D.I.T.H...">
-        <button id="manualSubmit">TRANSMIT</button>
+    <div id="response">
+        E.D.I.T.H. is ready.
+        Say "E.D.I.T.H." once to begin.
     </div>
 </div>
 
-<button id="vrButton">ENTER E.D.I.T.H. AR</button>
+<button id="vrButton">ENTER VR</button>
+
 <button id="settingsButton">⚙ SETTINGS</button>
 
 <div id="settings">
     <h2>E.D.I.T.H. SETTINGS</h2>
     <p>Gemini API Key</p>
-    <input id="apiKey" type="password" placeholder="Paste Gemini API key">
+    <input id="apiKey" type="password" autocomplete="off" placeholder="Paste Gemini API key">
     <br><br>
     <button id="saveKey">SAVE</button>
     <button id="closeSettings">CLOSE</button>
     <div id="error"></div>
+    <p style="font-size:11px;color:#666">
+        Your key is stored locally in this browser. Do not commit your API key to GitHub.
+    </p>
 </div>
 
 <script>
@@ -356,25 +399,23 @@ button:hover {
 const start = document.getElementById("start");
 const startButton = document.getElementById("startButton");
 const camera = document.getElementById("camera");
+const cameraOverlay = document.getElementById("cameraOverlay");
 const cameraStatus = document.getElementById("cameraStatus");
 const micStatus = document.getElementById("micStatus");
 const voiceStatus = document.getElementById("voiceStatus");
 const aiStatus = document.getElementById("aiStatus");
-const xrStatus = document.getElementById("xrStatus");
+const vrStatus = document.getElementById("vrStatus");
 const response = document.getElementById("response");
-const vrButton = document.getElementById("vrButton");
 const settings = document.getElementById("settings");
 const settingsButton = document.getElementById("settingsButton");
 const closeSettings = document.getElementById("closeSettings");
 const saveKey = document.getElementById("saveKey");
 const apiKeyInput = document.getElementById("apiKey");
 const errorBox = document.getElementById("error");
-
-const manualText = document.getElementById("manualText");
-const manualSubmit = document.getElementById("manualSubmit");
+const vrButton = document.getElementById("vrButton");
 
 /* =====================================================
-   GEMINI CONFIGURATION
+   API KEY
 ===================================================== */
 let apiKey = localStorage.getItem("edith_gemini_key") || "";
 apiKeyInput.value = apiKey;
@@ -387,11 +428,12 @@ if (apiKey) {
 saveKey.onclick = () => {
     const key = apiKeyInput.value.trim();
     if (!key) {
-        errorBox.textContent = "Enter a Gemini API key.";
+        errorBox.textContent = "Please enter your Gemini API key.";
         return;
     }
     apiKey = key;
-    localStorage.setItem("edith_gemini_key", key);
+    localStorage.setItem("edith_gemini_key", apiKey);
+    errorBox.textContent = "";
     aiStatus.textContent = "READY";
     aiStatus.className = "green";
     settings.style.display = "none";
@@ -401,22 +443,7 @@ settingsButton.onclick = () => { settings.style.display = "block"; };
 closeSettings.onclick = () => { settings.style.display = "none"; };
 
 /* =====================================================
-   MANUAL COMMAND TERMINAL
-===================================================== */
-async function sendManualCommand() {
-    const text = manualText.value.trim();
-    if (!text) return;
-    manualText.value = "";
-    await askGemini(text);
-}
-
-manualSubmit.onclick = sendManualCommand;
-manualText.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendManualCommand();
-});
-
-/* =====================================================
-   DEVICE CAMERA & MICROPHONE CAPTURE
+   CAMERA + MICROPHONE
 ===================================================== */
 let mediaStream = null;
 
@@ -433,6 +460,7 @@ async function startMedia() {
 
         camera.srcObject = mediaStream;
         camera.style.display = "block";
+        cameraOverlay.style.display = "block";
 
         cameraStatus.textContent = "ONLINE";
         cameraStatus.className = "green";
@@ -441,185 +469,185 @@ async function startMedia() {
 
         return true;
     } catch (error) {
-        console.warn("Hardware initialization fallback:", error);
-        
-        // Try audio-only if camera access was blocked
-        try {
-            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            micStatus.textContent = "CONNECTED";
-            micStatus.className = "green";
-            cameraStatus.textContent = "OFFLINE";
-            cameraStatus.className = "yellow";
-            return true;
-        } catch (audioErr) {
-            response.textContent = "Audio/Camera blocked. Use the direct text input bar.";
-            cameraStatus.textContent = "DENIED";
-            cameraStatus.className = "red";
-            micStatus.textContent = "DENIED";
-            micStatus.className = "red";
-            return true; // Still allow app to load for manual input
-        }
+        console.error("MEDIA ERROR:", error);
+        cameraStatus.textContent = "DENIED";
+        cameraStatus.className = "red";
+        micStatus.textContent = "DENIED";
+        micStatus.className = "red";
+        response.textContent = "Camera or microphone permission was denied.";
+        return false;
     }
 }
 
 /* =====================================================
-   VOICE ENGINE
+   CONTINUOUS VOICE
 ===================================================== */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let listening = false;
 let edithStarted = false;
 let conversationActive = false;
-let restartTimer = null;
 
 if (SpeechRecognition) {
-    try {
-        recognition = new SpeechRecognition();
-        recognition.lang = "en-GB";
-        recognition.continuous = false; // single pass avoids Quest browser hangs
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
+    recognition = new SpeechRecognition();
+    recognition.lang = "en-GB";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
 
-        recognition.onstart = () => {
-            listening = true;
-            voiceStatus.textContent = "LISTENING";
-            voiceStatus.className = "green";
-        };
+    recognition.onstart = () => {
+        listening = true;
+        voiceStatus.textContent = "LISTENING";
+        voiceStatus.className = "green";
+    };
 
-        recognition.onresult = async (event) => {
-            const spoken = event.results[0][0].transcript.trim();
-            console.log("HEARD:", spoken);
-            if (!spoken) return;
+    recognition.onresult = async (event) => {
+        const result = event.results[event.results.length - 1];
+        if (!result.isFinal) return;
 
-            if (!edithStarted) {
-                if (!spoken.toLowerCase().includes("edith")) return;
-                edithStarted = true;
-                conversationActive = true;
+        const spoken = result[0].transcript.trim();
+        if (!spoken) return;
 
-                const question = spoken.replace(/edith/gi, "").trim();
-                if (!question) {
-                    response.textContent = "Yes. How can I assist?";
-                    speak("Yes. How can I assist?");
-                    return;
-                }
-                await askGemini(question);
+        console.log("HEARD:", spoken);
+
+        if (!edithStarted) {
+            if (!spoken.toLowerCase().includes("edith")) return;
+
+            edithStarted = true;
+            conversationActive = true;
+
+            const firstQuestion = spoken.replace(/edith/gi, "").trim();
+            if (!firstQuestion) {
+                response.textContent = "Yes. How can I assist?";
+                speak("Yes. How can I assist?");
                 return;
             }
 
-            if (conversationActive) {
-                await askGemini(spoken);
-            }
-        };
+            await askGemini(firstQuestion);
+            return;
+        }
 
-        recognition.onerror = (event) => {
-            console.warn("VOICE ERROR:", event.error);
-            listening = false;
-            if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-                voiceStatus.textContent = "UNSUPPORTED";
-                voiceStatus.className = "yellow";
-            }
-        };
+        if (conversationActive) {
+            await askGemini(spoken);
+        }
+    };
 
-        recognition.onend = () => {
-            listening = false;
-            clearTimeout(restartTimer);
-            // Cycle listener gently so it doesn't freeze the Quest browser
-            restartTimer = setTimeout(() => {
-                startListening();
-            }, 600);
-        };
-    } catch (e) {
-        voiceStatus.textContent = "UNAVAILABLE";
-        voiceStatus.className = "yellow";
-    }
-} else {
-    voiceStatus.textContent = "NOT SUPPORTED";
-    voiceStatus.className = "yellow";
+    recognition.onerror = (event) => {
+        console.log("VOICE ERROR:", event.error);
+        listening = false;
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            voiceStatus.textContent = "MIC BLOCKED";
+            voiceStatus.className = "red";
+        }
+    };
+
+    recognition.onend = () => {
+        listening = false;
+        if (mediaStream) {
+            setTimeout(startListening, 400);
+        }
+    };
 }
 
 function startListening() {
-    if (!recognition || listening) return;
+    if (!recognition) {
+        voiceStatus.textContent = "NOT SUPPORTED";
+        voiceStatus.className = "red";
+        return;
+    }
+    if (listening) return;
+
     try {
         recognition.start();
-    } catch (err) {
-        // Recognition already alive or locked
+    } catch (error) {
+        console.log("Recognition:", error.message);
     }
 }
 
 /* =====================================================
-   CAMERA IMAGE CAPTURE
+   CAPTURE CAMERA IMAGE
 ===================================================== */
 function captureCamera() {
-    if (!camera || camera.readyState < 2 || !camera.videoWidth) {
+    if (!camera || camera.readyState < 2 || camera.videoWidth <= 0 || camera.videoHeight <= 0) {
         return null;
     }
 
     const canvas = document.createElement("canvas");
-    const width = Math.min(1024, camera.videoWidth);
-    const scale = width / camera.videoWidth;
+    const maxWidth = 1024;
+    const scale = Math.min(1, maxWidth / camera.videoWidth);
 
-    canvas.width = width;
-    canvas.height = camera.videoHeight * scale;
+    canvas.width = Math.round(camera.videoWidth * scale);
+    canvas.height = Math.round(camera.videoHeight * scale);
 
     const ctx = canvas.getContext("2d");
     ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
 
-    return canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+    return canvas.toDataURL("image/jpeg", 0.75).split(",")[1];
 }
 
 /* =====================================================
-   GEMINI API
+   GEMINI
 ===================================================== */
 async function askGemini(question) {
     if (!apiKey) {
-        response.textContent = "Add your Gemini API key in Settings.";
+        response.textContent = "Please add your Gemini API key in Settings.";
         settings.style.display = "block";
         return;
     }
 
     aiStatus.textContent = "ANALYSING";
     aiStatus.className = "yellow";
-    response.textContent = "Analyzing query...";
 
-    const image = captureCamera();
+    const imageData = captureCamera();
     const parts = [
         {
-            text: `You are E.D.I.T.H., a futuristic tactical assistant. Keep responses direct, factual, and concise.
-
-User Query: ${question}`
+            text: `You are E.D.I.T.H., a futuristic personal AI assistant.
+The user asked:
+"${question}"
+You have a current image from the user's camera.
+Use the image to help answer questions about the user's surroundings.
+Identify visible objects, people, rooms, screens, signs, text, animals, vehicles, and other relevant details.
+Never invent something that is not visible.
+If something cannot be determined, say so.
+Keep answers concise and natural.
+Usually answer in 1 to 3 sentences.`
         }
     ];
 
-    if (image) {
+    if (imageData) {
         parts.push({
             inline_data: {
                 mime_type: "image/jpeg",
-                data: image
+                data: imageData
             }
         });
     }
 
     const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey);
     let result = null;
-    let errorText = "";
+    let lastError = "";
 
     for (let attempt = 1; attempt <= 3; attempt++) {
+        response.textContent = attempt === 1 ? "ANALYSING..." : "GEMINI BUSY — RETRYING...";
+
         try {
             result = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts }] })
             });
-        } catch (error) {
-            errorText = error.message;
+        } catch (networkError) {
+            lastError = networkError.message;
             break;
         }
 
         if (result.ok) break;
 
-        errorText = await result.text();
+        lastError = await result.text();
+        console.error("GEMINI:", result.status, lastError);
+
         if (result.status === 503 || result.status === 429) {
-            await new Promise(res => setTimeout(res, attempt * 2000));
+            await new Promise(resolve => setTimeout(resolve, attempt * 2500));
             continue;
         }
         break;
@@ -628,194 +656,244 @@ User Query: ${question}`
     if (!result || !result.ok) {
         aiStatus.textContent = "ERROR";
         aiStatus.className = "red";
-        response.textContent = "Gemini API Connection failed. Check API key.";
+
+        if (result && result.status === 503) {
+            response.textContent = "Gemini is temporarily busy. Try again shortly.";
+        } else if (result && result.status === 429) {
+            response.textContent = "Gemini rate limit reached. Try again shortly.";
+        } else {
+            response.textContent = "Gemini error: HTTP " + (result ? result.status : "UNKNOWN");
+        }
+        errorBox.textContent = lastError;
         return;
     }
 
     try {
         const data = await result.json();
         const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!answer) throw new Error("Empty payload");
+
+        if (!answer) throw new Error("Gemini returned no answer.");
 
         aiStatus.textContent = "ONLINE";
         aiStatus.className = "green";
         response.textContent = answer;
         speak(answer);
-    } catch (err) {
+    } catch (error) {
+        console.error("RESPONSE ERROR:", error);
         aiStatus.textContent = "ERROR";
         aiStatus.className = "red";
-        response.textContent = "Parsing error processing AI output.";
+        response.textContent = "I couldn't read the AI response.";
     }
 }
 
 /* =====================================================
-   VOICE SYNTHESIS
+   TEXT TO SPEECH
 ===================================================== */
 function speak(text) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
 
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "en-GB";
-    speech.rate = 1.0;
-    speech.pitch = 0.95;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-GB";
+    utterance.rate = 1;
+    utterance.pitch = 0.9;
 
-    speech.onstart = () => { voiceStatus.textContent = "TRANSMITTING"; };
-    speech.onend = () => { voiceStatus.textContent = "LISTENING"; };
+    utterance.onstart = () => {
+        voiceStatus.textContent = "SPEAKING";
+    };
+    utterance.onend = () => {
+        voiceStatus.textContent = "LISTENING";
+    };
 
-    window.speechSynthesis.speak(speech);
+    window.speechSynthesis.speak(utterance);
 }
 
 /* =====================================================
-   INITIALIZE APP
+   START E.D.I.T.H.
 ===================================================== */
 startButton.onclick = async () => {
     startButton.disabled = true;
     startButton.textContent = "INITIALIZING...";
 
-    await startMedia();
+    const ok = await startMedia();
+    if (!ok) {
+        startButton.disabled = false;
+        startButton.textContent = "TRY AGAIN";
+        return;
+    }
+
     start.style.display = "none";
-    startListening();
+
+    if (recognition) {
+        startListening();
+    }
 };
 
 /* =====================================================
-   WEBXR PASSTHROUGH (QUEST 3S SAFE)
+   WEBXR PASSTHROUGH (QUEST 3S COMPATIBLE)
 ===================================================== */
 let xrSession = null;
-let xrRefSpace = null;
+let xrReferenceSpace = null;
 let xrGL = null;
-let isSessionBusy = false;
+let xrStarting = false;
 
-async function checkXR() {
+async function checkWebXR() {
     if (!navigator.xr) {
-        xrStatus.textContent = "NOT AVAILABLE";
-        xrStatus.className = "red";
+        vrStatus.textContent = "NOT AVAILABLE";
+        vrStatus.className = "red";
         return;
     }
 
     try {
+        // Quest mixed-reality passthrough requires checking immersive-ar first
         const arSupported = await navigator.xr.isSessionSupported("immersive-ar");
         const vrSupported = await navigator.xr.isSessionSupported("immersive-vr");
 
         if (arSupported || vrSupported) {
-            xrStatus.textContent = arSupported ? "PASSTHROUGH AR" : "VR AVAILABLE";
-            xrStatus.className = "green";
+            vrStatus.textContent = "READY";
+            vrStatus.className = "green";
             vrButton.style.display = "block";
-            vrButton.textContent = arSupported ? "ENTER AR PASSTHROUGH" : "ENTER VR";
+            vrButton.textContent = arSupported ? "ENTER PASSTHROUGH" : "ENTER VR";
         } else {
-            xrStatus.textContent = "UNAVAILABLE";
-            xrStatus.className = "red";
+            vrStatus.textContent = "NOT SUPPORTED";
+            vrStatus.className = "yellow";
         }
-    } catch (e) {
-        console.warn("XR Detection Exception:", e);
+    } catch (error) {
+        console.error("WebXR:", error);
+        vrStatus.textContent = "UNAVAILABLE";
+        vrStatus.className = "red";
     }
 }
 
-vrButton.onclick = async () => {
-    if (isSessionBusy) return;
+vrButton.onclick = async (e) => {
+    e.preventDefault();
 
-    // If already in an active session, cleanly close it
+    // Prevent double-click race condition on Quest 3S controllers
+    if (xrStarting) return;
+    xrStarting = true;
+
     if (xrSession) {
         try {
-            isSessionBusy = true;
             await xrSession.end();
-        } catch (e) {
-            console.warn("Forced cleanup on session termination:", e);
+        } catch (err) {
+            console.warn(err);
         } finally {
             xrSession = null;
-            isSessionBusy = false;
+            xrStarting = false;
         }
         return;
     }
 
-    if (!navigator.xr) return;
-
     try {
-        isSessionBusy = true;
+        const arSupported = await navigator.xr.isSessionSupported("immersive-ar").catch(() => false);
+        const mode = arSupported ? "immersive-ar" : "immersive-vr";
 
-        const arSupported = await navigator.xr.isSessionSupported("immersive-ar");
-        const sessionMode = arSupported ? "immersive-ar" : "immersive-vr";
-
-        const sessionInit = {
+        // Required features to unblock stereo camera passthrough and project HUD on Quest
+        const sessionOptions = {
             requiredFeatures: ["local-floor"],
-            optionalFeatures: ["dom-overlay", "unbounded"],
+            optionalFeatures: ["dom-overlay"],
             domOverlay: { root: document.getElementById("hud") }
         };
 
-        const session = await navigator.xr.requestSession(sessionMode, sessionInit);
+        const session = await navigator.xr.requestSession(mode, sessionOptions);
         xrSession = session;
 
+        // Strip non-transparent layers so real-world video feed shows through
         document.body.style.background = "transparent";
+        document.documentElement.style.background = "transparent";
         camera.style.display = "none";
+        cameraOverlay.style.display = "none";
 
-        session.addEventListener("end", () => {
-            xrSession = null;
-            isSessionBusy = false;
-            document.body.style.background = "#020609";
-            if (mediaStream && cameraStatus.textContent === "ONLINE") {
-                camera.style.display = "block";
-            }
-            xrStatus.textContent = arSupported ? "PASSTHROUGH AR" : "VR AVAILABLE";
-            xrStatus.className = "green";
-            vrButton.textContent = arSupported ? "ENTER AR PASSTHROUGH" : "ENTER VR";
-        });
+        session.addEventListener("end", onXREnd);
 
-        vrButton.textContent = "EXIT E.D.I.T.H.";
-        xrStatus.textContent = "PASSTHROUGH ACTIVE";
-        xrStatus.className = "green";
+        vrButton.textContent = "EXIT VR";
+        vrStatus.textContent = arSupported ? "PASSTHROUGH ACTIVE" : "VR ACTIVE";
+        vrStatus.className = "green";
 
-        await setupXR(session);
+        await startXR(session);
     } catch (error) {
-        console.error("XR Launch Failure:", error);
-        response.textContent = "XR Error: " + error.message;
-        xrStatus.textContent = "ERROR";
-        xrStatus.className = "red";
+        console.error("WEBXR ERROR:", error);
+        vrStatus.textContent = "ERROR";
+        vrStatus.className = "red";
+        response.textContent = "Could not enter VR: " + error.message;
     } finally {
-        isSessionBusy = false;
+        xrStarting = false;
     }
 };
 
-async function setupXR(session) {
-    const canvas = document.createElement("canvas");
-    xrGL = canvas.getContext("webgl", {
-        xrCompatible: true,
-        alpha: true,
-        premultipliedAlpha: false
-    });
+function onXREnd() {
+    xrSession = null;
+    xrReferenceSpace = null;
+    xrStarting = false;
 
-    if (!xrGL) throw new Error("WebGL context init failed");
-
-    await xrGL.makeXRCompatible();
-
-    const layer = new XRWebGLLayer(session, xrGL, { alpha: true });
-    session.updateRenderState({ baseLayer: layer });
-
-    try {
-        xrRefSpace = await session.requestReferenceSpace("local-floor");
-    } catch (e) {
-        xrRefSpace = await session.requestReferenceSpace("local");
+    // Restore desktop / phone UI theme
+    document.body.style.background = "#020609";
+    document.documentElement.style.background = "#020609";
+    if (mediaStream) {
+        camera.style.display = "block";
+        cameraOverlay.style.display = "block";
     }
 
-    session.requestAnimationFrame(renderXR);
+    vrButton.textContent = "ENTER VR";
+    vrStatus.textContent = "READY";
+    vrStatus.className = "green";
 }
 
-function renderXR(time, frame) {
+async function startXR(session) {
+    try {
+        const canvas = document.createElement("canvas");
+        xrGL = canvas.getContext("webgl", {
+            xrCompatible: true,
+            alpha: true,
+            premultipliedAlpha: false
+        });
+
+        if (!xrGL) {
+            throw new Error("WebGL unavailable.");
+        }
+
+        await xrGL.makeXRCompatible();
+
+        // Transparent render base layer
+        const layer = new XRWebGLLayer(session, xrGL, { alpha: true });
+        session.updateRenderState({ baseLayer: layer });
+
+        try {
+            xrReferenceSpace = await session.requestReferenceSpace("local-floor");
+        } catch (e) {
+            xrReferenceSpace = await session.requestReferenceSpace("local");
+        }
+
+        session.requestAnimationFrame(xrFrame);
+    } catch (error) {
+        console.error("XR START ERROR:", error);
+    }
+}
+
+function xrFrame(time, frame) {
     const session = frame.session;
-    const pose = frame.getViewerPose(xrRefSpace);
+    if (!session) return;
+
+    const pose = frame.getViewerPose(xrReferenceSpace);
 
     if (pose) {
         const layer = session.renderState.baseLayer;
         xrGL.bindFramebuffer(xrGL.FRAMEBUFFER, layer.framebuffer);
 
-        // Alpha clear to 0 renders pass-through real-world view behind HUD
-        xrGL.clearColor(0.0, 0.0, 0.0, 0.0);
+        // Alpha clear to 0 is mandatory for Quest 3S color passthrough cameras
+        xrGL.clearColor(0, 0, 0, 0);
         xrGL.clear(xrGL.COLOR_BUFFER_BIT | xrGL.DEPTH_BUFFER_BIT);
     }
 
-    session.requestAnimationFrame(renderXR);
+    session.requestAnimationFrame(xrFrame);
 }
 
-checkXR();
+/* =====================================================
+   CHECK WEBXR
+===================================================== */
+checkWebXR();
 </script>
+
 </body>
+
 </html>
