@@ -3,315 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>E.D.I.T.H. Interface</title>
+    <title>E.D.I.T.H. Tactical HUD</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            color: #00d9ff;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            width: 100%; height: 100%; overflow: hidden;
+            background: transparent !important;
+            color: #00d9ff; font-family: 'Segoe UI', Arial, sans-serif;
             user-select: none;
         }
 
-        #camera {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-            z-index: 0;
-        }
+        /* Video element stays completely hidden; used only for Gemini visual analysis */
+        #camera { display: none; }
 
-        #hud {
-            position: fixed;
-            inset: 0;
-            z-index: 5;
-            pointer-events: none;
+        /* Fullscreen WebXR DOM Overlay Container */
+        #xrOverlayRoot {
+            position: fixed; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999;
+            background: transparent;
         }
 
         .logo {
-            position: absolute;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: 8px;
-            color: #00d9ff;
-            text-shadow: 0 0 12px #00d9ff;
+            position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
+            font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #00d9ff;
+            text-shadow: 0 0 15px #00d9ff;
         }
 
         .online {
-            position: absolute;
-            top: 68px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: #00ff88;
-            font-weight: bold;
+            position: absolute; top: 75px; left: 50%; transform: translateX(-50%);
+            font-size: 11px; letter-spacing: 3px; color: #00ff88; font-weight: bold;
         }
 
+        /* Central Reticle */
         .target {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 140px;
-            height: 140px;
+            position: absolute; left: 50%; top: 50%; width: 150px; height: 150px;
             transform: translate(-50%, -50%);
             border: 2px solid rgba(0, 217, 255, 0.85);
             border-radius: 50%;
-            box-shadow: 0 0 15px #00d9ff, inset 0 0 15px rgba(0, 217, 255, 0.3);
+            box-shadow: 0 0 20px #00d9ff, inset 0 0 15px rgba(0, 217, 255, 0.3);
             animation: pulse 2s infinite ease-in-out;
         }
 
         .target::before {
-            content: "";
-            position: absolute;
-            width: 200px;
-            height: 1px;
-            left: -31px;
-            top: 68px;
-            background: #00d9ff;
-            box-shadow: 0 0 8px #00d9ff;
+            content: ""; position: absolute; width: 220px; height: 1px;
+            left: -35px; top: 73px; background: #00d9ff; box-shadow: 0 0 8px #00d9ff;
         }
 
         .target::after {
-            content: "";
-            position: absolute;
-            width: 1px;
-            height: 200px;
-            top: -31px;
-            left: 68px;
-            background: #00d9ff;
-            box-shadow: 0 0 8px #00d9ff;
+            content: ""; position: absolute; width: 1px; height: 220px;
+            top: -35px; left: 73px; background: #00d9ff; box-shadow: 0 0 8px #00d9ff;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
-            50% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.75; }
+            50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
         }
 
         .vision {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 300px;
-            height: 300px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
+            position: absolute; left: 50%; top: 50%; width: 320px; height: 320px;
+            transform: translate(-50%, -50%); pointer-events: none;
         }
 
         .corner {
-            position: absolute;
-            width: 35px;
-            height: 35px;
-            border-color: #00d9ff;
-            border-style: solid;
-            filter: drop-shadow(0 0 6px #00d9ff);
+            position: absolute; width: 40px; height: 40px;
+            border-color: #00d9ff; border-style: solid;
+            filter: drop-shadow(0 0 8px #00d9ff);
         }
-
         .corner.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
         .corner.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
         .corner.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
         .corner.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
 
         .status {
-            position: absolute;
-            left: 25px;
-            bottom: 25px;
-            width: 260px;
-            padding: 16px;
-            background: rgba(2, 10, 18, 0.85);
-            border-left: 3px solid #00d9ff;
-            backdrop-filter: blur(8px);
+            position: absolute; left: 30px; bottom: 30px; width: 260px;
+            padding: 16px; background: rgba(2, 10, 18, 0.85);
+            border-left: 3px solid #00d9ff; backdrop-filter: blur(8px);
             font-size: 11px;
         }
 
-        .status h2 {
-            font-size: 12px;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .status p {
-            margin: 6px 0;
-            color: #888;
-            display: flex;
-            justify-content: space-between;
-        }
+        .status h2 { font-size: 12px; margin-bottom: 10px; letter-spacing: 2px; }
+        .status p { margin: 6px 0; color: #888; display: flex; justify-content: space-between; }
 
         .green { color: #00ff88 !important; }
         .yellow { color: #ffbb00 !important; }
         .red { color: #ff4050 !important; }
 
         #response {
-            position: absolute;
-            left: 50%;
-            bottom: 110px;
-            transform: translateX(-50%);
-            width: 70%;
-            max-width: 750px;
-            text-align: center;
-            color: #fff;
-            font-size: 18px;
-            line-height: 1.5;
-            text-shadow: 0 0 8px #000, 0 0 12px #00d9ff;
+            position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%);
+            width: 75%; max-width: 800px; text-align: center; color: #fff;
+            font-size: 20px; line-height: 1.5;
+            text-shadow: 0 0 10px #000, 0 0 14px #00d9ff;
         }
 
         #manualInputBox {
-            position: absolute;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            width: min(650px, 85%);
-            display: flex;
-            gap: 10px;
-            pointer-events: auto;
+            position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%);
+            width: min(650px, 85%); display: flex; gap: 10px; pointer-events: auto;
         }
 
         #manualInput {
-            flex: 1;
-            padding: 12px 16px;
-            background: rgba(2, 10, 18, 0.9);
-            color: #fff;
-            border: 1px solid #00d9ff;
-            outline: none;
-            font-size: 14px;
+            flex: 1; padding: 12px 16px; background: rgba(2, 10, 18, 0.9);
+            color: #fff; border: 1px solid #00d9ff; outline: none; font-size: 14px;
         }
 
         button {
-            padding: 12px 20px;
-            color: #00d9ff;
-            background: rgba(2, 10, 18, 0.9);
-            border: 1px solid #00d9ff;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            letter-spacing: 1px;
-            transition: 0.2s all;
+            padding: 12px 20px; color: #00d9ff; background: rgba(2, 10, 18, 0.9);
+            border: 1px solid #00d9ff; cursor: pointer; font-weight: bold; font-size: 13px;
+            pointer-events: auto;
         }
 
-        button:hover {
-            background: #00d9ff;
-            color: #020609;
-        }
+        button:hover { background: #00d9ff; color: #020609; }
 
-        #start {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, #051a29, #010408 80%);
+        #startScreen {
+            position: fixed; inset: 0; z-index: 10000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; background: radial-gradient(circle, #051a29, #010408 85%);
             text-align: center;
         }
 
-        #start h1 {
-            font-size: 48px;
-            letter-spacing: 10px;
-            margin-bottom: 12px;
-            text-shadow: 0 0 20px #00d9ff;
-        }
-
-        #vrButton {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 50;
-            display: none;
-        }
-
-        #settingsButton {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 50;
-        }
+        #vrButton { position: fixed; top: 25px; right: 25px; z-index: 10001; }
+        #settingsButton { position: fixed; bottom: 25px; right: 25px; z-index: 10001; }
 
         #settings {
-            position: fixed;
-            right: 20px;
-            top: 70px;
-            z-index: 60;
-            width: 320px;
-            padding: 20px;
-            background: rgba(2, 10, 18, 0.95);
-            border: 1px solid #00d9ff;
-            display: none;
+            position: fixed; right: 25px; top: 80px; z-index: 10002; width: 320px; padding: 20px;
+            background: rgba(2, 10, 18, 0.98); border: 1px solid #00d9ff; display: none;
+            pointer-events: auto;
         }
 
-        #apiKey {
-            width: 100%;
-            padding: 10px;
-            margin: 12px 0;
-            background: #000;
-            color: #fff;
-            border: 1px solid #00d9ff;
-            outline: none;
-        }
+        #apiKey { width: 100%; padding: 10px; margin: 12px 0; background: #000; color: #fff; border: 1px solid #00d9ff; }
+        #webglCanvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <video id="camera" autoplay muted playsinline></video>
+<canvas id="webglCanvas"></canvas>
 
-<div id="start">
-    <h1>E.D.I.T.H.</h1>
-    <p style="color: #888; margin-bottom: 25px; letter-spacing: 2px;">TACTICAL AUGMENTED INTERFACE</p>
-    <button id="startButton">INITIALIZE INTERFACE</button>
+<div id="startScreen">
+    <h1 style="font-size: 50px; letter-spacing: 10px; text-shadow: 0 0 20px #00d9ff;">E.D.I.T.H.</h1>
+    <p style="color: #888; margin: 15px 0 25px; letter-spacing: 2px;">TACTICAL AUGMENTED INTERFACE</p>
+    <button id="startButton">INITIALIZE SYSTEM</button>
 </div>
 
-<div id="hud">
+<div id="xrOverlayRoot">
     <div class="logo">E.D.I.T.H.</div>
     <div class="online">● SYSTEM ONLINE</div>
+    
     <div class="target"></div>
     <div class="vision">
         <div class="corner tl"></div><div class="corner tr"></div>
         <div class="corner bl"></div><div class="corner br"></div>
     </div>
+
     <div class="status">
         <h2>TELEMETRY</h2>
-        <p>OPTICAL LINK: <span id="cameraStatus" class="yellow">OFFLINE</span></p>
+        <p>MIC LINK: <span id="micStatus" class="yellow">STANDBY</span></p>
         <p>SPEECH ENGINE: <span id="voiceStatus" class="yellow">STANDBY</span></p>
         <p>NEURAL CORE: <span id="aiStatus" class="yellow">STANDBY</span></p>
-        <p>XR SUBSYSTEM: <span id="xrStatus" class="yellow">CHECKING</span></p>
+        <p>PASSTHROUGH: <span id="xrStatus" class="yellow">CHECKING</span></p>
     </div>
-    <div id="response">Awaiting directive...</div>
+
+    <div id="response">Say "E.D.I.T.H." followed by your question...</div>
+
     <div id="manualInputBox">
-        <input id="manualInput" type="text" placeholder="Speak or enter directive..." autocomplete="off">
+        <input id="manualInput" type="text" placeholder="Issue directive..." autocomplete="off">
         <button id="sendButton">EXECUTE</button>
     </div>
 </div>
 
-<button id="vrButton">ENTER PASSTHROUGH</button>
+<button id="vrButton" style="display: none;">ENTER AR PASSTHROUGH</button>
 <button id="settingsButton">⚙ SETTINGS</button>
 
 <div id="settings">
-    <p style="font-size: 12px; letter-spacing: 1px;">GEMINI API KEY</p>
-    <input id="apiKey" type="password" placeholder="Paste key here">
+    <p style="font-size: 12px;">GEMINI API KEY</p>
+    <input id="apiKey" type="password" placeholder="Paste Gemini API key">
     <div style="display: flex; gap: 8px;">
         <button id="saveKey" style="flex: 1;">SAVE</button>
         <button id="closeSettings" style="flex: 1;">CLOSE</button>
     </div>
 </div>
 
-<canvas id="xrCanvas" style="display: none;"></canvas>
-
 <script>
 const camera = document.getElementById("camera");
-const cameraStatus = document.getElementById("cameraStatus");
+const micStatus = document.getElementById("micStatus");
 const voiceStatus = document.getElementById("voiceStatus");
 const aiStatus = document.getElementById("aiStatus");
 const xrStatus = document.getElementById("xrStatus");
@@ -320,6 +192,8 @@ const vrButton = document.getElementById("vrButton");
 const settings = document.getElementById("settings");
 const apiKeyInput = document.getElementById("apiKey");
 const manualInput = document.getElementById("manualInput");
+const xrOverlayRoot = document.getElementById("xrOverlayRoot");
+const webglCanvas = document.getElementById("webglCanvas");
 
 let apiKey = localStorage.getItem("edith_gemini_key") || "";
 apiKeyInput.value = apiKey;
@@ -338,38 +212,54 @@ document.getElementById("saveKey").onclick = () => {
     settings.style.display = "none";
 };
 
-/* --- HARDWARE CAMERA ACQUISITION --- */
+/* --- AUDIO & MICROPHONE RETRIEVAL --- */
+let audioContext = null;
 let mediaStream = null;
 
 async function initSensors() {
     try {
+        // Request persistent mic access to keep audio subsystem warm on Quest
         mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment", width: { ideal: 1280 } },
-            audio: false
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            },
+            video: { facingMode: "environment", width: { ideal: 640 } }
         });
+
         camera.srcObject = mediaStream;
-        cameraStatus.textContent = "ACTIVE";
-        cameraStatus.className = "green";
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(mediaStream);
+        
+        // Connect to a silent destination to prevent Quest auto-sleeping the stream
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0;
+        source.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        micStatus.textContent = "CONNECTED";
+        micStatus.className = "green";
     } catch (e) {
-        cameraStatus.textContent = "DENIED";
-        cameraStatus.className = "red";
+        micStatus.textContent = "DENIED";
+        micStatus.className = "red";
     }
 }
 
 function captureFrame() {
     if (!camera || camera.readyState < 2 || !camera.videoWidth) return null;
     const canvas = document.createElement("canvas");
-    canvas.width = 640;
-    canvas.height = (camera.videoHeight / camera.videoWidth) * 640;
+    canvas.width = 480;
+    canvas.height = (camera.videoHeight / camera.videoWidth) * 480;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/jpeg", 0.65).split(",")[1];
+    return canvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 }
 
-/* --- SPEECH RECOGNITION & VOICE SYNTHESIS --- */
+/* --- CONTINUOUS VOICE RECOGNITION --- */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
-let recognitionActive = false;
+let isListening = false;
 
 function setupSpeech() {
     if (!SpeechRecognition) {
@@ -377,49 +267,48 @@ function setupSpeech() {
         voiceStatus.className = "red";
         return;
     }
-    
+
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.lang = "en-GB";
 
     recognition.onstart = () => {
-        recognitionActive = true;
+        isListening = true;
         voiceStatus.textContent = "LISTENING";
         voiceStatus.className = "green";
     };
 
     recognition.onerror = (e) => {
         if (e.error !== "no-speech") {
-            voiceStatus.textContent = "RETRYING";
+            voiceStatus.textContent = "RECOVERING";
             voiceStatus.className = "yellow";
         }
     };
 
     recognition.onend = () => {
-        recognitionActive = false;
-        if (mediaStream) {
-            setTimeout(startSpeechSafe, 400);
-        }
+        isListening = false;
+        // Immediate restart to bypass Quest sleep cycles
+        setTimeout(startListening, 250);
     };
 
     recognition.onresult = async (e) => {
         const text = e.results[e.results.length - 1][0].transcript.trim();
         if (/edith/i.test(text)) {
-            const query = text.replace(/edith/gi, "").trim();
-            if (query) {
-                askAI(query);
+            const cleanQuery = text.replace(/edith/gi, "").trim();
+            if (cleanQuery) {
+                askGemini(cleanQuery);
             } else {
                 speak("Standing by.");
             }
         }
     };
 
-    startSpeechSafe();
+    startListening();
 }
 
-function startSpeechSafe() {
-    if (recognition && !recognitionActive) {
+function startListening() {
+    if (recognition && !isListening) {
         try {
             recognition.start();
         } catch (e) {}
@@ -436,21 +325,21 @@ function speak(text) {
     window.speechSynthesis.speak(utt);
 }
 
-/* --- GEMINI 2.5 ANALYTICS --- */
-async function askAI(promptText) {
+/* --- GEMINI 2.5 INTEGRATION --- */
+async function askGemini(promptText) {
     if (!apiKey) {
-        responseEl.textContent = "API key required. Configure in Settings.";
+        responseEl.textContent = "Key needed. Open settings to paste.";
         speak("API key required.");
         return;
     }
 
     aiStatus.textContent = "ANALYSING";
     aiStatus.className = "yellow";
-    responseEl.textContent = "Processing visual and acoustic telemetry...";
+    responseEl.textContent = "Analyzing telemetry...";
 
     const imgBase64 = captureFrame();
     const parts = [{
-        text: `You are E.D.I.T.H., Tony Stark's tactical AI. Deliver responses in 1 to 2 short sentences. Concise, direct, and tactical.\nUser: ${promptText}`
+        text: `You are E.D.I.T.H., Tony Stark's augmented intelligence. Respond in 1-2 brief, tactical sentences.\nUser: ${promptText}`
     }];
 
     if (imgBase64) {
@@ -481,140 +370,24 @@ async function askAI(promptText) {
 
 document.getElementById("sendButton").onclick = () => {
     if (manualInput.value.trim()) {
-        askAI(manualInput.value.trim());
+        askGemini(manualInput.value.trim());
         manualInput.value = "";
     }
 };
 
-manualInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        document.getElementById("sendButton").click();
-    }
-});
-
-/* --- WEBXR IMMERSIVE PASSTHROUGH ENGINE --- */
+/* --- WEBXR IMMERSIVE PASSTHROUGH (DOM-OVERLAY) --- */
 let xrSession = null;
 let gl = null;
-let xrCanvas2D = null;
-let xrCtx2D = null;
-let hudTexture = null;
-let shaderProgram = null;
 
-async function checkXRSupport() {
+async function checkXR() {
     if (navigator.xr && await navigator.xr.isSessionSupported("immersive-ar")) {
-        xrStatus.textContent = "READY";
+        xrStatus.textContent = "AVAILABLE";
         xrStatus.className = "green";
         vrButton.style.display = "block";
     } else {
         xrStatus.textContent = "UNAVAILABLE";
         xrStatus.className = "red";
     }
-}
-
-function init2DHUD() {
-    xrCanvas2D = document.createElement("canvas");
-    xrCanvas2D.width = 1024;
-    xrCanvas2D.height = 1024;
-    xrCtx2D = xrCanvas2D.getContext("2d");
-}
-
-function updateHUDTexture(time) {
-    const ctx = xrCtx2D;
-    ctx.clearRect(0, 0, 1024, 1024);
-
-    const cx = 512, cy = 512;
-    const pulse = Math.sin(time * 0.003) * 6;
-
-    // Center Tactical Target
-    ctx.strokeStyle = "rgba(0, 217, 255, 0.9)";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 110 + pulse, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = "rgba(0, 217, 255, 0.4)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 75, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Crosshairs
-    ctx.strokeStyle = "#00d9ff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - 150, cy); ctx.lineTo(cx + 150, cy);
-    ctx.moveTo(cx, cy - 150); ctx.lineTo(cx, cy + 150);
-    ctx.stroke();
-
-    // Rotating Outer Arc
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(time * 0.001);
-    ctx.strokeStyle = "rgba(0, 255, 136, 0.8)";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(0, 0, 140, 0, 0.6);
-    ctx.stroke();
-    ctx.restore();
-
-    // Text Subtitles
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 24px monospace";
-    ctx.textAlign = "center";
-    ctx.shadowColor = "#00d9ff";
-    ctx.shadowBlur = 8;
-    ctx.fillText(responseEl.textContent.slice(0, 55), cx, cy + 220);
-}
-
-function setupGL(canvas) {
-    gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
-
-    const vs = `
-        attribute vec2 position;
-        varying vec2 uv;
-        void main() {
-            uv = (position + 1.0) * 0.5;
-            uv.y = 1.0 - uv.y;
-            gl_Position = vec4(position * 0.85, -0.1, 1.0);
-        }
-    `;
-    const fs = `
-        precision mediump float;
-        varying vec2 uv;
-        uniform sampler2D tex;
-        void main() {
-            vec4 col = texture2D(tex, uv);
-            gl_FragColor = col;
-        }
-    `;
-
-    const createShader = (type, src) => {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        return s;
-    };
-
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, createShader(gl.VERTEX_SHADER, vs));
-    gl.attachShader(shaderProgram, createShader(gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(shaderProgram);
-
-    const quad = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
-
-    const pos = gl.getAttribLocation(shaderProgram, "position");
-    gl.enableVertexAttribArray(pos);
-    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-
-    hudTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, hudTexture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 }
 
 vrButton.onclick = async () => {
@@ -624,66 +397,58 @@ vrButton.onclick = async () => {
     }
 
     try {
+        // Request WebXR with dom-overlay directly binding your HUD
         xrSession = await navigator.xr.requestSession("immersive-ar", {
-            requiredFeatures: ["hit-test"],
-            optionalFeatures: ["local-floor"]
+            optionalFeatures: ["local-floor"],
+            domOverlay: { root: xrOverlayRoot }
         });
 
-        init2DHUD();
-        const canvas = document.getElementById("xrCanvas");
-        setupGL(canvas);
-
+        gl = webglCanvas.getContext("webgl", { xrCompatible: true, alpha: true });
         const glLayer = new XRWebGLLayer(xrSession, gl, { alpha: true });
         xrSession.updateRenderState({ baseLayer: glLayer });
 
-        await xrSession.requestReferenceSpace("viewer");
-        vrButton.textContent = "EXIT PASSTHROUGH";
+        const refSpace = await xrSession.requestReferenceSpace("local");
+        vrButton.textContent = "EXIT AR";
         xrStatus.textContent = "ACTIVE";
         xrStatus.className = "green";
+
+        // Keep audio awake during session initialization
+        if (audioContext && audioContext.state === "suspended") {
+            await audioContext.resume();
+        }
+        startListening();
 
         xrSession.requestAnimationFrame(function onFrame(time, frame) {
             if (!xrSession) return;
             xrSession.requestAnimationFrame(onFrame);
 
+            // Mandatory clear with zero alpha allows passthrough to stay visible
             gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-            updateHUDTexture(time);
-
-            gl.bindTexture(gl.TEXTURE_2D, hudTexture);
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, xrCanvas2D);
-
-            gl.enable(gl.BLEND);
-            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
-            gl.useProgram(shaderProgram);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
         });
 
         xrSession.onend = () => {
             xrSession = null;
-            vrButton.textContent = "ENTER PASSTHROUGH";
-            xrStatus.textContent = "READY";
-            startSpeechSafe();
+            vrButton.textContent = "ENTER AR PASSTHROUGH";
+            xrStatus.textContent = "AVAILABLE";
+            startListening();
         };
 
-        startSpeechSafe();
-    } catch (err) {
-        responseEl.textContent = "AR Init Failed: " + err.message;
+    } catch (e) {
+        responseEl.textContent = "AR Error: " + e.message;
         xrStatus.textContent = "ERROR";
         xrStatus.className = "red";
     }
 };
 
-/* --- SYSTEM INITIALIZATION --- */
+/* --- INITIALIZATION --- */
 document.getElementById("startButton").onclick = async () => {
-    document.getElementById("start").style.display = "none";
+    document.getElementById("startScreen").style.display = "none";
     await initSensors();
     setupSpeech();
-    checkXRSupport();
-    speak("E.D.I.T.H. online and standing by.");
+    checkXR();
+    speak("E.D.I.T.H. initialized.");
 };
 </script>
 </body>
