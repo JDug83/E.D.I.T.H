@@ -17,15 +17,15 @@
 html,
 body {
     margin: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
     background: #020609;
     color: #00d9ff;
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Strips solid black background in VR so passthrough is visible */
+/* Strips browser background in VR so headset passthrough cameras show */
 :xr-overlay,
 :xr-overlay html,
 :xr-overlay body {
@@ -34,7 +34,7 @@ body {
 }
 
 /* =====================================================
-   CAMERA (2D FALLBACK)
+   FALLBACK 2D CAMERA
 ===================================================== */
 #camera {
     position: fixed;
@@ -46,31 +46,21 @@ body {
     z-index: 0;
 }
 
-#cameraOverlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    display: none;
-    background: linear-gradient(
-        rgba(0,20,30,0.05),
-        rgba(0,10,20,0.18)
-    );
-}
-
 /* =====================================================
-   HUD CONTAINER
+   FULLSCREEN HUD LAYER
 ===================================================== */
 #hud {
     position: fixed;
     inset: 0;
-    z-index: 5;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
     pointer-events: none;
     background: transparent !important;
 }
 
 /* =====================================================
-   TOP-LEFT TACTICAL CLUSTER
+   TOP-LEFT UI CLUSTER
 ===================================================== */
 .top-left-cluster {
     position: absolute;
@@ -104,7 +94,7 @@ body {
 .status {
     width: 250px;
     padding: 14px 16px;
-    background: rgba(0, 12, 20, 0.65);
+    background: rgba(0, 12, 20, 0.75);
     border-left: 2px solid #00d9ff;
     border-top: 1px solid rgba(0, 217, 255, 0.2);
     backdrop-filter: blur(8px);
@@ -128,7 +118,7 @@ body {
 .red { color: #ff4050; }
 
 /* =====================================================
-   CENTER TARGET RETICLE
+   TARGET RETICLE
 ===================================================== */
 .target {
     position: absolute;
@@ -172,19 +162,20 @@ body {
 #response {
     position: absolute;
     left: 50%;
-    bottom: 35px;
+    bottom: 40px;
     transform: translateX(-50%);
-    width: 65%;
-    max-width: 750px;
+    width: 70%;
+    max-width: 800px;
     text-align: center;
     color: white;
     font-size: 19px;
     line-height: 1.5;
     text-shadow: 0 0 10px #00d9ff;
+    pointer-events: auto;
 }
 
 /* =====================================================
-   BUTTONS
+   BUTTONS & CONTROLS
 ===================================================== */
 button {
     padding: 11px 17px;
@@ -202,16 +193,11 @@ button:hover {
     box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
 }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: wait;
-}
-
 #vrButton {
     position: fixed;
     top: 25px;
     right: 25px;
-    z-index: 30;
+    z-index: 100;
     pointer-events: auto;
     font-weight: bold;
     letter-spacing: 2px;
@@ -222,18 +208,18 @@ button:disabled {
     position: fixed;
     right: 25px;
     bottom: 25px;
-    z-index: 30;
+    z-index: 100;
     pointer-events: auto;
 }
 
 /* =====================================================
-   SETTINGS
+   SETTINGS PANEL
 ===================================================== */
 #settings {
     position: fixed;
     right: 25px;
     top: 75px;
-    z-index: 50;
+    z-index: 150;
     width: 320px;
     padding: 18px;
     background: rgba(2, 10, 15, 0.98);
@@ -267,8 +253,6 @@ button:disabled {
     margin-top: 10px;
     color: #ff4050;
     font-size: 11px;
-    line-height: 1.4;
-    word-break: break-word;
 }
 
 /* =====================================================
@@ -277,7 +261,7 @@ button:disabled {
 #start {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 200;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -295,9 +279,7 @@ button:disabled {
     font-size: 50px;
     letter-spacing: 10px;
     color: #00d9ff;
-    text-shadow:
-        0 0 15px #00d9ff,
-        0 0 40px #00d9ff;
+    text-shadow: 0 0 20px #00d9ff;
 }
 
 #start p {
@@ -314,26 +296,12 @@ button:disabled {
     font-size: 15px;
     letter-spacing: 3px;
 }
-
-#vrNotice {
-    margin-top: 20px;
-    color: #666;
-    font-size: 11px;
-    max-width: 360px;
-    line-height: 1.5;
-}
-
-:xr-overlay #settingsButton,
-:xr-overlay #start {
-    display: none !important;
-}
 </style>
 </head>
 
 <body>
 
 <video id="camera" autoplay muted playsinline></video>
-<div id="cameraOverlay"></div>
 
 <div id="start">
     <h1>E.D.I.T.H.</h1>
@@ -344,9 +312,6 @@ button:disabled {
     <button id="startButton">
         INITIALIZE E.D.I.T.H.
     </button>
-    <div id="vrNotice">
-        Once initialized, tap ENTER VR for borderless tactical passthrough.
-    </div>
 </div>
 
 <div id="hud">
@@ -382,9 +347,6 @@ button:disabled {
     <button id="saveKey">SAVE</button>
     <button id="closeSettings">CLOSE</button>
     <div id="error"></div>
-    <p style="font-size:11px;color:#666">
-        Stored locally in this browser.
-    </p>
 </div>
 
 <script>
@@ -394,7 +356,6 @@ button:disabled {
 const start = document.getElementById("start");
 const startButton = document.getElementById("startButton");
 const camera = document.getElementById("camera");
-const cameraOverlay = document.getElementById("cameraOverlay");
 const cameraStatus = document.getElementById("cameraStatus");
 const micStatus = document.getElementById("micStatus");
 const voiceStatus = document.getElementById("voiceStatus");
@@ -438,7 +399,7 @@ settingsButton.onclick = () => { settings.style.display = "block"; };
 closeSettings.onclick = () => { settings.style.display = "none"; };
 
 /* =====================================================
-   CAMERA & MICROPHONE (STANDALONE CAPTURE)
+   CAMERA & MICROPHONE
 ===================================================== */
 let mediaStream = null;
 
@@ -455,7 +416,6 @@ async function startMedia() {
 
         camera.srcObject = mediaStream;
         camera.style.display = "block";
-        cameraOverlay.style.display = "block";
 
         cameraStatus.textContent = "ONLINE";
         cameraStatus.className = "green";
@@ -475,7 +435,7 @@ async function startMedia() {
 }
 
 /* =====================================================
-   SPEECH RECOGNITION (CONTINUOUS WAKE-WORD AI VOICE)
+   SPEECH RECOGNITION (VOICE WAKE)
 ===================================================== */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -560,7 +520,7 @@ function startListening() {
 }
 
 /* =====================================================
-   CAMERA FRAME CAPTURE FOR VISION AI
+   CAMERA CAPTURE FOR VISION
 ===================================================== */
 function captureCamera() {
     if (!camera || camera.readyState < 2 || camera.videoWidth <= 0 || camera.videoHeight <= 0) {
@@ -599,8 +559,7 @@ async function askGemini(question) {
             text: `You are E.D.I.T.H., a futuristic tactical augmented AI assistant.
 The user asked:
 "${question}"
-If an image is attached, evaluate the visual input to identify objects, threats, or context in surroundings.
-Keep answers concise, robotic, and natural (1 to 2 sentences).`
+Keep answers concise and clear (1 to 2 sentences).`
         }
     ];
 
@@ -634,8 +593,6 @@ Keep answers concise, robotic, and natural (1 to 2 sentences).`
         if (result.ok) break;
 
         lastError = await result.text();
-        console.error("GEMINI:", result.status, lastError);
-
         if (result.status === 503 || result.status === 429) {
             await new Promise(resolve => setTimeout(resolve, attempt * 2500));
             continue;
@@ -646,9 +603,7 @@ Keep answers concise, robotic, and natural (1 to 2 sentences).`
     if (!result || !result.ok) {
         aiStatus.textContent = "ERROR";
         aiStatus.className = "red";
-        response.textContent = result && result.status === 503
-            ? "Gemini is temporarily busy. Try again shortly."
-            : "Gemini error: HTTP " + (result ? result.status : "UNKNOWN");
+        response.textContent = "Gemini connection error.";
         errorBox.textContent = lastError;
         return;
     }
@@ -711,7 +666,7 @@ startButton.onclick = async () => {
 };
 
 /* =====================================================
-   WEBXR: BOUNDARY-FREE PASSTHROUGH
+   WEBXR PASSTHROUGH (FULL SITE ATTACHED)
 ===================================================== */
 let xrSession = null;
 let xrReferenceSpace = null;
@@ -767,21 +722,19 @@ vrButton.onclick = async (e) => {
         const arSupported = await navigator.xr.isSessionSupported("immersive-ar").catch(() => false);
         const mode = arSupported ? "immersive-ar" : "immersive-vr";
 
-        // "unbounded" disables the Guardian boundary grid on Quest headsets
+        // Point DOM Overlay to document.body so the entire website overlays passthrough
         const sessionOptions = {
-            requiredFeatures: ["local-floor"],
-            optionalFeatures: ["unbounded", "dom-overlay"],
-            domOverlay: { root: document.getElementById("hud") }
+            requiredFeatures: ["local-floor", "dom-overlay"],
+            optionalFeatures: ["unbounded"],
+            domOverlay: { root: document.body }
         };
 
         const session = await navigator.xr.requestSession(mode, sessionOptions);
         xrSession = session;
 
-        // Clear solid background so hardware camera feed shines through
         document.body.style.background = "transparent";
         document.documentElement.style.background = "transparent";
         camera.style.display = "none";
-        cameraOverlay.style.display = "none";
 
         session.addEventListener("end", onXREnd);
 
@@ -809,7 +762,6 @@ function onXREnd() {
     document.documentElement.style.background = "#020609";
     if (mediaStream) {
         camera.style.display = "block";
-        cameraOverlay.style.display = "block";
     }
 
     vrButton.textContent = "ENTER PASSTHROUGH";
@@ -833,7 +785,6 @@ async function startXR(session) {
         const layer = new XRWebGLLayer(session, xrGL, { alpha: true });
         session.updateRenderState({ baseLayer: layer });
 
-        // Try "unbounded" reference space first to eliminate the boundary wall
         try {
             xrReferenceSpace = await session.requestReferenceSpace("unbounded");
         } catch (e) {
@@ -860,7 +811,7 @@ function xrFrame(time, frame) {
         const layer = session.renderState.baseLayer;
         xrGL.bindFramebuffer(xrGL.FRAMEBUFFER, layer.framebuffer);
 
-        // Alpha clear to 0 renders the real-world surroundings through headset cameras
+        // Alpha clear to 0 lets the real-world cameras render behind the entire website
         xrGL.clearColor(0, 0, 0, 0);
         xrGL.clear(xrGL.COLOR_BUFFER_BIT | xrGL.DEPTH_BUFFER_BIT);
     }
