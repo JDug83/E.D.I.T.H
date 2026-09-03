@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stark HUD - Homecoming Lens Vision</title>
+    <title>Stark HUD - E.D.I.T.H. Homecoming Vision</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -47,19 +47,18 @@
 <body>
 
 <div id="setupScreen">
-    <h1>STARK EYES</h1>
-    <p>HOMECOMING OPTICAL SYSTEM // K.A.R.E.N.</p>
+    <h1>E.D.I.T.H.</h1>
+    <p>TACTICAL HUD // HOMECOMING PROTOCOL</p>
     <div class="config-box">
-        <input type="password" id="apiKeyInput" placeholder="OPTIONAL: ENTER LOCAL GEMINI API KEY">
-        <input type="text" id="proxyUrlInput" placeholder="OR: SERVERLESS PROXY URL (e.g. /api/chat)">
+        <input type="password" id="apiKeyInput" placeholder="LOCAL GEMINI API KEY">
+        <input type="text" id="proxyUrlInput" placeholder="OR SERVERLESS PROXY URL">
     </div>
-    <button id="btnInit">ACTIVATE SUIT OPTICS</button>
+    <button id="btnInit">INITIALIZE SYSTEM</button>
 </div>
 
 <canvas id="canvasXR"></canvas>
 
 <script>
-// Retrieve keys saved locally on device; never pushed to GitHub
 let apiKey = localStorage.getItem("stark_edith_key") || "";
 let proxyUrl = localStorage.getItem("stark_proxy_url") || "";
 
@@ -70,23 +69,30 @@ apiKeyInput.value = apiKey;
 proxyUrlInput.value = proxyUrl;
 
 let systemStatus = "ONLINE";
-let karenResponse = "Suit diagnostics nominal. Listening for directive.";
+let edithResponse = "E.D.I.T.H. online. Audio link established.";
 let micStream = null;
 let audioContext = null;
 let mediaRecorder = null;
 let recordedChunks = [];
 let voiceDetected = false;
+let isSpeaking = false;
 let silenceTimer = null;
 let voiceEnergy = 0;
+let selectedVoice = null;
 
-// Dynamic environment targets (Homage to the movie's blue dumpster targeting node)
-const trackedTargets = [
-    { x: 380, y: 580, r: 16, label: "REF_CONTAINER_01", dist: "2.8M", color: "#00e5ff" },
-    { x: 670, y: 460, r: 11, label: "OBSTACLE_WALL", dist: "4.2M", color: "#00e5ff" }
-];
+// Populate voices specifically for Quest Browser support
+function loadVoices() {
+    if (!window.speechSynthesis) return;
+    const voices = window.speechSynthesis.getVoices();
+    selectedVoice = voices.find(v => v.lang.includes("en-GB") || v.lang.includes("en-US")) || voices[0];
+}
+if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+}
 
 /* =================================================================
-   ACCURATE HOMECOMING HUD ENGINE
+   ACCURATE FILM HUD RENDERER (Clean, Small, Cinema-Matched)
 ================================================================= */
 const hudCanvas = document.createElement("canvas");
 hudCanvas.width = 1024;
@@ -94,8 +100,8 @@ hudCanvas.height = 1024;
 const ctx = hudCanvas.getContext("2d");
 
 const CYAN = "rgba(0, 229, 255, 0.85)";
-const CYAN_GLOW = "rgba(0, 229, 255, 0.4)";
-const CRIMSON = "rgba(235, 20, 45, 0.9)";
+const CYAN_DIM = "rgba(0, 229, 255, 0.35)";
+const CRIMSON = "rgba(235, 20, 45, 0.85)";
 const CRIMSON_SHADOW = "rgba(180, 10, 30, 0.5)";
 
 function renderHomecomingDisplay(time) {
@@ -104,68 +110,65 @@ function renderHomecomingDisplay(time) {
     const pulse = Math.sin(time * 0.003);
 
     /* -------------------------------------------------------------
-       1. EYE MASK VIGNETTE (Scaled to full field of view)
+       1. EYE APERTURE VIGNETTE (Left & Right Film Cutouts)
     ------------------------------------------------------------- */
     ctx.save();
     ctx.strokeStyle = CRIMSON;
     ctx.shadowColor = CRIMSON_SHADOW;
-    ctx.shadowBlur = 24;
+    ctx.shadowBlur = 20;
 
-    // Outer Left Mask Segment
-    ctx.lineWidth = 18;
+    // Left Vignette Mask Frame
+    ctx.lineWidth = 14;
     ctx.beginPath();
-    ctx.moveTo(80, 20);
-    ctx.bezierCurveTo(5, 260, 5, 764, 80, 1004);
+    ctx.moveTo(80, 40);
+    ctx.bezierCurveTo(15, 280, 15, 744, 80, 984);
     ctx.stroke();
 
-    // Left Secondary Bevels & Notches
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(110, 70);
-    ctx.lineTo(45, 220);
-    ctx.lineTo(45, 804);
-    ctx.lineTo(110, 954);
+    ctx.moveTo(105, 90);
+    ctx.lineTo(45, 240);
+    ctx.lineTo(45, 784);
+    ctx.lineTo(105, 934);
     ctx.stroke();
 
-    // Outer Right Mask Segment
-    ctx.lineWidth = 18;
+    // Right Vignette Mask Frame
+    ctx.lineWidth = 14;
     ctx.beginPath();
-    ctx.moveTo(944, 20);
-    ctx.bezierCurveTo(1019, 260, 1019, 764, 944, 1004);
+    ctx.moveTo(944, 40);
+    ctx.bezierCurveTo(1009, 280, 1009, 744, 944, 984);
     ctx.stroke();
 
-    // Right Secondary Bevels & Notches
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(914, 70);
-    ctx.lineTo(979, 220);
-    ctx.lineTo(979, 804);
-    ctx.lineTo(914, 954);
+    ctx.moveTo(919, 90);
+    ctx.lineTo(979, 240);
+    ctx.lineTo(979, 784);
+    ctx.lineTo(919, 934);
     ctx.stroke();
-
     ctx.restore();
 
     /* -------------------------------------------------------------
-       2. TOP FLIGHT ATTITUDE / PITCH LADDER
+       2. TOP AIRCRAFT ATTITUDE / PITCH LADDER (Small & Tight)
     ------------------------------------------------------------- */
     ctx.save();
-    const ladderCenterY = 125;
+    const ladderCenterY = 90;
     ctx.strokeStyle = CYAN;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.fillStyle = CYAN;
-    ctx.font = "bold 9px monospace";
+    ctx.font = "bold 8px monospace";
     ctx.textAlign = "center";
 
-    // Center vertical attitude index
+    // Central line
     ctx.beginPath();
-    ctx.moveTo(cx, ladderCenterY - 75);
-    ctx.lineTo(cx, ladderCenterY + 65);
+    ctx.moveTo(cx, ladderCenterY - 45);
+    ctx.lineTo(cx, ladderCenterY + 45);
     ctx.stroke();
 
-    // Ladder horizontal gradient steps
-    for (let i = -4; i <= 4; i++) {
-        const y = ladderCenterY + (i * 14);
-        const w = (i === 0) ? 42 : 22 - Math.abs(i * 3);
+    // Small pitch steps
+    for (let i = -3; i <= 3; i++) {
+        const y = ladderCenterY + (i * 11);
+        const w = (i === 0) ? 28 : 16 - Math.abs(i * 2);
 
         ctx.beginPath();
         ctx.moveTo(cx - w, y);
@@ -173,7 +176,7 @@ function renderHomecomingDisplay(time) {
         ctx.stroke();
 
         if (i !== 0) {
-            const tickH = i > 0 ? -4 : 4;
+            const tickH = i > 0 ? -3 : 3;
             ctx.beginPath();
             ctx.moveTo(cx - w, y);
             ctx.lineTo(cx - w, y + tickH);
@@ -183,100 +186,85 @@ function renderHomecomingDisplay(time) {
         }
     }
 
-    // Alignment Indicator Dots
+    // Red calibration dots at base of the ladder
     ctx.fillStyle = "#ff1a35";
     ctx.beginPath();
-    ctx.arc(cx - 12, ladderCenterY + 75, 2.5, 0, Math.PI * 2);
-    ctx.arc(cx + 12, ladderCenterY + 75, 2.5, 0, Math.PI * 2);
+    ctx.arc(cx - 8, ladderCenterY + 52, 2, 0, Math.PI * 2);
+    ctx.arc(cx + 8, ladderCenterY + 52, 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     /* -------------------------------------------------------------
-       3. TOP TARGETING HEADING ARC
+       3. TOP TARGETING HEADING ARC (Dotted Guidance Curve)
     ------------------------------------------------------------- */
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 229, 255, 0.35)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 8]);
+    ctx.strokeStyle = CYAN_DIM;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 8]);
     ctx.beginPath();
-    ctx.arc(cx, cy - 200, 310, Math.PI * 1.18, Math.PI * 1.82);
+    ctx.arc(cx, cy - 240, 310, Math.PI * 1.18, Math.PI * 1.82);
     ctx.stroke();
     ctx.restore();
 
     /* -------------------------------------------------------------
-       4. BLUE HOLOGRAPHIC TRACKERS (Movie Screenshot Style)
+       4. TOP-RIGHT E.D.I.T.H. AUDIO WAVEFORM SPEAKER
     ------------------------------------------------------------- */
-    trackedTargets.forEach(tgt => {
-        ctx.save();
-        ctx.fillStyle = tgt.color;
-        ctx.shadowColor = tgt.color;
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.arc(tgt.x, tgt.y, tgt.r, 0, Math.PI * 2);
-        ctx.fill();
+    ctx.save();
+    const speakX = 760;
+    const speakY = 85;
 
-        ctx.strokeStyle = CYAN;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(tgt.x, tgt.y, tgt.r + 9 + (pulse * 2), 0, Math.PI * 2);
-        ctx.stroke();
+    ctx.fillStyle = isSpeaking ? "#00ff88" : CYAN;
+    ctx.font = "bold 11px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("E.D.I.T.H. // VOICE", speakX, speakY - 12);
 
-        ctx.beginPath();
-        ctx.moveTo(tgt.x + tgt.r + 10, tgt.y);
-        ctx.lineTo(tgt.x + tgt.r + 35, tgt.y - 12);
-        ctx.lineTo(tgt.x + tgt.r + 95, tgt.y - 12);
-        ctx.stroke();
+    // Audio Waveform Visualizer Node
+    for (let b = 0; b < 8; b++) {
+        const barHeight = isSpeaking 
+            ? Math.abs(Math.sin(time * 0.015 + b)) * 18 + 4
+            : (voiceDetected ? Math.abs(Math.sin(time * 0.02 + b)) * 22 * voiceEnergy + 3 : 3);
 
-        ctx.fillStyle = tgt.color;
-        ctx.font = "bold 10px monospace";
-        ctx.fillText(`${tgt.label} [${tgt.dist}]`, tgt.x + tgt.r + 20, tgt.y - 16);
-        ctx.restore();
-    });
+        ctx.fillStyle = isSpeaking ? "#00ff88" : (voiceDetected ? "#ff1a35" : CYAN);
+        ctx.fillRect(speakX + (b * 7), speakY - (barHeight / 2), 4, barHeight);
+    }
+    ctx.restore();
 
     /* -------------------------------------------------------------
-       5. CENTRAL ERGONOMIC RETICLE & SPEECH CLUSTER
+       5. CENTRAL ERGONOMIC RETICLE & CAPTION CLUSTER
     ------------------------------------------------------------- */
     ctx.save();
     const reticleColor = voiceDetected ? "#ff1a35" : CYAN;
     ctx.strokeStyle = reticleColor;
     ctx.lineWidth = 2;
     ctx.shadowColor = reticleColor;
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 6;
 
-    const dynamicRadius = 34 + (voiceEnergy * 28);
+    // Small, tight central aim reticle
+    const dynamicRadius = 24 + (voiceEnergy * 18);
     ctx.beginPath();
     ctx.arc(cx, cy, dynamicRadius, 0, Math.PI * 2);
     ctx.stroke();
 
+    // Cross-hairs
     ctx.beginPath();
-    ctx.moveTo(cx - 16, cy); ctx.lineTo(cx - 6, cy);
-    ctx.moveTo(cx + 6, cy); ctx.lineTo(cx + 16, cy);
-    ctx.moveTo(cx, cy - 16); ctx.lineTo(cx - 6, cy);
-    ctx.moveTo(cx, cy + 6); ctx.lineTo(cx, cy + 16);
+    ctx.moveTo(cx - 12, cy); ctx.lineTo(cx - 4, cy);
+    ctx.moveTo(cx + 4, cy); ctx.lineTo(cx + 12, cy);
+    ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy - 4);
+    ctx.moveTo(cx, cy + 4); ctx.lineTo(cx, cy + 12);
     ctx.stroke();
 
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(time * 0.0008);
-    ctx.strokeStyle = "rgba(0, 229, 255, 0.4)";
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 18]);
-    ctx.beginPath();
-    ctx.arc(0, 0, 52, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
+    // Status line directly below reticle (No eye strain)
     ctx.fillStyle = voiceDetected ? "#ff1a35" : (systemStatus === "TRANSMITTING" ? "#ffaa00" : CYAN);
-    ctx.font = "bold 12px monospace";
+    ctx.font = "bold 11px monospace";
     ctx.textAlign = "center";
-    ctx.fillText(voiceDetected ? "● AUDIO DETECTED // STREAMING" : `● K.A.R.E.N. // ${systemStatus}`, cx, cy + 74);
+    ctx.fillText(voiceDetected ? "● RECORDING DIRECTIVE..." : `● ${systemStatus}`, cx, cy + 48);
 
+    // E.D.I.T.H. Captions (Centered in clear focus)
     ctx.fillStyle = "#ffffff";
-    ctx.font = "18px 'Courier New', monospace";
+    ctx.font = "16px 'Courier New', monospace";
     ctx.shadowColor = CYAN;
     ctx.shadowBlur = 4;
-    wrapCenteredText(ctx, karenResponse, cx, cy + 110, 480, 24);
-
+    wrapCenteredText(ctx, edithResponse, cx, cy + 78, 440, 20);
     ctx.restore();
 }
 
@@ -298,7 +286,7 @@ function wrapCenteredText(context, text, x, y, maxWidth, lineHeight) {
 }
 
 /* =================================================================
-   HANDS-FREE AMBIENT VOICE PIPELINE
+   HANDS-FREE AMBIENT VAD WITH SPEECH OUTPUT
 ================================================================= */
 async function setupVAD() {
     micStream = await navigator.mediaDevices.getUserMedia({
@@ -329,7 +317,8 @@ async function setupVAD() {
         const avg = sum / dataArray.length;
         voiceEnergy = avg / 128.0;
 
-        if (avg > 25) {
+        // Sound triggers listener automatically
+        if (avg > 24 && !isSpeaking) {
             if (!voiceDetected && mediaRecorder.state === "inactive") {
                 recordedChunks = [];
                 mediaRecorder.start();
@@ -343,7 +332,7 @@ async function setupVAD() {
                     voiceDetected = false;
                     systemStatus = "TRANSMITTING";
                 }
-            }, 1100);
+            }, 1000);
         }
         requestAnimationFrame(pollMicEnergy);
     }
@@ -357,11 +346,9 @@ async function sendVocalData() {
     reader.readAsDataURL(audioBlob);
     reader.onloadend = async () => {
         const base64Audio = reader.result.split(',')[1];
-        
         try {
             let res;
             if (proxyUrl) {
-                // Route through private proxy without exposing keys
                 res = await fetch(proxyUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -371,47 +358,58 @@ async function sendVocalData() {
                     })
                 });
             } else if (apiKey) {
-                // Direct call using key saved locally on headset
                 res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: "You are Karen, Peter Parker's suit AI from Spider-Man: Homecoming. Answer tactically, warmly, and concisely in 1 to 2 short sentences." },
+                                { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Provide a concise, clear, 1-2 sentence response." },
                                 { inline_data: { mime_type: mediaRecorder.mimeType.split(';')[0], data: base64Audio } }
                             ]
                         }]
                     })
                 });
             } else {
-                throw new Error("No API Key or Proxy configured");
+                throw new Error("Missing Key");
             }
 
             const data = await res.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || data.reply || "Signal resolved. No verbal advisory.";
-            karenResponse = reply;
+            const reply = data.reply || data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal resolved.";
+            edithResponse = reply;
             systemStatus = "ONLINE";
-            speak(reply);
+            speakResponse(reply);
         } catch (err) {
-            karenResponse = "Network interruption. Check API Key configuration.";
+            edithResponse = "Connection failure. Check network or key.";
             systemStatus = "ERROR";
         }
     };
 }
 
-function speak(text) {
+function speakResponse(text) {
     if (!window.speechSynthesis) return;
+
+    // Wake audio playback context
+    if (audioContext && audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
+    if (selectedVoice) utt.voice = selectedVoice;
     utt.lang = "en-US";
-    utt.pitch = 1.05;
-    utt.rate = 1.08;
+    utt.rate = 1.05;
+    utt.pitch = 1.0;
+
+    utt.onstart = () => { isSpeaking = true; };
+    utt.onend = () => { isSpeaking = false; };
+    utt.onerror = () => { isSpeaking = false; };
+
     window.speechSynthesis.speak(utt);
 }
 
 /* =================================================================
-   WEBGL STEREOSCOPIC FULL-SCREEN ENGINE
+   WEBGL FULL-SCREEN STEREOSCOPIC ENGINE
 ================================================================= */
 const canvas = document.getElementById("canvasXR");
 const gl = canvas.getContext("webgl", { xrCompatible: true, alpha: true });
@@ -422,8 +420,7 @@ const vsSrc = `
     uniform mat4 uProj;
     varying vec2 vTex;
     void main() {
-        // Positioned 1.1m away to span the user's field of view
-        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.1, 1.0);
+        vec4 pos = vec4(aPos.x, aPos.y, aPos.z - 1.15, 1.0);
         gl_Position = uProj * pos;
         vTex = aTex;
     }
@@ -451,7 +448,6 @@ gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vsSrc));
 gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fsSrc));
 gl.linkProgram(prog);
 
-// Quad expanded to 1.8m x 1.8m for peripheral coverage
 const vertices = new Float32Array([
     -0.9, -0.9, 0.0,   0.0, 1.0,
      0.9, -0.9, 0.0,   1.0, 1.0,
@@ -487,7 +483,7 @@ document.getElementById("btnInit").onclick = async () => {
     localStorage.setItem("stark_proxy_url", proxyUrl);
 
     if (!apiKey && !proxyUrl) {
-        alert("Please provide either a local API key or a Serverless Proxy URL.");
+        alert("Provide either a local API key or a Serverless Proxy URL.");
         return;
     }
 
