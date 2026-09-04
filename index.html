@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK OPTICAL SYSTEM</title>
+<title>E.D.I.T.H. // STARK TACTICAL OPTICS</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -17,7 +17,7 @@ html, body {
 #setupScreen {
     position: fixed; inset: 0; z-index: 100;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle at center, rgba(0,70,100,.3), #000 75%);
+    background: radial-gradient(circle at center, rgba(0,70,100,.35), #000 75%);
     color: #00eaff;
 }
 .logo {
@@ -30,31 +30,50 @@ html, body {
     color: rgba(0,235,255,.6); font-size: 10px; letter-spacing: 3px;
 }
 .setupBox {
-    width: min(440px, 90vw); padding: 25px;
-    background: rgba(0,10,15,.9); border: 1px solid rgba(0,235,255,.45);
-    box-shadow: 0 0 35px rgba(0,235,255,.1);
+    width: min(460px, 90vw); padding: 25px;
+    background: rgba(0,10,15,.92); border: 1px solid rgba(0,235,255,.45);
+    box-shadow: 0 0 35px rgba(0,235,255,.12);
+}
+.input-label {
+    font-size: 10px; color: rgba(0,235,255,0.7); letter-spacing: 2px;
+    margin-bottom: 8px; display: block;
 }
 #apiKeyInput {
     width: 100%; height: 48px; border: 1px solid rgba(0,235,255,.55);
     outline: none; background: rgba(0,5,8,.95); color: white;
-    text-align: center; font-family: inherit; font-size: 13px; margin-bottom: 15px;
+    text-align: center; font-family: inherit; font-size: 13px; margin-bottom: 12px;
 }
-#btnInit {
-    width: 100%; height: 50px; border: 1px solid #00eaff;
+.key-status {
+    font-size: 10px; margin-bottom: 15px; letter-spacing: 1px;
+    min-height: 14px; text-align: center;
+}
+.btn-row {
+    display: flex; gap: 10px;
+}
+button {
+    height: 50px; border: 1px solid #00eaff;
     background: rgba(0,235,255,.12); color: #00eaff;
-    font-family: inherit; font-weight: bold; letter-spacing: 3px; cursor: pointer;
+    font-family: inherit; font-weight: bold; letter-spacing: 2px; cursor: pointer;
+    transition: all 0.2s;
 }
-#btnInit:hover { background: rgba(0,235,255,.3); }
+#btnVerify { width: 35%; font-size: 11px; }
+#btnInit { width: 65%; font-size: 13px; }
+button:hover { background: rgba(0,235,255,.3); }
 </style>
 </head>
 <body>
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // PROTOCOL 2.5</div>
+    <div class="subtitle">STARK OPTICAL AR // SUPER-ZOOM &amp; VAD</div>
     <div class="setupBox">
+        <span class="input-label">GEMINI NEURAL UPLINK KEY</span>
         <input id="apiKeyInput" type="password" placeholder="PASTE GEMINI API KEY">
-        <button id="btnInit">INITIALIZE SYSTEM</button>
+        <div class="key-status" id="keyStatus">CHECKING STORED KEY...</div>
+        <div class="btn-row">
+            <button id="btnVerify" type="button">VERIFY</button>
+            <button id="btnInit" type="button">INITIALIZE AR</button>
+        </div>
     </div>
 </div>
 
@@ -62,15 +81,63 @@ html, body {
 
 <script>
 /* ================================================================
-   PERSISTENCE & SYSTEM STATE
+   1. KEY SANITIZER & SYSTEM STATE
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnInit = document.getElementById("btnInit");
+const btnVerify = document.getElementById("btnVerify");
+const keyStatus = document.getElementById("keyStatus");
 const setupScreen = document.getElementById("setupScreen");
 const canvas = document.getElementById("canvasXR");
 
-let apiKey = localStorage.getItem("edith_gemini_key") || "";
+function sanitizeKey(raw) {
+    if (!raw) return "";
+    return raw.trim().replace(/[\s\r\n\t"']/g, "");
+}
+
+let apiKey = sanitizeKey(localStorage.getItem("edith_gemini_key") || "");
 apiKeyInput.value = apiKey;
+
+function updateKeyPreview() {
+    apiKey = sanitizeKey(apiKeyInput.value);
+    if (!apiKey) {
+        keyStatus.style.color = "#ff4444";
+        keyStatus.textContent = "KEY IS EMPTY";
+    } else if (apiKey.length < 35) {
+        keyStatus.style.color = "#ffaa00";
+        keyStatus.textContent = `KEY LENGTH (${apiKey.length}) - MIGHT BE INCOMPLETE`;
+    } else {
+        keyStatus.style.color = "#00ff88";
+        keyStatus.textContent = `KEY VALIDATED (${apiKey.substring(0, 7)}...${apiKey.substring(apiKey.length - 4)}) [${apiKey.length} chars]`;
+    }
+}
+apiKeyInput.addEventListener("input", updateKeyPreview);
+updateKeyPreview();
+
+btnVerify.onclick = async () => {
+    updateKeyPreview();
+    if (!apiKey) return;
+    keyStatus.style.color = "#00eaff";
+    keyStatus.textContent = "TESTING WITH GOOGLE SERVERS...";
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
+        });
+        if (res.ok) {
+            keyStatus.style.color = "#00ff88";
+            keyStatus.textContent = "VERIFIED! KEY IS 100% OPERATIONAL";
+        } else {
+            const err = await res.json();
+            keyStatus.style.color = "#ff4444";
+            keyStatus.textContent = `REJECTED: ${err.error?.message || res.status}`;
+        }
+    } catch (e) {
+        keyStatus.style.color = "#ff4444";
+        keyStatus.textContent = `NETWORK ERROR: ${e.message}`;
+    }
+};
 
 let session = null;
 let referenceSpace = null;
@@ -81,8 +148,14 @@ let isProcessing = false;
 let hasError = false;
 
 let systemStatus = "SYSTEM ONLINE";
-let edithResponse = "E.D.I.T.H. active. Audio link established.";
+let edithResponse = "E.D.I.T.H. active. Pinch fingers to zoom.";
 let subErrorMessage = "";
+
+// Super Zoom magnification state
+const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
+let zoomIndex = 0;
+let currentZoom = 1.0;
+let targetZoom = 1.0;
 
 let audioContext = null;
 let micStream = null;
@@ -92,7 +165,7 @@ let voiceLevel = 0;
 let silenceFrames = 0;
 
 /* ================================================================
-   HARDWARE AUDIO KEEP-ALIVE & SPEECH OUTPUT
+   2. HARDWARE AUDIO KEEP-ALIVE & TTS
 ================================================================ */
 function wakeAudioEngine() {
     if (!audioContext) {
@@ -103,7 +176,7 @@ function wakeAudioEngine() {
     }
     const osc = audioContext.createOscillator();
     const gain = audioContext.createGain();
-    gain.gain.value = 0.0001; // Prevents Quest hardware sleep
+    gain.gain.value = 0.0001;
     osc.connect(gain);
     gain.connect(audioContext.destination);
     osc.start();
@@ -121,6 +194,25 @@ function playCue(freq = 880, dur = 0.08) {
         gain.connect(audioContext.destination);
         osc.start();
         osc.stop(audioContext.currentTime + dur + 0.01);
+    } catch(e) {}
+}
+
+function playZoomServo(zoomFactor) {
+    try {
+        wakeAudioEngine();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = "sawtooth";
+        const startFreq = 300 + (zoomFactor * 90);
+        const endFreq = 650 + (zoomFactor * 120);
+        osc.frequency.setValueAtTime(startFreq, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.14);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.15);
     } catch(e) {}
 }
 
@@ -143,7 +235,7 @@ function speakVoice(text) {
 }
 
 /* ================================================================
-   16kHz DOWNSAMPLING & WAV ENCODER (STRICT GEMINI SPECIFICATION)
+   3. RESAMPLED 16kHz WAV ENCODER
 ================================================================ */
 function downsampleAndEncodeWAV(samples, inputSampleRate) {
     const targetSampleRate = 16000;
@@ -179,10 +271,10 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
     view.setUint32(16, 16, true);
     view.setUint16(20, 1, true); // Linear PCM
     view.setUint16(22, 1, true); // Mono
-    view.setUint32(24, 16000, true); // 16kHz
+    view.setUint32(24, 16000, true);
     view.setUint32(28, 16000 * 2, true);
     view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true); // 16-bit
+    view.setUint16(34, 16, true);
     writeStr(36, 'data');
     view.setUint32(40, result.length * 2, true);
 
@@ -196,7 +288,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   CONTINUOUS AMBIENT VAD PIPELINE
+   4. VOICE DETECTION (VAD) PIPELINE
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -262,7 +354,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   GEMINI API TRANSMISSION (AUDIO/WAV COMPLIANT + FULL ERROR OUTPUT)
+   5. GEMINI API TRANSMISSION (SANITIZED AUTHENTICATION)
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.4) {
@@ -281,9 +373,13 @@ async function transmitToGemini(samples) {
         }
         const base64WAV = btoa(binary);
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const cleanKey = sanitizeKey(apiKey);
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': cleanKey
+            },
             body: JSON.stringify({
                 contents: [{
                     parts: [
@@ -329,8 +425,6 @@ async function transmitToGemini(samples) {
 
         systemStatus = "UPLINK ERROR";
         edithResponse = "Neural uplink unavailable. Please retry.";
-        
-        // Output the exact raw error string to the HUD for direct troubleshooting
         subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
 
         playCue(300, 0.25);
@@ -339,8 +433,17 @@ async function transmitToGemini(samples) {
 }
 
 /* ================================================================
-   COMPLEX STARK HUD RENDERING ENGINE
-================================================================= */
+   6. SUPER ZOOM CONTROL (FINGER PINCH / TAP / TRIGGER)
+================================================================ */
+function triggerSuperZoom() {
+    zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
+    targetZoom = ZOOM_LEVELS[zoomIndex];
+    playZoomServo(targetZoom);
+}
+
+/* ================================================================
+   7. ADVANCED STARK HUD CANVAS (TELESCOPIC ZOOM SUITE)
+================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
 hud.height = 1080;
@@ -379,9 +482,13 @@ function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
 function renderHUD(time) {
     ctx.clearRect(0, 0, W, H);
 
-    /* 1. Spider-Eye Vignette Cutouts */
+    // Smooth lerp zoom interpolation
+    currentZoom += (targetZoom - currentZoom) * 0.15;
+    const isZoomed = currentZoom > 1.05;
+
+    /* 1. Spider-Eye Vignette Outlines */
     ctx.save();
-    ctx.strokeStyle = "rgba(255, 20, 40, 0.55)";
+    ctx.strokeStyle = isZoomed ? "rgba(0, 235, 255, 0.55)" : "rgba(255, 20, 40, 0.55)";
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(70, 70); ctx.bezierCurveTo(25, 280, 25, 800, 70, 1010);
@@ -389,7 +496,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 2. Top Heading Tape / Attitude Indicator */
+    /* 2. Top Heading Tape & Flight Pitch Ladder */
     ctx.save();
     const ladderY = 85;
     ctx.strokeStyle = CYAN;
@@ -407,7 +514,7 @@ function renderHUD(time) {
     }
     ctx.restore();
 
-    /* 3. Dotted Guidance Arcs */
+    /* 3. Dotted Guidance Arc */
     ctx.save();
     ctx.strokeStyle = CYAN_DIM;
     ctx.lineWidth = 1.5;
@@ -417,7 +524,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 4. Complex Rotating Compass Node */
+    /* 4. Rotating Compass Node */
     ctx.save();
     ctx.translate(CX, CY);
     ctx.rotate(time * 0.0004);
@@ -429,38 +536,63 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 5. Central Dynamic Reticle */
-    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : CYAN;
+    /* 5. TELESCOPIC SUPER-ZOOM RETICLE OVERLAY */
     ctx.save();
+    const zoomReticleRadius = (32 + (voiceLevel * 14)) * (isZoomed ? 1.4 : 1.0);
+    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (isZoomed ? "#00ff88" : CYAN);
+
     ctx.strokeStyle = mainCol;
     ctx.shadowColor = mainCol;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 12;
     ctx.lineWidth = 2;
 
-    const r = 28 + (voiceLevel * 14);
+    // Outer Reticle Ring
     ctx.beginPath();
-    ctx.arc(CX, CY, r, 0, Math.PI * 2);
+    ctx.arc(CX, CY, zoomReticleRadius, 0, Math.PI * 2);
     ctx.stroke();
 
+    // Center Aim Dot
     ctx.fillStyle = mainCol;
     ctx.beginPath();
     ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    drawLine(CX - 50, CY, CX - 16, CY, mainCol, 1.5);
+    // Crosshairs
+    drawLine(CX - 55, CY, CX - 16, CY, mainCol, 1.5);
     drawLine(CX + 16, CY, CX + 50, CY, mainCol, 1.5);
-    drawLine(CX, CY - 50, CX, CY - 16, mainCol, 1.5);
+    drawLine(CX, CY - 55, CX, CY - 16, mainCol, 1.5);
     drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
+
+    // If Zoom Active: Precision Milliradian Ticks & Brackets
+    if (isZoomed) {
+        ctx.strokeStyle = "#00ff88";
+        ctx.lineWidth = 1.5;
+        // Scope Corner Brackets
+        const sz = 120 + (currentZoom * 12);
+        drawLine(CX - sz, CY - sz, CX - sz + 25, CY - sz, "#00ff88", 2);
+        drawLine(CX - sz, CY - sz, CX - sz, CY - sz + 25, "#00ff88", 2);
+        drawLine(CX + sz, CY - sz, CX + sz - 25, CY - sz, "#00ff88", 2);
+        drawLine(CX + sz, CY - sz, CX + sz, CY - sz + 25, "#00ff88", 2);
+        drawLine(CX - sz, CY + sz, CX - sz + 25, CY + sz, "#00ff88", 2);
+        drawLine(CX - sz, CY + sz, CX - sz, CY + sz - 25, "#00ff88", 2);
+        drawLine(CX + sz, CY + sz, CX + sz - 25, CY + sz, "#00ff88", 2);
+        drawLine(CX + sz, CY + sz, CX + sz, CY + sz - 25, "#00ff88", 2);
+
+        // Zoom Telemetry Label
+        drawText(`[ MAG: ${currentZoom.toFixed(1)}X // OPTICAL PINCH ]`, CX, CY - zoomReticleRadius - 20, 11, "#00ff88", "center");
+    } else {
+        drawText(`[ 1.0X // PINCH TO ZOOM ]`, CX, CY - zoomReticleRadius - 16, 9, CYAN_DIM, "center");
+    }
     ctx.restore();
 
-    /* 6. Optical Central Cluster (Myopia Corridor) */
+    /* 6. Central Cluster (Myopia Optimized Corridor) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
-    ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
+    ctx.fillRect(CX - barW / 2, CY + 52, barW, barH);
     ctx.fillStyle = isListening ? RED : GREEN;
-    ctx.fillRect(CX - barW / 2, CY + 48, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
+    ctx.fillRect(CX - barW / 2, CY + 52, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
-    drawText(`● ${systemStatus}`, CX, CY + 70, 11, mainCol, "center");
+    drawText(`● ${systemStatus}`, CX, CY + 74, 11, mainCol, "center");
 
     ctx.save();
     ctx.font = "16px Consolas, monospace";
@@ -471,7 +603,7 @@ function renderHUD(time) {
 
     const words = edithResponse.split(" ");
     let line = "";
-    let y = CY + 98;
+    let y = CY + 102;
 
     for (let i = 0; i < words.length; i++) {
         const test = line + words[i] + " ";
@@ -486,23 +618,25 @@ function renderHUD(time) {
     ctx.fillText(line, CX, y);
     ctx.restore();
 
-    // Raw, unclipped error message displayed directly underneath
+    // Raw unclipped error message displayed directly underneath
     if (hasError || subErrorMessage) {
         drawText(subErrorMessage, CX, y + 26, 11, RED, "center");
     }
 }
 
 /* ================================================================
-   WEBGL PIPELINE
+   8. WEBGL QUAD WITH DYNAMIC ZOOM PROJECTION
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
 const vs = `
 attribute vec2 aPos;
 attribute vec2 aUV;
+uniform float uZoom;
 varying vec2 vUV;
 void main() {
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    // Zoom expands HUD geometry forward optically
+    gl_Position = vec4(aPos * uZoom, 0.0, 1.0);
     vUV = aUV;
 }`;
 
@@ -541,6 +675,7 @@ gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
 
 const posLoc = gl.getAttribLocation(prog, "aPos");
 const uvLoc = gl.getAttribLocation(prog, "aUV");
+const zoomUniformLoc = gl.getUniformLocation(prog, "uZoom");
 
 const tex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -550,14 +685,14 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   WEBXR SESSION PIPELINE (UNBOUNDED SPACE)
+   9. WEBXR SESSION // HAND PINCH + TRIGGER SUPER ZOOM
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
 
     session = await navigator.xr.requestSession("immersive-ar", {
         requiredFeatures: [],
-        optionalFeatures: ["unbounded", "local"]
+        optionalFeatures: ["unbounded", "local", "hand-tracking"]
     });
 
     xrLayer = new XRWebGLLayer(session, gl, { alpha: true, depth: false });
@@ -568,6 +703,11 @@ async function launchAR() {
     } catch(e) {
         referenceSpace = await session.requestReferenceSpace("local");
     }
+
+    // Tap with finger / hand pinch or controller trigger cycles zoom
+    session.addEventListener("select", () => {
+        triggerSuperZoom();
+    });
 
     session.requestAnimationFrame(renderFrame);
 }
@@ -599,6 +739,10 @@ function renderFrame(time, frame) {
     gl.enableVertexAttribArray(uvLoc);
     gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
+    // Pass subtle scale factor to enhance telescopic perspective
+    const renderScale = 1.0 + ((currentZoom - 1.0) * 0.08);
+    gl.uniform1f(zoomUniformLoc, renderScale);
+
     for (const view of pose.views) {
         const vp = xrLayer.getViewport(view);
         gl.viewport(vp.x, vp.y, vp.width, vp.height);
@@ -607,10 +751,10 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   BOOTSTRAP
+   10. INITIALIZATION
 ================================================================ */
 btnInit.onclick = async () => {
-    apiKey = apiKeyInput.value.trim();
+    apiKey = sanitizeKey(apiKeyInput.value);
     if (!apiKey) {
         alert("Enter your Gemini API key.");
         return;
@@ -618,7 +762,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING AR SYSTEM...";
+    btnInit.textContent = "INITIALIZING STARK AR...";
 
     try {
         wakeAudioEngine();
@@ -629,7 +773,7 @@ btnInit.onclick = async () => {
         playCue(880, 0.1);
     } catch (err) {
         btnInit.disabled = false;
-        btnInit.textContent = "INITIALIZE SYSTEM";
+        btnInit.textContent = "INITIALIZE AR";
         alert("Startup failed: " + err.message);
     }
 };
