@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK OPTICAL TACTICAL SYSTEM</title>
+<title>E.D.I.T.H. // STARK OPTICAL SYSTEM</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -262,7 +262,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   GEMINI API TRANSMISSION (AUDIO/WAV COMPLIANT)
+   GEMINI API TRANSMISSION (AUDIO/WAV COMPLIANT + FULL ERROR OUTPUT)
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.4) {
@@ -299,8 +299,14 @@ async function transmitToGemini(samples) {
         });
 
         if (!res.ok) {
-            const errBody = await res.json();
-            throw new Error(errBody.error?.message || `HTTP ${res.status}`);
+            let errDetail = `HTTP ${res.status}`;
+            try {
+                const errBody = await res.json();
+                if (errBody.error && errBody.error.message) {
+                    errDetail = errBody.error.message;
+                }
+            } catch(e) {}
+            throw new Error(errDetail);
         }
 
         const data = await res.json();
@@ -323,7 +329,9 @@ async function transmitToGemini(samples) {
 
         systemStatus = "UPLINK ERROR";
         edithResponse = "Neural uplink unavailable. Please retry.";
-        subErrorMessage = "AI ERROR";
+        
+        // Output the exact raw error string to the HUD for direct troubleshooting
+        subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
 
         playCue(300, 0.25);
         speakVoice(edithResponse);
@@ -445,7 +453,7 @@ function renderHUD(time) {
     drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
     ctx.restore();
 
-    /* 6. Optical Central Cluster (Myopia Optimized Corridor) */
+    /* 6. Optical Central Cluster (Myopia Corridor) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
@@ -478,8 +486,9 @@ function renderHUD(time) {
     ctx.fillText(line, CX, y);
     ctx.restore();
 
+    // Raw, unclipped error message displayed directly underneath
     if (hasError || subErrorMessage) {
-        drawText(subErrorMessage || "AI ERROR", CX, y + 26, 13, RED, "center");
+        drawText(subErrorMessage, CX, y + 26, 11, RED, "center");
     }
 }
 
@@ -598,7 +607,7 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   INITIALIZER BOOTSTRAP
+   BOOTSTRAP
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = apiKeyInput.value.trim();
