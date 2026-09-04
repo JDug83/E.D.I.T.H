@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // HANDS-FREE UNBOUNDED AR</title>
+<title>E.D.I.T.H. - Quest Adaptive Audio</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -17,7 +17,7 @@ html, body {
 #setupScreen {
     position: fixed; inset: 0; z-index: 100;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle at center, rgba(0,70,100,.25), #000 75%);
+    background: radial-gradient(circle at center, rgba(0,70,100,.3), #000 75%);
     color: #00eaff;
 }
 .logo {
@@ -51,7 +51,7 @@ html, body {
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">UNBOUNDED HANDS-FREE AI // MYOPIA CLUSTER</div>
+    <div class="subtitle">QUEST DYNAMIC AUDIO ADAPTER // UNBOUNDED</div>
     <div class="setupBox">
         <input id="apiKeyInput" type="password" placeholder="PASTE GEMINI API KEY">
         <button id="btnInit">INITIALIZE SYSTEM</button>
@@ -62,7 +62,7 @@ html, body {
 
 <script>
 /* ================================================================
-   SYSTEM STATE & LOCAL PERSISTENCE
+   1. CACHE & PERSISTENT STATE
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnInit = document.getElementById("btnInit");
@@ -81,31 +81,40 @@ let isProcessing = false;
 let hasError = false;
 
 let systemStatus = "SYSTEM READY";
-let edithResponse = "E.D.I.T.H. online. Listening for voice input.";
+let edithResponse = "E.D.I.T.H. active. Speak normally.";
 let subErrorMessage = "";
 
 let audioContext = null;
 let micStream = null;
-let mediaRecorder = null;
-let audioChunks = [];
+let pcmBuffer = [];
 let voiceLevel = 0;
-let silenceTimer = null;
+let silenceFrames = 0;
+let actualSampleRate = 48000; // Will adapt automatically to the Quest
 
 /* ================================================================
-   AUDIO HARDWARE KEEP-ALIVE & TTS
+   2. HARDWARE AUDIO KEEP-ALIVE
 ================================================================ */
-function unlockAudio() {
+function wakeAudioEngine() {
     if (!audioContext) {
+        // Do NOT force sampleRate to 16000: let Quest decide natively (usually 48000)
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        actualSampleRate = audioContext.sampleRate;
     }
     if (audioContext.state === "suspended") {
         audioContext.resume();
     }
+    // Tiny inaudible tone keeps headset speakers from going to sleep
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    gain.gain.value = 0.0001;
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.start();
 }
 
-function playBeep(freq = 880, dur = 0.08) {
+function playCue(freq = 880, dur = 0.08) {
     try {
-        unlockAudio();
+        wakeAudioEngine();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.frequency.setValueAtTime(freq, audioContext.currentTime);
@@ -118,9 +127,9 @@ function playBeep(freq = 880, dur = 0.08) {
     } catch(e) {}
 }
 
-function speakText(text) {
+function speakVoice(text) {
     if (!window.speechSynthesis) return;
-    unlockAudio();
+    wakeAudioEngine();
     window.speechSynthesis.cancel();
 
     const utt = new SpeechSynthesisUtterance(text);
@@ -137,9 +146,45 @@ function speakText(text) {
 }
 
 /* ================================================================
-   HANDS-FREE AMBIENT VAD (NO BUTTONS, NO TOUCH)
+   3. ADAPTIVE WAV ENCODER (MATCHES QUEST'S EXACT HARDWARE RATE)
 ================================================================ */
-async function setupHandsFreeMic() {
+function encodeWAV(samples, sampleRate) {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+
+    function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    }
+
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // Linear PCM
+    view.setUint16(22, 1, true); // Mono
+    view.setUint32(24, sampleRate, true); // Adapts to Quest 48kHz or Laptop 44.1/16kHz
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true); // 16-bit
+    writeStr(36, 'data');
+    view.setUint32(40, samples.length * 2, true);
+
+    let offset = 44;
+    for (let i = 0; i < samples.length; i++) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+    }
+    return new Uint8Array(buffer);
+}
+
+/* ================================================================
+   4. VOICE DETECTION (VAD) RUNNING ON NATIVE SAMPLE RATE
+================================================================ */
+async function setupVADPipeline() {
+    wakeAudioEngine();
+
     micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
             channelCount: 1,
@@ -149,135 +194,131 @@ async function setupHandsFreeMic() {
         }
     });
 
-    unlockAudio();
     const source = audioContext.createMediaStreamSource(micStream);
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
+
+    const processor = audioContext.createScriptProcessor(2048, 1, 1);
     source.connect(analyser);
-
-    // Use Quest's native media recorder
-    let mimeType = 'audio/webm;codecs=opus';
-    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/webm';
-    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
-
-    mediaRecorder = mimeType ? new MediaRecorder(micStream, { mimeType }) : new MediaRecorder(micStream);
-
-    mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) audioChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = async () => {
-        if (audioChunks.length === 0) {
-            isProcessing = false;
-            return;
-        }
-        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        audioChunks = [];
-        await sendAudioToGemini(blob);
-    };
+    source.connect(processor);
+    processor.connect(audioContext.destination);
 
     const freqData = new Uint8Array(analyser.frequencyBinCount);
 
-    function checkAudioEnergy() {
+    processor.onaudioprocess = (e) => {
+        if (isProcessing) return;
+
         analyser.getByteFrequencyData(freqData);
         let sum = 0;
         for (let i = 0; i < freqData.length; i++) sum += freqData[i];
         const avg = sum / freqData.length;
-        voiceLevel = avg / 60.0;
+        voiceLevel = avg / 45.0;
 
-        // Ambient voice activity trigger
-        if (avg > 14 && !isProcessing) {
-            if (!isListening && mediaRecorder.state === "inactive") {
-                audioChunks = [];
-                mediaRecorder.start();
+        const input = e.inputBuffer.getChannelData(0);
+
+        if (avg > 14) {
+            if (!isListening) {
                 isListening = true;
                 hasError = false;
                 subErrorMessage = "";
+                pcmBuffer = [];
                 systemStatus = "LISTENING...";
-                playBeep(540, 0.05);
+                playCue(540, 0.05);
             }
-            clearTimeout(silenceTimer);
-            silenceTimer = setTimeout(() => {
-                if (isListening && mediaRecorder.state === "recording") {
-                    isListening = false;
-                    isProcessing = true;
-                    systemStatus = "NEURAL UPLINK";
-                    playBeep(920, 0.07);
-                    mediaRecorder.stop();
-                }
-            }, 1000); // 1.0s silence terminates capture and sends
+            silenceFrames = 0;
+            for (let i = 0; i < input.length; i++) pcmBuffer.push(input[i]);
+        } else if (isListening) {
+            for (let i = 0; i < input.length; i++) pcmBuffer.push(input[i]);
+            silenceFrames++;
+
+            // ~1.1s of silence (adjusted for buffer size)
+            if (silenceFrames > Math.round(actualSampleRate / 2048 * 1.1)) {
+                isListening = false;
+                isProcessing = true;
+                systemStatus = "NEURAL PROCESSING";
+                playCue(920, 0.07);
+
+                const recordedSamples = pcmBuffer.slice();
+                pcmBuffer = [];
+                transmitToGemini(recordedSamples);
+            }
         }
-        requestAnimationFrame(checkAudioEnergy);
-    }
-    checkAudioEnergy();
+    };
 }
 
 /* ================================================================
-   ROBUST GEMINI AI PIPELINE
+   5. GEMINI API COMMUNICATION WITH ERROR DECODING
 ================================================================ */
-async function sendAudioToGemini(blob) {
+async function transmitToGemini(samples) {
+    if (samples.length < actualSampleRate * 0.4) {
+        isProcessing = false;
+        systemStatus = "SYSTEM READY";
+        return;
+    }
+
     try {
-        systemStatus = "PROCESSING DIRECTIVE";
+        systemStatus = "UPLINKING DIRECTIVE";
 
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = async () => {
-            const base64Audio = reader.result.split(',')[1];
-            const rawMime = mediaRecorder.mimeType.split(';')[0] || "audio/webm";
+        // Encode WAV using the headset's true native sample rate
+        const wavBytes = encodeWAV(samples, actualSampleRate);
+        let binary = '';
+        for (let i = 0; i < wavBytes.byteLength; i++) {
+            binary += String.fromCharCode(wavBytes[i]);
+        }
+        const base64WAV = btoa(binary);
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: "You are E.D.I.T.H., Tony Stark's optical tactical AI. Answer the user's vocal query concisely in maximum 1 to 2 short sentences." },
-                            { inline_data: { mime_type: rawMime, data: base64Audio } }
-                        ]
-                    }],
-                    generationConfig: {
-                        temperature: 0.3,
-                        maxOutputTokens: 100
-                    }
-                })
-            });
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: "You are E.D.I.T.H., Tony Stark's tactical optical AI. Provide a concise, clear response in maximum 1 or 2 sentences." },
+                        { inline_data: { mime_type: "audio/wav", data: base64WAV } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 90
+                }
+            })
+        });
 
-            if (!res.ok) {
-                const errBody = await res.json();
-                throw new Error(errBody.error?.message || `HTTP ${res.status}`);
-            }
+        if (!res.ok) {
+            const errBody = await res.json();
+            throw new Error(errBody.error?.message || `HTTP ${res.status}`);
+        }
 
-            const data = await res.json();
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (!reply) throw new Error("EMPTY_DATA");
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (!reply) throw new Error("EMPTY_DATA");
 
-            hasError = false;
-            subErrorMessage = "";
-            edithResponse = reply;
-            systemStatus = "DIRECTIVE COMPLETE";
-            isProcessing = false;
+        hasError = false;
+        subErrorMessage = "";
+        edithResponse = reply;
+        systemStatus = "DIRECTIVE COMPLETE";
+        isProcessing = false;
 
-            playBeep(1200, 0.1);
-            speakText(reply);
-        };
+        playCue(1200, 0.1);
+        speakVoice(reply);
+
     } catch (err) {
-        console.error("Gemini Failure:", err);
+        console.error("VR AI Error:", err);
         isProcessing = false;
         hasError = true;
 
-        // Specified error requirements
         systemStatus = "UPLINK ERROR";
         edithResponse = "Neural uplink unavailable. Please retry.";
-        subErrorMessage = "AI ERROR";
+        subErrorMessage = "AI ERROR (" + (err.message.substring(0, 30)) + ")";
 
-        playBeep(300, 0.25);
-        speakText(edithResponse);
+        playCue(300, 0.25);
+        speakVoice(edithResponse);
     }
 }
 
 /* ================================================================
-   HUD CANVAS (CENTER CLUSTERED FOR MYOPIA LENSES)
-================================================================= */
+   6. MYOPIA CENTER-LOCKED HUD
+================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
 hud.height = 1080;
@@ -316,15 +357,15 @@ function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
 function renderHUD(time) {
     ctx.clearRect(0, 0, W, H);
 
-    /* 1. Subtle Lens Mask Edges */
-    ctx.strokeStyle = "rgba(255, 20, 40, 0.5)";
+    /* Lens Mask Borders */
+    ctx.strokeStyle = "rgba(255, 20, 40, 0.45)";
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(60, 60); ctx.bezierCurveTo(20, 280, 20, 800, 60, 1020);
     ctx.moveTo(W - 60, 60); ctx.bezierCurveTo(W - 20, 280, W - 20, 800, W - 60, 1020);
     ctx.stroke();
 
-    /* 2. Central Reticle */
+    /* Central Reticle */
     const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : CYAN;
     ctx.save();
     ctx.strokeStyle = mainCol;
@@ -348,7 +389,7 @@ function renderHUD(time) {
     drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
     ctx.restore();
 
-    /* 3. Central Stack (Tight 480px focal corridor for myopia lenses) */
+    /* Central Cluster (Locked right below reticle for Myopia lenses) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
@@ -381,14 +422,13 @@ function renderHUD(time) {
     ctx.fillText(line, CX, y);
     ctx.restore();
 
-    // Red AI Error indicator rendered directly underneath
     if (hasError || subErrorMessage) {
-        drawText(subErrorMessage || "AI ERROR", CX, y + 26, 13, RED, "center");
+        drawText(subErrorMessage || "AI ERROR", CX, y + 26, 12, RED, "center");
     }
 }
 
 /* ================================================================
-   WEBGL PASSTHROUGH
+   7. WEBGL PIPELINE
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
@@ -445,15 +485,15 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   WEBXR SESSION // UNBOUNDED (GUARDIAN BOUNDARY REMOVED)
+   8. WEBXR SESSION // REMOVES GUARDIAN PERIMETER
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
 
-    // Requesting unbounded removes room guardian boundaries completely
+    // Recommending unbounded/local space eliminates the standing barrier grid
     session = await navigator.xr.requestSession("immersive-ar", {
         requiredFeatures: [],
-        optionalFeatures: ["unbounded", "local"]
+        optionalFeatures: ["unbounded", "local", "viewer"]
     });
 
     xrLayer = new XRWebGLLayer(session, gl, { alpha: true, depth: false });
@@ -461,8 +501,12 @@ async function launchAR() {
 
     try {
         referenceSpace = await session.requestReferenceSpace("unbounded");
-    } catch (e) {
-        referenceSpace = await session.requestReferenceSpace("local");
+    } catch(e) {
+        try {
+            referenceSpace = await session.requestReferenceSpace("local");
+        } catch(err) {
+            referenceSpace = await session.requestReferenceSpace("viewer");
+        }
     }
 
     session.requestAnimationFrame(renderFrame);
@@ -476,7 +520,7 @@ function renderFrame(time, frame) {
     if (!pose) return;
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-    gl.clearColor(0, 0, 0, 0); // 0.0 Alpha required for Quest passthrough
+    gl.clearColor(0, 0, 0, 0); // Transparent passthrough
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.enable(gl.BLEND);
@@ -503,7 +547,7 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   BOOT INITIALIZER
+   9. BOOTSTRAP INITIALIZER
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = apiKeyInput.value.trim();
@@ -514,15 +558,15 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING AR...";
+    btnInit.textContent = "CALIBRATING ADAPTIVE AUDIO...";
 
     try {
-        unlockAudio();
-        await setupHandsFreeMic();
+        wakeAudioEngine();
+        await setupVADPipeline();
         await launchAR();
 
         setupScreen.style.display = "none";
-        playBeep(880, 0.1);
+        playCue(880, 0.1);
     } catch (err) {
         btnInit.disabled = false;
         btnInit.textContent = "INITIALIZE SYSTEM";
