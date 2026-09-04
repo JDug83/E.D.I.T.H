@@ -3,125 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // SPIDER OPTICAL SYSTEM</title>
+<title>E.D.I.T.H. // UNBOUNDED AI</title>
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-    font-family: Consolas, "Courier New", monospace;
+    width: 100%; height: 100%; overflow: hidden;
+    background: #000; font-family: Consolas, "Courier New", monospace;
 }
-
 #canvasXR {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: transparent;
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    display: block; background: transparent;
 }
-
 #setupScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at center, rgba(0,70,100,.20), #000 70%);
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,70,100,.25), #000 75%);
     color: #00eaff;
 }
-
-#setupScreen::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,220,255,.025) 4px);
-}
-
 .logo {
-    position: relative;
-    color: white;
-    font-size: clamp(42px, 8vw, 80px);
-    font-weight: 900;
-    letter-spacing: 14px;
-    text-shadow: 0 0 8px #00eaff, 0 0 25px #00eaff, 0 0 60px rgba(0,220,255,.45);
+    color: white; font-size: clamp(38px, 7vw, 68px);
+    font-weight: 900; letter-spacing: 12px;
+    text-shadow: 0 0 10px #00eaff, 0 0 25px #00eaff;
 }
-
 .subtitle {
-    position: relative;
-    margin-top: 12px;
-    margin-bottom: 35px;
-    color: rgba(0,235,255,.55);
-    font-size: 10px;
-    letter-spacing: 4px;
+    margin-top: 10px; margin-bottom: 25px;
+    color: rgba(0,235,255,.6); font-size: 10px; letter-spacing: 3px;
 }
-
 .setupBox {
-    position: relative;
-    width: min(460px, 90vw);
-    padding: 25px;
-    background: rgba(0,10,15,.82);
-    border: 1px solid rgba(0,235,255,.45);
-    box-shadow: 0 0 40px rgba(0,235,255,.08), inset 0 0 30px rgba(0,235,255,.05);
+    width: min(440px, 90vw); padding: 25px;
+    background: rgba(0,10,15,.9); border: 1px solid rgba(0,235,255,.45);
+    box-shadow: 0 0 35px rgba(0,235,255,.1);
 }
-
-.label {
-    color: rgba(0,235,255,.5);
-    font-size: 9px;
-    letter-spacing: 3px;
-    margin-bottom: 10px;
-}
-
 #apiKeyInput {
-    width: 100%;
-    height: 50px;
-    border: 1px solid rgba(0,235,255,.55);
-    outline: none;
-    background: rgba(0,5,8,.95);
-    color: white;
-    text-align: center;
-    font-family: inherit;
-    font-size: 13px;
+    width: 100%; height: 48px; border: 1px solid rgba(0,235,255,.55);
+    outline: none; background: rgba(0,5,8,.95); color: white;
+    text-align: center; font-family: inherit; font-size: 13px; margin-bottom: 15px;
 }
-
 #btnInit {
-    width: 100%;
-    height: 52px;
-    margin-top: 15px;
-    border: 1px solid #00eaff;
-    background: rgba(0,235,255,.05);
-    color: #00eaff;
-    font-family: inherit;
-    font-weight: bold;
-    letter-spacing: 4px;
-    cursor: pointer;
+    width: 100%; height: 50px; border: 1px solid #00eaff;
+    background: rgba(0,235,255,.12); color: #00eaff;
+    font-family: inherit; font-weight: bold; letter-spacing: 3px; cursor: pointer;
 }
-
-#btnInit:hover {
-    background: rgba(0,235,255,.18);
-    box-shadow: 0 0 30px rgba(0,235,255,.4);
-}
+#btnInit:hover { background: rgba(0,235,255,.3); }
 </style>
 </head>
-
 <body>
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">OPTICAL TACTICAL INTELLIGENCE // UNBOUNDED</div>
+    <div class="subtitle">UNBOUNDED TACTICAL AI // MYOPIA CORE</div>
     <div class="setupBox">
-        <div class="label">GEMINI NEURAL UPLINK</div>
-        <input id="apiKeyInput" type="password" placeholder="GEMINI API KEY" autocomplete="off">
+        <input id="apiKeyInput" type="password" placeholder="PASTE GEMINI API KEY">
         <button id="btnInit">INITIALIZE SYSTEM</button>
     </div>
 </div>
@@ -130,11 +62,11 @@ html, body {
 
 <script>
 /* ================================================================
-   STATE
+   STATE & PERSISTENCE
 ================================================================ */
-const setupScreen = document.getElementById("setupScreen");
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnInit = document.getElementById("btnInit");
+const setupScreen = document.getElementById("setupScreen");
 const canvas = document.getElementById("canvasXR");
 
 let apiKey = localStorage.getItem("edith_gemini_key") || "";
@@ -144,29 +76,26 @@ let session = null;
 let referenceSpace = null;
 let xrLayer = null;
 
-let isRecording = false;
+let isListening = false;
 let isProcessing = false;
-let isSpeaking = false;
 let hasError = false;
 
 let systemStatus = "SYSTEM READY";
-let edithResponse = "E.D.I.T.H. online. Speak freely.";
+let edithResponse = "E.D.I.T.H. online. Listening for voice input.";
 let subErrorMessage = "";
 
-let detectedPlanes = [];
-
-/* ================================================================
-   AUDIO & DIRECT MIC PCM PIPELINE (BYPASSES BROKEN WEBM CHUNKS)
-================================================================ */
 let audioContext = null;
 let micStream = null;
+let analyserNode = null;
 let scriptProcessor = null;
-let pcmSamples = [];
-let voiceEnergy = 0;
+let pcmData = [];
 let liveLevel = 0;
-let silenceFrames = 0;
+let silenceCount = 0;
 
-function initAudio() {
+/* ================================================================
+   AUDIO HARDWARE KEEP-ALIVE & TTS
+================================================================ */
+function unlockAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
     }
@@ -175,58 +104,56 @@ function initAudio() {
     }
 }
 
-function playTone(frequency, duration, type = "sine", volume = 0.1) {
+function playBeep(freq = 880, dur = 0.08) {
     try {
-        initAudio();
+        unlockAudio();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        osc.type = type;
-        osc.frequency.value = frequency;
-        gain.gain.setValueAtTime(volume, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.12, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + dur);
         osc.connect(gain);
         gain.connect(audioContext.destination);
         osc.start();
-        osc.stop(audioContext.currentTime + duration);
-    } catch (e) {}
+        osc.stop(audioContext.currentTime + dur + 0.01);
+    } catch(e) {}
 }
 
 function speakText(text) {
     if (!window.speechSynthesis) return;
-    initAudio();
+    unlockAudio();
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 1.05;
-    utterance.pitch = 0.92;
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = "en-US";
+    utt.rate = 1.05;
+    utt.pitch = 0.95;
 
-    utterance.onstart = () => { isSpeaking = true; };
-    utterance.onend = () => {
-        isSpeaking = false;
-        if (!isRecording && !hasError) {
+    utt.onend = () => {
+        if (!isListening && !hasError) {
             systemStatus = "SYSTEM READY";
         }
     };
-    utterance.onerror = () => { isSpeaking = false; };
-
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(utt);
 }
 
-function encodeWAV(samples, sampleRate) {
+/* ================================================================
+   VALID 16kHz WAV ENCODER (Guarantees Gemini Compatibility)
+================================================================ */
+function encodeWAV(samples, sampleRate = 16000) {
     const buffer = new ArrayBuffer(44 + samples.length * 2);
     const view = new DataView(buffer);
 
-    function writeString(view, offset, string) {
+    function writeString(offset, string) {
         for (let i = 0; i < string.length; i++) {
             view.setUint8(offset + i, string.charCodeAt(i));
         }
     }
 
-    writeString(view, 0, 'RIFF');
+    writeString(0, 'RIFF');
     view.setUint32(4, 36 + samples.length * 2, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
     view.setUint32(16, 16, true);
     view.setUint16(20, 1, true); // Linear PCM
     view.setUint16(22, 1, true); // Mono
@@ -234,7 +161,7 @@ function encodeWAV(samples, sampleRate) {
     view.setUint32(28, sampleRate * 2, true);
     view.setUint16(32, 2, true);
     view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
+    writeString(36, 'data');
     view.setUint32(40, samples.length * 2, true);
 
     let offset = 44;
@@ -246,7 +173,10 @@ function encodeWAV(samples, sampleRate) {
     return new Uint8Array(buffer);
 }
 
-async function setupMicrophone() {
+/* ================================================================
+   MIC & CONTINUOUS VOICE DETECTION
+================================================================ */
+async function setupMicVAD() {
     micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
             channelCount: 1,
@@ -257,9 +187,9 @@ async function setupMicrophone() {
         }
     });
 
-    initAudio();
+    unlockAudio();
     const source = audioContext.createMediaStreamSource(micStream);
-    const analyserNode = audioContext.createAnalyser();
+    analyserNode = audioContext.createAnalyser();
     analyserNode.fftSize = 256;
 
     scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
@@ -267,57 +197,55 @@ async function setupMicrophone() {
     source.connect(scriptProcessor);
     scriptProcessor.connect(audioContext.destination);
 
-    const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+    const freqData = new Uint8Array(analyserNode.frequencyBinCount);
 
     scriptProcessor.onaudioprocess = (e) => {
-        if (isSpeaking || isProcessing) return;
+        if (isProcessing) return;
 
-        analyserNode.getByteFrequencyData(dataArray);
+        analyserNode.getByteFrequencyData(freqData);
         let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        const avg = sum / dataArray.length;
-        voiceEnergy = avg / 128.0;
+        for (let i = 0; i < freqData.length; i++) sum += freqData[i];
+        const avg = sum / freqData.length;
         liveLevel = avg / 50.0;
 
-        const inputData = e.inputBuffer.getChannelData(0);
+        const input = e.inputBuffer.getChannelData(0);
 
-        if (avg > 14) {
-            // Voice active
-            if (!isRecording) {
-                isRecording = true;
+        // Voice detected threshold
+        if (avg > 15) {
+            if (!isListening) {
+                isListening = true;
                 hasError = false;
                 subErrorMessage = "";
-                pcmSamples = [];
-                systemStatus = "LISTENING";
-                playTone(540, 0.06, "triangle");
+                pcmData = [];
+                systemStatus = "LISTENING...";
+                playBeep(540, 0.05);
             }
-            silenceFrames = 0;
-            for (let i = 0; i < inputData.length; i++) pcmSamples.push(inputData[i]);
-        } else if (isRecording) {
-            // Voice silence detection
-            for (let i = 0; i < inputData.length; i++) pcmSamples.push(inputData[i]);
-            silenceFrames++;
-            
-            // ~1.1 seconds of silence terminates capture and dispatches request
-            if (silenceFrames > 9) {
-                isRecording = false;
+            silenceCount = 0;
+            for (let i = 0; i < input.length; i++) pcmData.push(input[i]);
+        } else if (isListening) {
+            for (let i = 0; i < input.length; i++) pcmData.push(input[i]);
+            silenceCount++;
+
+            // ~1.1s of silence triggers transmission
+            if (silenceCount > 9) {
+                isListening = false;
                 isProcessing = true;
                 systemStatus = "NEURAL UPLINK";
-                playTone(920, 0.08, "triangle");
-                
-                const sampleSnapshot = pcmSamples.slice();
-                pcmSamples = [];
-                dispatchAudioToGemini(sampleSnapshot);
+                playBeep(920, 0.07);
+
+                const recorded = pcmData.slice();
+                pcmData = [];
+                sendToGemini(recorded);
             }
         }
     };
 }
 
 /* ================================================================
-   GEMINI AI DIRECTIVE (DIRECT 16kHz WAV BASE64)
+   GEMINI AI DIRECTIVE
 ================================================================ */
-async function dispatchAudioToGemini(samples) {
-    if (samples.length < 5000) {
+async function sendToGemini(samples) {
+    if (samples.length < 4000) {
         isProcessing = false;
         systemStatus = "SYSTEM READY";
         return;
@@ -333,42 +261,31 @@ async function dispatchAudioToGemini(samples) {
         }
         const base64Audio = btoa(binary);
 
-        const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey),
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: "You are E.D.I.T.H., Tony Stark's tactical optical AI. Maximum two short sentences. Crisp, calm, and concise." },
-                            { inline_data: { mime_type: "audio/wav", data: base64Audio } }
-                        ]
-                    }],
-                    generationConfig: {
-                        temperature: 0.3,
-                        maxOutputTokens: 100
-                    }
-                })
-            }
-        );
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: "You are E.D.I.T.H., Tony Stark's optical tactical AI. Respond concisely in maximum 1 to 2 short sentences." },
+                        { inline_data: { mime_type: "audio/wav", data: base64Audio } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 90
+                }
+            })
+        });
 
-        const raw = await response.text();
-        let data;
-        try {
-            data = JSON.parse(raw);
-        } catch {
-            throw new Error("Invalid response format");
+        if (!res.ok) {
+            const errBody = await res.json();
+            throw new Error(errBody.error?.message || `HTTP ${res.status}`);
         }
 
-        if (!response.ok) {
-            throw new Error(data?.error?.message || `HTTP ${response.status}`);
-        }
-
-        const reply = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
-        if (!reply) {
-            throw new Error("Empty AI transmission");
-        }
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (!reply) throw new Error("EMPTY_DATA");
 
         hasError = false;
         subErrorMessage = "";
@@ -376,11 +293,11 @@ async function dispatchAudioToGemini(samples) {
         systemStatus = "DIRECTIVE COMPLETE";
         isProcessing = false;
 
-        playTone(1200, 0.13, "sine");
+        playBeep(1200, 0.1);
         speakText(reply);
 
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
         isProcessing = false;
         hasError = true;
 
@@ -388,162 +305,110 @@ async function dispatchAudioToGemini(samples) {
         edithResponse = "Neural uplink unavailable. Please retry.";
         subErrorMessage = "AI ERROR";
 
-        playTone(220, 0.3, "sawtooth");
+        playBeep(300, 0.25);
         speakText(edithResponse);
     }
 }
 
 /* ================================================================
-   HUD CANVAS CONFIGURATION
-================================================================ */
+   HUD CANVAS (CENTER CLUSTERED FOR MYOPIA LENSES)
+================================================================= */
 const hud = document.createElement("canvas");
 hud.width = 1920;
 hud.height = 1080;
 const ctx = hud.getContext("2d");
 
-const W = 1920;
-const H = 1080;
-const CX = W / 2;
-const CY = H / 2;
+const W = 1920, H = 1080;
+const CX = W / 2, CY = H / 2;
 
-const CYAN = "rgba(0,235,255,.95)";
-const CYAN_DIM = "rgba(0,235,255,.48)";
-const RED = "rgba(255,25,45,.95)";
-const GREEN = "rgba(0,255,145,.95)";
-const WHITE = "rgba(240,255,255,.98)";
+const CYAN = "rgba(0, 235, 255, 0.95)";
+const CYAN_DIM = "rgba(0, 235, 255, 0.4)";
+const RED = "rgba(255, 25, 45, 0.95)";
+const GREEN = "rgba(0, 255, 145, 0.95)";
+const WHITE = "rgba(240, 255, 255, 0.98)";
 
-function drawText(value, x, y, size, color = CYAN, align = "left") {
+function drawText(val, x, y, size, col = CYAN, align = "left") {
     ctx.save();
     ctx.font = `${size}px Consolas, monospace`;
-    ctx.fillStyle = color;
+    ctx.fillStyle = col;
     ctx.textAlign = align;
-    ctx.shadowColor = color;
+    ctx.shadowColor = col;
     ctx.shadowBlur = 6;
-    ctx.fillText(value, x, y);
+    ctx.fillText(val, x, y);
     ctx.restore();
 }
 
-function drawLine(x1, y1, x2, y2, color = CYAN_DIM, width = 1) {
+function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
     ctx.save();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    ctx.strokeStyle = col;
+    ctx.lineWidth = w;
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
+    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
     ctx.stroke();
     ctx.restore();
 }
 
-function drawSideGraphics(time) {
-    const pulse = 0.65 + Math.sin(time * .004) * .2;
-    ctx.save();
-    ctx.lineCap = "round";
+function renderHUD(time) {
+    ctx.clearRect(0, 0, W, H);
 
-    ctx.strokeStyle = `rgba(255,20,40,${pulse})`;
-    ctx.shadowColor = RED;
-    ctx.shadowBlur = 18;
+    /* 1. Subtle Lens Mask Edges */
+    ctx.strokeStyle = "rgba(255, 20, 40, 0.5)";
     ctx.lineWidth = 3;
-
     ctx.beginPath();
-    ctx.moveTo(45, 90);
-    ctx.bezierCurveTo(20, 230, 20, 370, 48, 470);
+    ctx.moveTo(60, 60); ctx.bezierCurveTo(20, 280, 20, 800, 60, 1020);
+    ctx.moveTo(W - 60, 60); ctx.bezierCurveTo(W - 20, 280, W - 20, 800, W - 60, 1020);
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(48, 610);
-    ctx.bezierCurveTo(20, 720, 25, 850, 58, 980);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(W - 45, 90);
-    ctx.bezierCurveTo(W - 20, 230, W - 20, 370, W - 48, 470);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(W - 48, 610);
-    ctx.bezierCurveTo(W - 20, 720, W - 25, 850, W - 58, 980);
-    ctx.stroke();
-
-    ctx.restore();
-}
-
-function drawPitchLadder() {
-    const top = 65;
+    /* 2. Central Reticle */
+    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : CYAN;
     ctx.save();
-    ctx.strokeStyle = CYAN;
-    ctx.lineWidth = 1.4;
-
-    drawLine(CX, top - 25, CX, top + 75, CYAN_DIM, 1);
-
-    for (let i = -3; i <= 3; i++) {
-        const y = top + i * 15;
-        const width = i === 0 ? 34 : 16;
-        drawLine(CX - width, y, CX + width, y, i === 0 ? CYAN : CYAN_DIM, i === 0 ? 2 : 1);
-    }
-    ctx.restore();
-}
-
-function drawReticle(time) {
-    const color = isRecording ? RED : isSpeaking ? GREEN : hasError ? RED : CYAN;
-    const pulse = 1 + Math.sin(time * .006) * .06;
-    const r = (isRecording ? 44 : 32) * pulse;
-
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 14;
-
+    ctx.strokeStyle = mainCol;
+    ctx.shadowColor = mainCol;
+    ctx.shadowBlur = 10;
     ctx.lineWidth = 2;
+
+    const r = 28 + (liveLevel * 14);
     ctx.beginPath();
     ctx.arc(CX, CY, r, 0, Math.PI * 2);
     ctx.stroke();
 
+    ctx.fillStyle = mainCol;
     ctx.beginPath();
-    ctx.arc(CX, CY, 4, 0, Math.PI * 2);
-    ctx.fillStyle = color;
+    ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    drawLine(CX - 85, CY, CX - 42, CY, color, 1);
-    drawLine(CX + 42, CY, CX + 85, CY, color, 1);
-    drawLine(CX, CY - 85, CX, CY - 42, color, 1);
-    drawLine(CX, CY + 42, CX, CY + 85, color, 1);
-
+    drawLine(CX - 50, CY, CX - 16, CY, mainCol, 1.5);
+    drawLine(CX + 16, CY, CX + 50, CY, mainCol, 1.5);
+    drawLine(CX, CY - 50, CX, CY - 16, mainCol, 1.5);
+    drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
     ctx.restore();
-}
 
-function drawCentralCluster() {
-    const meterW = 160;
-    const meterH = 4;
-    const meterY = CY + 54;
-
+    /* 3. Central Stack (Tight 480px focal area for myopia lenses) */
+    const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
-    ctx.fillRect(CX - meterW / 2, meterY, meterW, meterH);
+    ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
+    ctx.fillStyle = isListening ? RED : GREEN;
+    ctx.fillRect(CX - barW / 2, CY + 48, Math.min(barW, barW * Math.max(liveLevel * 2, 0.05)), barH);
 
-    const activeW = Math.min(meterW, meterW * Math.max(liveLevel * 1.5, isRecording ? 0.4 : 0.05));
-    ctx.fillStyle = isRecording ? RED : GREEN;
-    ctx.fillRect(CX - meterW / 2, meterY, activeW, meterH);
-
-    const statusColor = isRecording ? RED : isSpeaking ? GREEN : hasError ? RED : CYAN;
-    drawText(`● ${systemStatus}`, CX, CY + 76, 11, statusColor, "center");
+    drawText(`● ${systemStatus}`, CX, CY + 70, 11, mainCol, "center");
 
     ctx.save();
     ctx.font = "16px Consolas, monospace";
     ctx.fillStyle = WHITE;
     ctx.textAlign = "center";
     ctx.shadowColor = hasError ? RED : CYAN;
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 5;
 
-    const words = edithResponse.replace(/\s+/g, " ").split(" ");
-    const maxWidth = 540;
+    const words = edithResponse.split(" ");
     let line = "";
-    let y = CY + 104;
+    let y = CY + 98;
 
-    for (const word of words) {
-        const test = line + word + " ";
-        if (ctx.measureText(test).width > maxWidth) {
+    for (let i = 0; i < words.length; i++) {
+        const test = line + words[i] + " ";
+        if (ctx.measureText(test).width > 480 && i > 0) {
             ctx.fillText(line, CX, y);
             y += 22;
-            line = word + " ";
+            line = words[i] + " ";
         } else {
             line = test;
         }
@@ -551,160 +416,129 @@ function drawCentralCluster() {
     ctx.fillText(line, CX, y);
     ctx.restore();
 
+    // Red error indicator rendered directly underneath
     if (hasError || subErrorMessage) {
-        drawText("AI ERROR", CX, y + 26, 13, RED, "center");
+        drawText(subErrorMessage || "AI ERROR", CX, y + 26, 13, RED, "center");
     }
 }
 
-function renderHUD(time) {
-    ctx.clearRect(0, 0, W, H);
-    drawSideGraphics(time);
-    drawPitchLadder();
-    drawReticle(time);
-    drawCentralCluster();
-}
-
 /* ================================================================
-   WEBGL SETUP
+   WEBGL PASSTHROUGH (PRESERVES CLEAN STEREO PASS)
 ================================================================ */
-const gl = canvas.getContext("webgl", {
-    alpha: true,
-    antialias: false,
-    depth: false,
-    stencil: false,
-    premultipliedAlpha: true
-});
+const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
-const vertexShaderSource = `
-attribute vec2 aPosition;
+const vs = `
+attribute vec2 aPos;
 attribute vec2 aUV;
 varying vec2 vUV;
 void main() {
-    gl_Position = vec4(aPosition, 0.0, 1.0);
+    gl_Position = vec4(aPos, 0.0, 1.0);
     vUV = aUV;
 }`;
 
-const fragmentShaderSource = `
+const fs = `
 precision mediump float;
-uniform sampler2D uTexture;
+uniform sampler2D uTex;
 varying vec2 vUV;
 void main() {
-    gl_FragColor = texture2D(uTexture, vUV);
+    gl_FragColor = texture2D(uTex, vUV);
 }`;
 
-function compileShader(type, source) {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    return shader;
+function createShader(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
 }
 
-const program = gl.createProgram();
-gl.attachShader(program, compileShader(gl.VERTEX_SHADER, vertexShaderSource));
-gl.attachShader(program, compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource));
-gl.linkProgram(program);
+const prog = gl.createProgram();
+gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vs));
+gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fs));
+gl.linkProgram(prog);
 
-const vertices = new Float32Array([
-    -1, -1,  0, 1,
-     1, -1,  1, 1,
-    -1,  1,  0, 0,
-    -1,  1,  0, 0,
-     1, -1,  1, 1,
-     1,  1,  1, 0
+const quad = new Float32Array([
+    -1, -1, 0, 1,
+     1, -1, 1, 1,
+    -1,  1, 0, 0,
+    -1,  1, 0, 0,
+     1, -1, 1, 1,
+     1,  1, 1, 0
 ]);
 
-const vertexBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
 
-const positionLocation = gl.getAttribLocation(program, "aPosition");
-const uvLocation = gl.getAttribLocation(program, "aUV");
+const posLoc = gl.getAttribLocation(prog, "aPos");
+const uvLoc = gl.getAttribLocation(prog, "aUV");
 
-const hudTexture = gl.createTexture();
-gl.bindTexture(gl.TEXTURE_2D, hudTexture);
+const tex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, tex);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   WEBXR SESSION // UNBOUNDED SPACE (NO GUARDIAN BOUNDARY)
+   WEBXR SESSION // UNBOUNDED (BOUNDARY-FREE LOCOMOTION)
 ================================================================ */
-async function startAR() {
+async function launchAR() {
     await gl.makeXRCompatible();
 
-    // Request unbounded space to eliminate headset Guardian room barriers
+    // Removes guardian and boundaries completely
     session = await navigator.xr.requestSession("immersive-ar", {
         requiredFeatures: [],
-        optionalFeatures: ["unbounded", "local-floor", "local"]
+        optionalFeatures: ["unbounded", "local"]
     });
 
-    xrLayer = new XRWebGLLayer(session, gl, {
-        alpha: true,
-        depth: false,
-        stencil: false
-    });
-
+    xrLayer = new XRWebGLLayer(session, gl, { alpha: true, depth: false });
     session.updateRenderState({ baseLayer: xrLayer });
 
-    // Try unbounded reference space first to allow unlimited physical navigation
     try {
         referenceSpace = await session.requestReferenceSpace("unbounded");
-    } catch {
-        try {
-            referenceSpace = await session.requestReferenceSpace("local-floor");
-        } catch {
-            referenceSpace = await session.requestReferenceSpace("local");
-        }
+    } catch (e) {
+        referenceSpace = await session.requestReferenceSpace("local");
     }
 
-    session.addEventListener("end", () => {
-        session = null;
-        systemStatus = "XR SESSION ENDED";
-    });
-
-    session.requestAnimationFrame(renderXRFrame);
+    session.requestAnimationFrame(renderFrame);
 }
 
-function renderXRFrame(time, frame) {
+function renderFrame(time, frame) {
     if (!session) return;
-    session.requestAnimationFrame(renderXRFrame);
+    session.requestAnimationFrame(renderFrame);
 
     const pose = frame.getViewerPose(referenceSpace);
     if (!pose) return;
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-    gl.disable(gl.DEPTH_TEST);
+    gl.clearColor(0, 0, 0, 0); // Transparent pass
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
     renderHUD(time);
 
-    gl.bindTexture(gl.TEXTURE_2D, hudTexture);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hud);
 
-    gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 16, 0);
-
-    gl.enableVertexAttribArray(uvLocation);
-    gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 16, 8);
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 16, 0);
+    gl.enableVertexAttribArray(uvLoc);
+    gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
     for (const view of pose.views) {
-        const viewport = xrLayer.getViewport(view);
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        const vp = xrLayer.getViewport(view);
+        gl.viewport(vp.x, vp.y, vp.width, vp.height);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 }
 
 /* ================================================================
-   INITIALIZATION
+   BOOT INITIALIZER
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = apiKeyInput.value.trim();
@@ -715,28 +549,24 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "STARTING PASSTHROUGH...";
+    btnInit.textContent = "INITIALIZING AR...";
 
     try {
-        initAudio();
-        await setupMicrophone();
-        await startAR();
+        unlockAudio();
+        await setupMicVAD();
+        await launchAR();
 
         setupScreen.style.display = "none";
-        systemStatus = "PASSTHROUGH ONLINE";
-
-        playTone(650, 0.07, "triangle");
-        setTimeout(() => playTone(1050, 0.12, "triangle"), 100);
-    } catch (error) {
-        console.error(error);
+        playBeep(880, 0.1);
+    } catch (err) {
         btnInit.disabled = false;
         btnInit.textContent = "INITIALIZE SYSTEM";
-        alert("Initialization failed:\n\n" + error.message);
+        alert("Startup failed: " + err.message);
     }
 };
 
 window.addEventListener("beforeunload", () => {
-    if (micStream) micStream.getTracks().forEach(track => track.stop());
+    if (micStream) micStream.getTracks().forEach(t => t.stop());
     if (session) session.end();
 });
 
