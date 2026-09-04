@@ -73,7 +73,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // NEAR-FIELD TACTICAL HUD</div>
+    <div class="subtitle">STARK DEFENCE OPTICS // TACTICAL AR INTERFACE</div>
     <div class="setupBox">
         <span class="input-label">GEMINI AI STUDIO KEY (HEADSET STORAGE ONLY)</span>
         <div class="input-wrap">
@@ -92,7 +92,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY RECOVERY & SYSTEM SETUP
+   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
@@ -142,7 +142,7 @@ btnVerify.onclick = async () => {
     updateKeyPreview();
     if (!apiKey) return;
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "TESTING GEMINI 1.5 FLASH UPLINK...";
+    keyStatus.textContent = "TESTING STANDARD GEMINI 1.5 FLASH...";
     try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: "POST",
@@ -151,7 +151,7 @@ btnVerify.onclick = async () => {
         });
         if (res.ok) {
             keyStatus.style.color = "#00ff88";
-            keyStatus.textContent = "VERIFIED! GEMINI 1.5 UPLINK ACTIVE (1,500 RPD)";
+            keyStatus.textContent = "VERIFIED! STANDARD GEMINI KEY ACTIVE (1,500 RPD)";
             localStorage.setItem("edith_gemini_key", apiKey);
         } else {
             const err = await res.json();
@@ -194,17 +194,17 @@ let zoomIndex = 0;
 let currentZoom = 1.0;
 let targetZoom = 1.0;
 
-// Real Surface Hit Tracking (WebXR Depth Ray)
+// Real Surface Hit Tracking (WebXR Hardware Raycast)
 let realHitDetected = false;
 let realSurfaceDist = 0;
 let realHit3D = [0, 0, -1];
 let lockedTargets = [];
 
 const TARGET_CATALOGUE = [
-    { label: "SURFACE // STRUCTURAL INTERCEPT", threat: "SECURE" },
-    { label: "OBJECT // TACTICAL PERIMETER", threat: "NOMINAL" },
+    { label: "STRUCTURAL // SURFACE BOUNDARY", threat: "SECURE" },
+    { label: "TACTICAL // WORKSPACE INTERCEPT", threat: "NOMINAL" },
     { label: "BIOMETRIC // ENTITY VECTOR", threat: "MONITORED" },
-    { label: "ACCESS // APERTURE BOUNDARY", threat: "CLEAR" }
+    { label: "PERIMETER // APERTURE AXIS", threat: "CLEAR" }
 ];
 
 let audioContext = null;
@@ -355,7 +355,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. VOICE ACTIVITY DETECTION (450ms SILENCE GATE)
+   4. VOICE ACTIVITY DETECTION (450ms SILENCE PAUSE)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -423,7 +423,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. GEMINI 1.5 FLASH TRANSMISSION (1,500 FREE RPD)
+   5. STANDARD GEMINI 1.5 FLASH TRANSMISSION
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
@@ -514,15 +514,13 @@ async function transmitToGemini(samples) {
 }
 
 /* ================================================================
-   6. USER INTERACTION: ZOOM & REAL TARGET ACQUISITION
+   6. USER INTERACTION: OPTICAL ZOOM & REAL TARGET LOCK
 ================================================================ */
 function handlePinchTap() {
-    // Cycle super-zoom magnification
     zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
     targetZoom = ZOOM_LEVELS[zoomIndex];
     playServoSound(targetZoom);
 
-    // If aiming at real physical geometry, lock a persistent 3D bracket
     if (realHitDetected) {
         const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
         lockedTargets.push({
@@ -537,7 +535,7 @@ function handlePinchTap() {
 }
 
 /* ================================================================
-   7. NEAR-FIELD STARK HUD CANVAS (OPTIMIZED FOR OCULAR FOV)
+   7. NEAR-FIELD STARK HUD CANVAS (OPTIMIZED OCULAR FOV)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -577,11 +575,10 @@ function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
 function renderHUD(time) {
     ctx.clearRect(0, 0, W, H);
 
-    // Smooth lerp zoom interpolation
     currentZoom += (targetZoom - currentZoom) * 0.2;
     const isZoomed = currentZoom > 1.05;
 
-    /* 1. Curved Holographic Edge Vignette */
+    /* 1. Curved Peripheral Guides */
     ctx.save();
     ctx.strokeStyle = isZoomed ? "rgba(0, 255, 145, 0.6)" : "rgba(0, 235, 255, 0.35)";
     ctx.lineWidth = 2.5;
@@ -591,19 +588,19 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 2. Top Banner: UK Time & Systems */
+    /* 2. Top Banner: UK Clock & Telemetry */
     const ukTimeStr = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour12: false });
     const ukDateStr = new Date().toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
 
     drawText(`UK // ${ukTimeStr} BST`, CX - 320, 90, 14, WHITE, "left");
     drawText(`DATE // ${ukDateStr}`, CX - 320, 110, 10, CYAN_DIM, "left");
 
-    drawText(`STARK-NET // SECURE`, CX + 320, 90, 11, GREEN, "right");
+    drawText(`STARK-NET // 128.02.5.4`, CX + 320, 90, 11, GREEN, "right");
     drawText(`MAG // ${currentZoom.toFixed(1)}X TELESCOPIC`, CX + 320, 110, 12, isZoomed ? GREEN : CYAN, "right");
 
     drawLine(CX - 325, 75, CX + 325, 75, CYAN_DIM, 1);
 
-    /* 3. Central Tactical Scope & Optical Magnifier Frame */
+    /* 3. Central Tactical Reticle & Scope Frame */
     const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (realHitDetected ? GREEN : CYAN);
 
     ctx.save();
@@ -614,24 +611,20 @@ function renderHUD(time) {
     ctx.shadowBlur = 10;
     ctx.lineWidth = 2;
 
-    // Optical Lens Reticle
     ctx.beginPath();
     ctx.arc(CX, CY, scopeRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Center Aim Point
     ctx.fillStyle = mainCol;
     ctx.beginPath();
     ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Crosshairs
     drawLine(CX - scopeRadius - 35, CY, CX - scopeRadius + 12, CY, mainCol, 1.5);
     drawLine(CX + scopeRadius - 12, CY, CX + scopeRadius + 35, CY, mainCol, 1.5);
     drawLine(CX, CY - scopeRadius - 35, CX, CY - scopeRadius + 12, mainCol, 1.5);
     drawLine(CX, CY + scopeRadius - 12, CX, CY + scopeRadius + 35, mainCol, 1.5);
 
-    // If Zoom Active: Optical Magnification Brackets
     if (isZoomed) {
         ctx.strokeStyle = GREEN;
         ctx.lineWidth = 2;
@@ -648,7 +641,6 @@ function renderHUD(time) {
         drawText(`[ TELESCOPIC ZOOM: ${currentZoom.toFixed(1)}X ]`, CX, CY - scopeRadius - 22, 11, GREEN, "center");
     }
 
-    // Live Physical Hit-Test Range Reading
     if (realHitDetected) {
         drawText(`[ REAL SURFACE RANGE: ${realSurfaceDist.toFixed(2)}M ]`, CX, CY + scopeRadius + 22, 10.5, GREEN, "center");
     } else {
@@ -691,7 +683,7 @@ function renderHUD(time) {
         ctx.restore();
     }
 
-    /* 5. Central Corridor: Natural Voice Subtitles & Status */
+    /* 5. Central Corridor: Voice Subtitles & Status */
     const barW = 150, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 54, barW, barH);
@@ -740,7 +732,6 @@ attribute vec2 aUV;
 uniform float uNearScale;
 varying vec2 vUV;
 void main() {
-    // Positions the HUD in comfortable near-field reading distance
     gl_Position = vec4(aPos * uNearScale, 0.0, 1.0);
     vUV = aUV;
 }`;
@@ -812,7 +803,6 @@ async function launchAR() {
     const viewerSpace = await session.requestReferenceSpace("viewer");
     hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
 
-    // Tap/Pinch handles zoom + object lock
     session.addEventListener("select", () => {
         handlePinchTap();
     });
@@ -827,7 +817,6 @@ function renderFrame(time, frame) {
     const pose = frame.getViewerPose(referenceSpace);
     if (!pose) return;
 
-    // Continuous real-world depth raycast
     if (hitTestSource) {
         const hits = frame.getHitTestResults(hitTestSource);
         if (hits.length > 0) {
@@ -863,7 +852,6 @@ function renderFrame(time, frame) {
     gl.enableVertexAttribArray(uvLoc);
     gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
-    // Near-field comfortable ocular projection factor (0.65m in front of eyes)
     const ocularScale = 0.95 + ((currentZoom - 1.0) * 0.05);
     gl.uniform1f(nearScaleLoc, ocularScale);
 
@@ -875,7 +863,7 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   10. BOOTSTRAP INITIALIZATION
+   10. INITIALIZATION
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = cleanGeminiKey(apiKeyInput.value);
