@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK TACTICAL OPTICS</title>
+<title>E.D.I.T.H. // STARK OPTICAL AR</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -21,31 +21,39 @@ html, body {
     color: #00eaff;
 }
 .logo {
-    color: white; font-size: clamp(38px, 7vw, 68px);
+    color: white; font-size: clamp(36px, 7vw, 64px);
     font-weight: 900; letter-spacing: 12px;
     text-shadow: 0 0 10px #00eaff, 0 0 25px #00eaff;
 }
 .subtitle {
-    margin-top: 10px; margin-bottom: 25px;
+    margin-top: 8px; margin-bottom: 22px;
     color: rgba(0,235,255,.6); font-size: 10px; letter-spacing: 3px;
 }
 .setupBox {
-    width: min(460px, 90vw); padding: 25px;
-    background: rgba(0,10,15,.92); border: 1px solid rgba(0,235,255,.45);
+    width: min(480px, 92vw); padding: 22px;
+    background: rgba(0,10,15,.94); border: 1px solid rgba(0,235,255,.45);
     box-shadow: 0 0 35px rgba(0,235,255,.12);
 }
 .input-label {
     font-size: 10px; color: rgba(0,235,255,0.7); letter-spacing: 2px;
     margin-bottom: 8px; display: block;
 }
+.input-wrap {
+    display: flex; gap: 6px; margin-bottom: 10px;
+}
 #apiKeyInput {
-    width: 100%; height: 48px; border: 1px solid rgba(0,235,255,.55);
+    flex: 1; height: 48px; border: 1px solid rgba(0,235,255,.55);
     outline: none; background: rgba(0,5,8,.95); color: white;
-    text-align: center; font-family: inherit; font-size: 13px; margin-bottom: 12px;
+    text-align: left; padding: 0 14px; font-family: inherit; font-size: 13px;
+}
+#btnToggleShow {
+    width: 70px; height: 48px; border: 1px solid rgba(0,235,255,.4);
+    background: rgba(0,235,255,.08); color: #00eaff;
+    font-family: inherit; font-size: 11px; cursor: pointer;
 }
 .key-status {
     font-size: 10px; margin-bottom: 15px; letter-spacing: 1px;
-    min-height: 14px; text-align: center;
+    min-height: 28px; line-height: 14px; text-align: center;
 }
 .btn-row {
     display: flex; gap: 10px;
@@ -65,11 +73,14 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK OPTICAL AR // SUPER-ZOOM &amp; VAD</div>
+    <div class="subtitle">STARK OPTICAL AR // FAST CONVERSATION</div>
     <div class="setupBox">
-        <span class="input-label">GEMINI NEURAL UPLINK KEY</span>
-        <input id="apiKeyInput" type="password" placeholder="PASTE GEMINI API KEY">
-        <div class="key-status" id="keyStatus">CHECKING STORED KEY...</div>
+        <span class="input-label">GEMINI AI STUDIO KEY</span>
+        <div class="input-wrap">
+            <input id="apiKeyInput" type="password" placeholder="Paste AIzaSy... key here">
+            <button id="btnToggleShow" type="button">SHOW</button>
+        </div>
+        <div class="key-status" id="keyStatus">ENTER KEY TO VALIDATE</div>
         <div class="btn-row">
             <button id="btnVerify" type="button">VERIFY</button>
             <button id="btnInit" type="button">INITIALIZE AR</button>
@@ -81,34 +92,47 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY SANITIZER & SYSTEM STATE
+   1. KEY RECOVERY & SANITIZER
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
+const btnToggleShow = document.getElementById("btnToggleShow");
 const btnInit = document.getElementById("btnInit");
 const btnVerify = document.getElementById("btnVerify");
 const keyStatus = document.getElementById("keyStatus");
 const setupScreen = document.getElementById("setupScreen");
 const canvas = document.getElementById("canvasXR");
 
-function sanitizeKey(raw) {
+btnToggleShow.onclick = () => {
+    if (apiKeyInput.type === "password") {
+        apiKeyInput.type = "text";
+        btnToggleShow.textContent = "HIDE";
+    } else {
+        apiKeyInput.type = "password";
+        btnToggleShow.textContent = "SHOW";
+    }
+};
+
+function cleanGeminiKey(raw) {
     if (!raw) return "";
-    return raw.trim().replace(/[\s\r\n\t"']/g, "");
+    let str = raw.trim();
+    const match = str.match(/AIzaSy[A-Za-z0-9_-]{33}/);
+    if (match) return match[0];
+    return str.replace(/[\s\r\n\t"']/g, "");
 }
 
-let apiKey = sanitizeKey(localStorage.getItem("edith_gemini_key") || "");
+// Auto-check URL parameter if key passed via query string
+const urlParams = new URLSearchParams(window.location.search);
+let apiKey = cleanGeminiKey(urlParams.get("key") || localStorage.getItem("edith_gemini_key") || "");
 apiKeyInput.value = apiKey;
 
 function updateKeyPreview() {
-    apiKey = sanitizeKey(apiKeyInput.value);
+    apiKey = cleanGeminiKey(apiKeyInput.value);
     if (!apiKey) {
         keyStatus.style.color = "#ff4444";
         keyStatus.textContent = "KEY IS EMPTY";
-    } else if (apiKey.length < 35) {
-        keyStatus.style.color = "#ffaa00";
-        keyStatus.textContent = `KEY LENGTH (${apiKey.length}) - MIGHT BE INCOMPLETE`;
     } else {
         keyStatus.style.color = "#00ff88";
-        keyStatus.textContent = `KEY VALIDATED (${apiKey.substring(0, 7)}...${apiKey.substring(apiKey.length - 4)}) [${apiKey.length} chars]`;
+        keyStatus.textContent = `KEY LOADED (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
     }
 }
 apiKeyInput.addEventListener("input", updateKeyPreview);
@@ -122,12 +146,13 @@ btnVerify.onclick = async () => {
     try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
         });
         if (res.ok) {
             keyStatus.style.color = "#00ff88";
             keyStatus.textContent = "VERIFIED! KEY IS 100% OPERATIONAL";
+            localStorage.setItem("edith_gemini_key", apiKey);
         } else {
             const err = await res.json();
             keyStatus.style.color = "#ff4444";
@@ -148,10 +173,10 @@ let isProcessing = false;
 let hasError = false;
 
 let systemStatus = "SYSTEM ONLINE";
-let edithResponse = "E.D.I.T.H. active. Pinch fingers to zoom.";
+let edithResponse = "E.D.I.T.H. active. Speak naturally.";
 let subErrorMessage = "";
 
-// Super Zoom magnification state
+// Telescopic Zoom Levels
 const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
 let zoomIndex = 0;
 let currentZoom = 1.0;
@@ -165,7 +190,7 @@ let voiceLevel = 0;
 let silenceFrames = 0;
 
 /* ================================================================
-   2. HARDWARE AUDIO KEEP-ALIVE & TTS
+   2. AUDIO ENGINE & NATURAL SPEECH
 ================================================================ */
 function wakeAudioEngine() {
     if (!audioContext) {
@@ -182,7 +207,7 @@ function wakeAudioEngine() {
     osc.start();
 }
 
-function playCue(freq = 880, dur = 0.08) {
+function playCue(freq = 880, dur = 0.06) {
     try {
         wakeAudioEngine();
         const osc = audioContext.createOscillator();
@@ -203,11 +228,11 @@ function playZoomServo(zoomFactor) {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.type = "sawtooth";
-        const startFreq = 300 + (zoomFactor * 90);
-        const endFreq = 650 + (zoomFactor * 120);
+        const startFreq = 280 + (zoomFactor * 75);
+        const endFreq = 600 + (zoomFactor * 110);
         osc.frequency.setValueAtTime(startFreq, audioContext.currentTime);
         osc.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.14, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.14);
         osc.connect(gain);
         gain.connect(audioContext.destination);
@@ -223,8 +248,8 @@ function speakVoice(text) {
 
     const utt = new SpeechSynthesisUtterance(text);
     utt.lang = "en-US";
-    utt.rate = 1.05;
-    utt.pitch = 0.95;
+    utt.rate = 1.12; // Natural conversational cadence
+    utt.pitch = 1.0;
 
     utt.onend = () => {
         if (!isListening && !hasError) {
@@ -269,8 +294,8 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
     writeStr(8, 'WAVE');
     writeStr(12, 'fmt ');
     view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true); // Linear PCM
-    view.setUint16(22, 1, true); // Mono
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
     view.setUint32(24, 16000, true);
     view.setUint32(28, 16000 * 2, true);
     view.setUint16(32, 2, true);
@@ -288,7 +313,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. VOICE DETECTION (VAD) PIPELINE
+   4. FAST CONVERSATIONAL VAD PIPELINE (450ms Silence Gate)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -313,6 +338,11 @@ async function setupAudioPipeline() {
 
     const freqData = new Uint8Array(analyser.frequencyBinCount);
 
+    // Dynamic threshold matches normal voice volume
+    const SPEECH_GATE = 11;
+    // 450ms silence pause threshold
+    const SILENCE_LIMIT = Math.round((audioContext.sampleRate / 2048) * 0.45);
+
     scriptProcessor.onaudioprocess = (e) => {
         if (isProcessing) return;
 
@@ -320,18 +350,18 @@ async function setupAudioPipeline() {
         let sum = 0;
         for (let i = 0; i < freqData.length; i++) sum += freqData[i];
         const avg = sum / freqData.length;
-        voiceLevel = avg / 45.0;
+        voiceLevel = avg / 35.0;
 
         const input = e.inputBuffer.getChannelData(0);
 
-        if (avg > 15) {
+        if (avg > SPEECH_GATE) {
             if (!isListening) {
                 isListening = true;
                 hasError = false;
                 subErrorMessage = "";
                 pcmSamples = [];
                 systemStatus = "LISTENING...";
-                playCue(540, 0.05);
+                playCue(540, 0.04);
             }
             silenceFrames = 0;
             for (let i = 0; i < input.length; i++) pcmSamples.push(input[i]);
@@ -339,11 +369,11 @@ async function setupAudioPipeline() {
             for (let i = 0; i < input.length; i++) pcmSamples.push(input[i]);
             silenceFrames++;
 
-            if (silenceFrames > Math.round((audioContext.sampleRate / 2048) * 1.1)) {
+            if (silenceFrames > SILENCE_LIMIT) {
                 isListening = false;
                 isProcessing = true;
                 systemStatus = "NEURAL PROCESSING";
-                playCue(920, 0.07);
+                playCue(920, 0.05);
 
                 const recordedSnapshot = pcmSamples.slice();
                 pcmSamples = [];
@@ -354,10 +384,10 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. GEMINI API TRANSMISSION (SANITIZED AUTHENTICATION)
+   5. GEMINI API TRANSMISSION (LOW LATENCY)
 ================================================================ */
 async function transmitToGemini(samples) {
-    if (samples.length < audioContext.sampleRate * 0.4) {
+    if (samples.length < audioContext.sampleRate * 0.25) {
         isProcessing = false;
         systemStatus = "SYSTEM ONLINE";
         return;
@@ -373,23 +403,20 @@ async function transmitToGemini(samples) {
         }
         const base64WAV = btoa(binary);
 
-        const cleanKey = sanitizeKey(apiKey);
+        const cleanKey = cleanGeminiKey(apiKey);
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': cleanKey
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
                     parts: [
-                        { text: "You are E.D.I.T.H., Tony Stark's tactical optical AI. Provide a concise, clear response in maximum 1 or 2 sentences." },
+                        { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Answer in 1 short, quick conversational sentence." },
                         { inline_data: { mime_type: "audio/wav", data: base64WAV } }
                     ]
                 }],
                 generationConfig: {
                     temperature: 0.3,
-                    maxOutputTokens: 90
+                    maxOutputTokens: 60
                 }
             })
         });
@@ -415,7 +442,7 @@ async function transmitToGemini(samples) {
         systemStatus = "DIRECTIVE COMPLETE";
         isProcessing = false;
 
-        playCue(1200, 0.1);
+        playCue(1200, 0.08);
         speakVoice(reply);
 
     } catch (err) {
@@ -427,13 +454,13 @@ async function transmitToGemini(samples) {
         edithResponse = "Neural uplink unavailable. Please retry.";
         subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
 
-        playCue(300, 0.25);
+        playCue(300, 0.2);
         speakVoice(edithResponse);
     }
 }
 
 /* ================================================================
-   6. SUPER ZOOM CONTROL (FINGER PINCH / TAP / TRIGGER)
+   6. SUPER ZOOM (HAND PINCH / CONTROLLER TRIGGER)
 ================================================================ */
 function triggerSuperZoom() {
     zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
@@ -442,7 +469,7 @@ function triggerSuperZoom() {
 }
 
 /* ================================================================
-   7. ADVANCED STARK HUD CANVAS (TELESCOPIC ZOOM SUITE)
+   7. STARK HUD CANVAS (MYOPIA CENTER-LOCKED)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -482,11 +509,10 @@ function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
 function renderHUD(time) {
     ctx.clearRect(0, 0, W, H);
 
-    // Smooth lerp zoom interpolation
-    currentZoom += (targetZoom - currentZoom) * 0.15;
+    currentZoom += (targetZoom - currentZoom) * 0.18;
     const isZoomed = currentZoom > 1.05;
 
-    /* 1. Spider-Eye Vignette Outlines */
+    /* 1. Spider-Eye Mask */
     ctx.save();
     ctx.strokeStyle = isZoomed ? "rgba(0, 235, 255, 0.55)" : "rgba(255, 20, 40, 0.55)";
     ctx.lineWidth = 3;
@@ -496,7 +522,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 2. Top Heading Tape & Flight Pitch Ladder */
+    /* 2. Top Pitch Ladder */
     ctx.save();
     const ladderY = 85;
     ctx.strokeStyle = CYAN;
@@ -536,7 +562,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 5. TELESCOPIC SUPER-ZOOM RETICLE OVERLAY */
+    /* 5. Central Dynamic Reticle + Telescopic Super Zoom */
     ctx.save();
     const zoomReticleRadius = (32 + (voiceLevel * 14)) * (isZoomed ? 1.4 : 1.0);
     const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (isZoomed ? "#00ff88" : CYAN);
@@ -546,28 +572,23 @@ function renderHUD(time) {
     ctx.shadowBlur = 12;
     ctx.lineWidth = 2;
 
-    // Outer Reticle Ring
     ctx.beginPath();
     ctx.arc(CX, CY, zoomReticleRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Center Aim Dot
     ctx.fillStyle = mainCol;
     ctx.beginPath();
     ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Crosshairs
     drawLine(CX - 55, CY, CX - 16, CY, mainCol, 1.5);
     drawLine(CX + 16, CY, CX + 50, CY, mainCol, 1.5);
-    drawLine(CX, CY - 55, CX, CY - 16, mainCol, 1.5);
+    drawLine(CX, CY - 50, CX, CY - 16, mainCol, 1.5);
     drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
 
-    // If Zoom Active: Precision Milliradian Ticks & Brackets
     if (isZoomed) {
         ctx.strokeStyle = "#00ff88";
         ctx.lineWidth = 1.5;
-        // Scope Corner Brackets
         const sz = 120 + (currentZoom * 12);
         drawLine(CX - sz, CY - sz, CX - sz + 25, CY - sz, "#00ff88", 2);
         drawLine(CX - sz, CY - sz, CX - sz, CY - sz + 25, "#00ff88", 2);
@@ -578,14 +599,13 @@ function renderHUD(time) {
         drawLine(CX + sz, CY + sz, CX + sz - 25, CY + sz, "#00ff88", 2);
         drawLine(CX + sz, CY + sz, CX + sz, CY + sz - 25, "#00ff88", 2);
 
-        // Zoom Telemetry Label
-        drawText(`[ MAG: ${currentZoom.toFixed(1)}X // OPTICAL PINCH ]`, CX, CY - zoomReticleRadius - 20, 11, "#00ff88", "center");
+        drawText(`[ MAG: ${currentZoom.toFixed(1)}X // PINCH TO CYCLE ]`, CX, CY - zoomReticleRadius - 20, 11, "#00ff88", "center");
     } else {
-        drawText(`[ 1.0X // PINCH TO ZOOM ]`, CX, CY - zoomReticleRadius - 16, 9, CYAN_DIM, "center");
+        drawText(`[ 1.0X // PINCH FINGERS TO ZOOM ]`, CX, CY - zoomReticleRadius - 16, 9, CYAN_DIM, "center");
     }
     ctx.restore();
 
-    /* 6. Central Cluster (Myopia Optimized Corridor) */
+    /* 6. Central Cluster (Myopia Corridor) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 52, barW, barH);
@@ -618,14 +638,13 @@ function renderHUD(time) {
     ctx.fillText(line, CX, y);
     ctx.restore();
 
-    // Raw unclipped error message displayed directly underneath
     if (hasError || subErrorMessage) {
         drawText(subErrorMessage, CX, y + 26, 11, RED, "center");
     }
 }
 
 /* ================================================================
-   8. WEBGL QUAD WITH DYNAMIC ZOOM PROJECTION
+   8. WEBGL & DYNAMIC ZOOM QUAD
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
@@ -635,7 +654,6 @@ attribute vec2 aUV;
 uniform float uZoom;
 varying vec2 vUV;
 void main() {
-    // Zoom expands HUD geometry forward optically
     gl_Position = vec4(aPos * uZoom, 0.0, 1.0);
     vUV = aUV;
 }`;
@@ -685,7 +703,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   9. WEBXR SESSION // HAND PINCH + TRIGGER SUPER ZOOM
+   9. WEBXR SESSION // UNBOUNDED + HAND TRACKING PINCH
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
@@ -704,7 +722,6 @@ async function launchAR() {
         referenceSpace = await session.requestReferenceSpace("local");
     }
 
-    // Tap with finger / hand pinch or controller trigger cycles zoom
     session.addEventListener("select", () => {
         triggerSuperZoom();
     });
@@ -739,7 +756,6 @@ function renderFrame(time, frame) {
     gl.enableVertexAttribArray(uvLoc);
     gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
-    // Pass subtle scale factor to enhance telescopic perspective
     const renderScale = 1.0 + ((currentZoom - 1.0) * 0.08);
     gl.uniform1f(zoomUniformLoc, renderScale);
 
@@ -754,7 +770,7 @@ function renderFrame(time, frame) {
    10. INITIALIZATION
 ================================================================ */
 btnInit.onclick = async () => {
-    apiKey = sanitizeKey(apiKeyInput.value);
+    apiKey = cleanGeminiKey(apiKeyInput.value);
     if (!apiKey) {
         alert("Enter your Gemini API key.");
         return;
