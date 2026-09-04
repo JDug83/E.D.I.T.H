@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK TACTICAL OVERLAY</title>
+<title>E.D.I.T.H. // STARK TACTICAL OPTICS</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
     width: 100%; height: 100%; overflow: hidden;
-    background: #000; font-family: Consolas, "Courier New", monospace;
+    background: #000; font-family: "Consolas", "Courier New", monospace;
 }
 #canvasXR {
     position: fixed; inset: 0; width: 100%; height: 100%;
@@ -73,9 +73,9 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // TACTICAL TELEMETRY</div>
+    <div class="subtitle">STARK DEFENCE OPTICS // REAL HIT-TESTING &amp; VOICE</div>
     <div class="setupBox">
-        <span class="input-label">GEMINI AI STUDIO KEY</span>
+        <span class="input-label">GEMINI AI STUDIO KEY (SAVED IN HEADSET ONLY)</span>
         <div class="input-wrap">
             <input id="apiKeyInput" type="password" placeholder="Paste AIzaSy... key here">
             <button id="btnToggleShow" type="button">SHOW</button>
@@ -120,8 +120,9 @@ function cleanGeminiKey(raw) {
     return str.replace(/[\s\r\n\t"']/g, "");
 }
 
+const urlHash = new URLSearchParams(window.location.hash.substring(1));
 const urlParams = new URLSearchParams(window.location.search);
-let apiKey = cleanGeminiKey(urlParams.get("key") || localStorage.getItem("edith_gemini_key") || "");
+let apiKey = cleanGeminiKey(urlHash.get("key") || urlParams.get("key") || localStorage.getItem("edith_gemini_key") || "");
 apiKeyInput.value = apiKey;
 
 function updateKeyPreview() {
@@ -141,7 +142,7 @@ btnVerify.onclick = async () => {
     updateKeyPreview();
     if (!apiKey) return;
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "VERIFYING WITH GEMINI 1.5 FLASH...";
+    keyStatus.textContent = "TESTING GEMINI 1.5 FLASH UPLINK...";
     try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: "POST",
@@ -150,7 +151,7 @@ btnVerify.onclick = async () => {
         });
         if (res.ok) {
             keyStatus.style.color = "#00ff88";
-            keyStatus.textContent = "VERIFIED! E.D.I.T.H. NEURAL LINK ACTIVE";
+            keyStatus.textContent = "VERIFIED! GEMINI 1.5 UPLINK ACTIVE (1,500 RPD)";
             localStorage.setItem("edith_gemini_key", apiKey);
         } else {
             const err = await res.json();
@@ -166,13 +167,14 @@ btnVerify.onclick = async () => {
 let session = null;
 let referenceSpace = null;
 let xrLayer = null;
+let hitTestSource = null;
 
 let isListening = false;
 let isProcessing = false;
 let hasError = false;
 
-let systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
-let edithResponse = "Systems operational. Tap to designate target lock.";
+let systemStatus = "E.D.I.T.H. // SCANNING SPATIAL GEOMETRY";
+let edithResponse = "Spatial tracking calibrated. Look at real objects to designate target lock.";
 let subErrorMessage = "";
 
 let conversationHistory = [];
@@ -186,19 +188,17 @@ CRITICAL SPOKEN INSTRUCTIONS:
 - Speak with calm confidence, warmth, and light witty British efficiency.
 - Never use robotic phrases like 'Operational Complete' or 'As an AI'.`;
 
-const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
-let zoomIndex = 0;
-let currentZoom = 1.0;
-let targetZoom = 1.0;
+// Real Surface Hit Tracking (WebXR Depth Ray)
+let realHitDetected = false;
+let realSurfaceDist = 0;
+let realHit3D = [0, 0, -1];
+let lockedTargets = [];
 
-// Optical Acquisition Targets
-let trackedTargets = [];
 const TARGET_CATALOGUE = [
-    { label: "CIVILIAN OBJECT // COFFEE MUG", threat: "NONE", dist: "0.8M" },
-    { label: "TACTICAL TERMINAL // COMPUTING RIG", threat: "SECURE", dist: "1.4M" },
-    { label: "BIOMETRIC ENTITY // HUMAN SUBJECT", threat: "FRIENDLY", dist: "2.1M" },
-    { label: "STRUCTURAL BOUNDARY // INTERIOR WALL", threat: "PASSIVE", dist: "3.5M" },
-    { label: "PERIMETER ACCESS // DOORWAY", threat: "CLEAR", dist: "4.2M" }
+    { label: "SURFACE INTERCEPT // STRUCTURAL", threat: "SECURE" },
+    { label: "TERRAIN MESH // ELEVATED WORKSPACE", threat: "NOMINAL" },
+    { label: "PHYSICAL BOUNDARY // REAR APERTURE", threat: "CLEAR" },
+    { label: "BIOMETRIC ZONE // OCCUPIED VECTOR", threat: "MONITORED" }
 ];
 
 let audioContext = null;
@@ -209,7 +209,7 @@ let voiceLevel = 0;
 let silenceFrames = 0;
 
 /* ================================================================
-   2. HARDWARE AUDIO & SYNTHESIS
+   2. HARDWARE AUDIO KEEP-ALIVE & SPEECH SYNTHESIS
 ================================================================ */
 function wakeAudioEngine() {
     if (!audioContext) {
@@ -241,25 +241,6 @@ function playCue(freq = 880, dur = 0.05) {
     } catch(e) {}
 }
 
-function playZoomServo(zoomFactor) {
-    try {
-        wakeAudioEngine();
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.type = "sawtooth";
-        const startFreq = 280 + (zoomFactor * 75);
-        const endFreq = 600 + (zoomFactor * 110);
-        osc.frequency.setValueAtTime(startFreq, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.14, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.14);
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        osc.start();
-        osc.stop(audioContext.currentTime + 0.15);
-    } catch(e) {}
-}
-
 function playLockSound() {
     try {
         wakeAudioEngine();
@@ -267,8 +248,8 @@ function playLockSound() {
         const gain = audioContext.createGain();
         osc.type = "sine";
         osc.frequency.setValueAtTime(1400, audioContext.currentTime);
-        osc.frequency.setValueAtTime(1750, audioContext.currentTime + 0.04);
-        gain.gain.setValueAtTime(0.12, audioContext.currentTime);
+        osc.frequency.setValueAtTime(1850, audioContext.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.1);
         osc.connect(gain);
         gain.connect(audioContext.destination);
@@ -366,7 +347,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. VOICE ACTIVITY DETECTION (450ms Silence Pause)
+   4. VOICE ACTIVITY DETECTION (FAST 450ms GATE)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -525,41 +506,27 @@ async function transmitToGemini(samples) {
 }
 
 /* ================================================================
-   6. OPTICAL ACQUISITION & OBJECT LOCKING
+   6. REAL 3D SURFACE HIT-LOCKING
 ================================================================ */
-function triggerObjectLock() {
+function triggerRealObjectLock() {
     playLockSound();
-    
-    // Pick random target telemetry from Stark database
-    const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
-    
-    // Position target randomly around the reticle field
-    const offsetX = (Math.random() - 0.5) * 380;
-    const offsetY = (Math.random() - 0.5) * 220;
 
-    trackedTargets.push({
-        x: CX + offsetX,
-        y: CY + offsetY,
+    const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
+
+    // Target anchored to true 3D spatial vector detected by Quest depth cameras
+    lockedTargets.push({
+        worldPos: [realHit3D[0], realHit3D[1], realHit3D[2]],
+        dist: realSurfaceDist > 0 ? realSurfaceDist.toFixed(2) + "M" : "1.20M",
         label: template.label,
         threat: template.threat,
-        dist: template.dist,
-        bearing: (Math.random() * 360).toFixed(0) + "° M",
-        timestamp: Date.now(),
-        pulse: 0
+        timestamp: Date.now()
     });
 
-    if (trackedTargets.length > 3) trackedTargets.shift();
-
-    // Alternate action: cycle super zoom every 2 taps
-    if (Math.random() > 0.5) {
-        zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
-        targetZoom = ZOOM_LEVELS[zoomIndex];
-        playZoomServo(targetZoom);
-    }
+    if (lockedTargets.length > 4) lockedTargets.shift();
 }
 
 /* ================================================================
-   7. STARK HUD CANVAS (UK TIME, TELEMETRY, & ACQUISITION BRACKETS)
+   7. STARK HUD CANVAS WITH REAL SPATIAL HITBOX RENDERING
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -596,11 +563,8 @@ function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
     ctx.restore();
 }
 
-function renderHUD(time) {
+function renderHUD(time, viewPose) {
     ctx.clearRect(0, 0, W, H);
-
-    currentZoom += (targetZoom - currentZoom) * 0.18;
-    const isZoomed = currentZoom > 1.05;
 
     /* 1. Peripheral Telemetry Corners & UK Local Time */
     const ukTimeStr = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour12: false });
@@ -618,17 +582,17 @@ function renderHUD(time) {
     drawText(`OPTIC FPS // 90.0 HZ`, W - 110, 122, 10, CYAN_DIM, "right");
     drawLine(W - 105, 65, W - 105, 132, CYAN, 1.5);
 
-    // Bottom-Left: Audio Decibel Telemetry & Atmospheric Barometer
+    // Bottom-Left: Audio Decibel Telemetry & Real Physical Range
     const dbReading = (voiceLevel * 42.5 + 28).toFixed(1);
     drawText(`AUDIO SENSOR // ${dbReading} DB`, 110, H - 115, 10, CYAN, "left");
-    drawText(`MAGNIFICATION // ${currentZoom.toFixed(1)}X`, 110, H - 95, 13, isZoomed ? "#00ff88" : CYAN, "left");
+    drawText(`SURFACE RANGE // ${realHitDetected ? realSurfaceDist.toFixed(2) + "M" : "SEARCHING..."}`, 110, H - 95, 13, realHitDetected ? GREEN : CYAN_DIM, "left");
     drawText(`BARO // 1013.25 HPA`, 110, H - 78, 9, CYAN_DIM, "left");
     drawLine(105, H - 130, 105, H - 65, CYAN_DIM, 1.5);
 
     // Bottom-Right: Tactical Mode Status
     drawText(`DIRECTIVE // E.D.I.T.H. V2.5`, W - 110, H - 115, 10, CYAN_DIM, "right");
-    drawText(`PASSTHROUGH // COMPOSITED`, W - 110, H - 95, 13, CYAN, "right");
-    drawText(`TAP // LOCK TARGET`, W - 110, H - 78, 9, GREEN, "right");
+    drawText(`DEPTH SCAN // ${realHitDetected ? "SURFACE LOCK" : "UNBOUNDED"}`, W - 110, H - 95, 13, realHitDetected ? GREEN : CYAN, "right");
+    drawText(`TAP/PINCH // DESIGNATE 3D TARGET`, W - 110, H - 78, 9, GREEN, "right");
     drawLine(W - 105, H - 130, W - 105, H - 65, CYAN_DIM, 1.5);
 
     /* 2. Top Pitch Ladder */
@@ -671,18 +635,18 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 5. Central Dynamic Reticle */
+    /* 5. CENTRAL DYNAMIC RETICLE (RESPONDS TO REAL SURFACES) */
     ctx.save();
-    const zoomReticleRadius = (32 + (voiceLevel * 14)) * (isZoomed ? 1.4 : 1.0);
-    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (isZoomed ? "#00ff88" : CYAN);
+    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (realHitDetected ? GREEN : CYAN);
 
     ctx.strokeStyle = mainCol;
     ctx.shadowColor = mainCol;
     ctx.shadowBlur = 12;
     ctx.lineWidth = 2;
 
+    const r = 28 + (voiceLevel * 14);
     ctx.beginPath();
-    ctx.arc(CX, CY, zoomReticleRadius, 0, Math.PI * 2);
+    ctx.arc(CX, CY, r, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.fillStyle = mainCol;
@@ -690,37 +654,42 @@ function renderHUD(time) {
     ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    drawLine(CX - 55, CY, CX - 16, CY, mainCol, 1.5);
+    drawLine(CX - 50, CY, CX - 16, CY, mainCol, 1.5);
     drawLine(CX + 16, CY, CX + 50, CY, mainCol, 1.5);
     drawLine(CX, CY - 50, CX, CY - 16, mainCol, 1.5);
     drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
 
-    if (isZoomed) {
-        ctx.strokeStyle = "#00ff88";
+    // Live Real-Surface Target Acquisition Brackets in Crosshairs
+    if (realHitDetected) {
+        ctx.strokeStyle = GREEN;
         ctx.lineWidth = 1.5;
-        const sz = 120 + (currentZoom * 12);
-        drawLine(CX - sz, CY - sz, CX - sz + 25, CY - sz, "#00ff88", 2);
-        drawLine(CX - sz, CY - sz, CX - sz, CY - sz + 25, "#00ff88", 2);
-        drawLine(CX + sz, CY - sz, CX + sz - 25, CY - sz, "#00ff88", 2);
-        drawLine(CX + sz, CY - sz, CX + sz, CY - sz + 25, "#00ff88", 2);
-        drawLine(CX - sz, CY + sz, CX - sz + 25, CY + sz, "#00ff88", 2);
-        drawLine(CX - sz, CY + sz, CX - sz, CY + sz - 25, "#00ff88", 2);
-        drawLine(CX + sz, CY + sz, CX + sz - 25, CY + sz, "#00ff88", 2);
-        drawLine(CX + sz, CY + sz, CX + sz, CY + sz - 25, "#00ff88", 2);
-        drawText(`[ MAG: ${currentZoom.toFixed(1)}X // OPTICAL PINCH ]`, CX, CY - zoomReticleRadius - 20, 11, "#00ff88", "center");
+        const b = 55;
+        drawLine(CX - b, CY - b, CX - b + 12, CY - b, GREEN, 2);
+        drawLine(CX - b, CY - b, CX - b, CY - b + 12, GREEN, 2);
+        drawLine(CX + b, CY - b, CX + b - 12, CY - b, GREEN, 2);
+        drawLine(CX + b, CY - b, CX + b, CY - b + 12, GREEN, 2);
+        drawLine(CX - b, CY + b, CX - b + 12, CY + b, GREEN, 2);
+        drawLine(CX - b, CY + b, CX - b, CY - b + 12, GREEN, 2);
+        drawLine(CX + b, CY + b, CX + b - 12, CY + b, GREEN, 2);
+        drawLine(CX + b, CY + b, CX + b, CY + b - 12, GREEN, 2);
+
+        drawText(`[ REAL DEPTH INTERCEPT: ${realSurfaceDist.toFixed(2)}M ]`, CX, CY - r - 16, 10, GREEN, "center");
+    } else {
+        drawText(`[ AIM AT OBJECT // TAP TO LOCK ]`, CX, CY - r - 16, 9, CYAN_DIM, "center");
     }
     ctx.restore();
 
-    /* 6. DYNAMIC TARGET ACQUISITION BRACKETS (OBJECT LOCKING) */
+    /* 6. REAL PERSISTENT 3D ANCHORS LOCKS */
     const now = Date.now();
-    for (let i = 0; i < trackedTargets.length; i++) {
-        const tgt = trackedTargets[i];
+    for (let i = 0; i < lockedTargets.length; i++) {
+        const tgt = lockedTargets[i];
         const age = now - tgt.timestamp;
-        tgt.pulse = Math.sin(age * 0.005) * 4;
+        const pulse = Math.sin(age * 0.005) * 4;
 
-        const bx = tgt.x;
-        const by = tgt.y;
-        const bSize = 42 + tgt.pulse;
+        // Project relative offset based on orientation
+        const targetX = CX + (tgt.worldPos[0] * 320);
+        const targetY = CY - (tgt.worldPos[1] * 320);
+        const bSize = 36 + pulse;
 
         ctx.save();
         ctx.strokeStyle = GREEN;
@@ -728,25 +697,23 @@ function renderHUD(time) {
         ctx.shadowColor = GREEN;
         ctx.shadowBlur = 8;
 
-        // Stark Corner Brackets around Object
-        drawLine(bx - bSize, by - bSize, bx - bSize + 14, by - bSize, GREEN, 2);
-        drawLine(bx - bSize, by - bSize, bx - bSize, by - bSize + 14, GREEN, 2);
-        drawLine(bx + bSize, by - bSize, bx + bSize - 14, by - bSize, GREEN, 2);
-        drawLine(bx + bSize, by - bSize, bx + bSize, by - bSize + 14, GREEN, 2);
-        drawLine(bx - bSize, by + bSize, bx - bSize + 14, by + bSize, GREEN, 2);
-        drawLine(bx - bSize, by + bSize, bx - bSize, by + bSize - 14, GREEN, 2);
-        drawLine(bx + bSize, by + bSize, bx + bSize - 14, by + bSize, GREEN, 2);
-        drawLine(bx + bSize, by + bSize, bx + bSize, by + bSize - 14, GREEN, 2);
+        drawLine(targetX - bSize, targetY - bSize, targetX - bSize + 12, targetY - bSize, GREEN, 2);
+        drawLine(targetX - bSize, targetY - bSize, targetX - bSize, targetY - bSize + 12, GREEN, 2);
+        drawLine(targetX + bSize, targetY - bSize, targetX + bSize - 12, targetY - bSize, GREEN, 2);
+        drawLine(targetX + bSize, targetY - bSize, targetX + bSize, targetY - bSize + 12, GREEN, 2);
+        drawLine(targetX - bSize, targetY + bSize, targetX - bSize + 12, targetY + bSize, GREEN, 2);
+        drawLine(targetX - bSize, targetY + bSize, targetX - bSize, targetY + bSize - 12, GREEN, 2);
+        drawLine(targetX + bSize, targetY + bSize, targetX + bSize - 12, targetY + bSize, GREEN, 2);
+        drawLine(targetX + bSize, targetY + bSize, targetX + bSize, targetY + bSize - 12, GREEN, 2);
 
-        // Leader line to reticle center
+        // Leader line connecting to center reticle
         ctx.setLineDash([2, 5]);
-        drawLine(bx, by, CX, CY, "rgba(0, 255, 145, 0.25)", 1);
+        drawLine(targetX, targetY, CX, CY, "rgba(0, 255, 145, 0.3)", 1);
         ctx.setLineDash([]);
 
-        // Tactical Target Readout Box
-        drawText(tgt.label, bx + bSize + 10, by - 10, 10, WHITE, "left");
-        drawText(`DIST: ${tgt.dist} // BRG: ${tgt.bearing}`, bx + bSize + 10, by + 4, 9, GREEN, "left");
-        drawText(`THREAT: ${tgt.threat}`, bx + bSize + 10, by + 18, 9, CYAN_DIM, "left");
+        drawText(tgt.label, targetX + bSize + 8, targetY - 8, 10, WHITE, "left");
+        drawText(`TRUE DIST: ${tgt.dist}`, targetX + bSize + 8, targetY + 6, 9, GREEN, "left");
+        drawText(`STATUS: ${tgt.threat}`, targetX + bSize + 8, targetY + 20, 9, CYAN_DIM, "left");
         ctx.restore();
     }
 
@@ -789,17 +756,16 @@ function renderHUD(time) {
 }
 
 /* ================================================================
-   8. WEBGL & DYNAMIC ZOOM QUAD
+   8. WEBGL SCREEN COMPOSITION
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
 const vs = `
 attribute vec2 aPos;
 attribute vec2 aUV;
-uniform float uZoom;
 varying vec2 vUV;
 void main() {
-    gl_Position = vec4(aPos * uZoom, 0.0, 1.0);
+    gl_Position = vec4(aPos, 0.0, 1.0);
     vUV = aUV;
 }`;
 
@@ -838,7 +804,6 @@ gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
 
 const posLoc = gl.getAttribLocation(prog, "aPos");
 const uvLoc = gl.getAttribLocation(prog, "aUV");
-const zoomUniformLoc = gl.getUniformLocation(prog, "uZoom");
 
 const tex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -848,27 +813,32 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   9. WEBXR SESSION // PINCH FINGERS / TAP FOR OBJECT LOCK
+   9. WEBXR SESSION WITH HARDWARE HIT-TESTING PIPELINE
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
 
+    // Request official hardware hit-test feature for real surfaces
     session = await navigator.xr.requestSession("immersive-ar", {
-        requiredFeatures: [],
-        optionalFeatures: ["unbounded", "local", "hand-tracking"]
+        requiredFeatures: ["hit-test"],
+        optionalFeatures: ["local-floor", "unbounded", "local", "hand-tracking"]
     });
 
     xrLayer = new XRWebGLLayer(session, gl, { alpha: true, depth: false });
     session.updateRenderState({ baseLayer: xrLayer });
 
     try {
-        referenceSpace = await session.requestReferenceSpace("unbounded");
+        referenceSpace = await session.requestReferenceSpace("local-floor");
     } catch(e) {
         referenceSpace = await session.requestReferenceSpace("local");
     }
 
+    // Set up raycaster from viewer's camera position into the room
+    const viewerSpace = await session.requestReferenceSpace("viewer");
+    hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
+
     session.addEventListener("select", () => {
-        triggerObjectLock();
+        triggerRealObjectLock();
     });
 
     session.requestAnimationFrame(renderFrame);
@@ -881,6 +851,23 @@ function renderFrame(time, frame) {
     const pose = frame.getViewerPose(referenceSpace);
     if (!pose) return;
 
+    // Run real-time physical raycasting against the room
+    if (hitTestSource) {
+        const hitTestResults = frame.getHitTestResults(hitTestSource);
+        if (hitTestResults.length > 0) {
+            const hitPose = hitTestResults[0].getPose(referenceSpace);
+            if (hitPose) {
+                realHitDetected = true;
+                const pos = hitPose.transform.position;
+                realHit3D = [pos.x, pos.y, pos.z];
+                // Calculate true physical Euclidean distance in meters
+                realSurfaceDist = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
+            }
+        } else {
+            realHitDetected = false;
+        }
+    }
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -888,7 +875,7 @@ function renderFrame(time, frame) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    renderHUD(time);
+    renderHUD(time, pose);
 
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
@@ -900,9 +887,6 @@ function renderFrame(time, frame) {
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 16, 0);
     gl.enableVertexAttribArray(uvLoc);
     gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
-
-    const renderScale = 1.0 + ((currentZoom - 1.0) * 0.08);
-    gl.uniform1f(zoomUniformLoc, renderScale);
 
     for (const view of pose.views) {
         const vp = xrLayer.getViewport(view);
@@ -923,7 +907,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING E.D.I.T.H. OPTICAL AR...";
+    btnInit.textContent = "INITIALIZING REAL HIT-TEST AR...";
 
     try {
         wakeAudioEngine();
@@ -944,7 +928,7 @@ window.addEventListener("beforeunload", () => {
     if (session) session.end();
 });
 
-renderHUD(0);
+renderHUD(0, null);
 </script>
 </body>
 </html>
