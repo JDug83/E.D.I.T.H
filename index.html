@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK TACTICAL AR</title>
+<title>E.D.I.T.H. // OCULAR HUD</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -17,13 +17,13 @@ html, body {
 #setupScreen {
     position: fixed; inset: 0; z-index: 100;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle at center, rgba(0,70,100,.35), #000 75%);
+    background: radial-gradient(circle at center, rgba(0,70,100,.4), #000 80%);
     color: #00eaff;
 }
 .logo {
-    color: white; font-size: clamp(36px, 7vw, 64px);
-    font-weight: 900; letter-spacing: 12px;
-    text-shadow: 0 0 10px #00eaff, 0 0 25px #00eaff;
+    color: #fff; font-size: clamp(36px, 7vw, 64px);
+    font-weight: 900; letter-spacing: 14px;
+    text-shadow: 0 0 12px #00eaff, 0 0 30px #00eaff;
 }
 .subtitle {
     margin-top: 8px; margin-bottom: 22px;
@@ -31,8 +31,8 @@ html, body {
 }
 .setupBox {
     width: min(480px, 92vw); padding: 22px;
-    background: rgba(0,10,15,.94); border: 1px solid rgba(0,235,255,.45);
-    box-shadow: 0 0 35px rgba(0,235,255,.12);
+    background: rgba(0,10,15,.95); border: 1px solid rgba(0,235,255,.5);
+    box-shadow: 0 0 35px rgba(0,235,255,.15);
 }
 .input-label {
     font-size: 10px; color: rgba(0,235,255,0.7); letter-spacing: 2px;
@@ -43,7 +43,7 @@ html, body {
 }
 #apiKeyInput {
     flex: 1; height: 48px; border: 1px solid rgba(0,235,255,.55);
-    outline: none; background: rgba(0,5,8,.95); color: white;
+    outline: none; background: rgba(0,5,8,.95); color: #fff;
     text-align: left; padding: 0 14px; font-family: inherit; font-size: 13px;
 }
 #btnToggleShow {
@@ -73,7 +73,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // STANDARD GEMINI PIPELINE</div>
+    <div class="subtitle">OCULAR TACTICAL HUD // CORNEA PLANE</div>
     <div class="setupBox">
         <span class="input-label">GEMINI AI STUDIO KEY</span>
         <div class="input-wrap">
@@ -92,7 +92,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT (gemini-flash)
+   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
@@ -132,7 +132,7 @@ function updateKeyPreview() {
         keyStatus.textContent = "KEY IS EMPTY";
     } else {
         keyStatus.style.color = "#00ff88";
-        keyStatus.textContent = `KEY LOADED (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
+        keyStatus.textContent = `READY: (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
     }
 }
 apiKeyInput.addEventListener("input", updateKeyPreview);
@@ -142,16 +142,16 @@ btnVerify.onclick = async () => {
     updateKeyPreview();
     if (!apiKey) return;
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "CONNECTING TO DEFAULT GEMINI UPLINK...";
+    keyStatus.textContent = "VERIFYING UPLINK...";
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
         });
         if (res.ok) {
             keyStatus.style.color = "#00ff88";
-            keyStatus.textContent = "VERIFIED! STANDARD GEMINI NEURAL LINK ACTIVE";
+            keyStatus.textContent = "VERIFIED // UPLINK SYNAPSE READY";
             localStorage.setItem("edith_gemini_key", apiKey);
         } else {
             const err = await res.json();
@@ -174,18 +174,18 @@ let isProcessing = false;
 let hasError = false;
 
 let systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
-let edithResponse = "Tactical optics aligned. Speak normally or pinch to engage zoom & target locks.";
+let edithResponse = "Tactical optics aligned. Cornea plane online.";
 let subErrorMessage = "";
 
 let conversationHistory = [];
 
 const EDITH_SYSTEM_PROMPT = 
-`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside an AR optical headset.
-CRITICAL SPOKEN INSTRUCTIONS:
-- You are speaking aloud, NOT typing text.
-- Do NOT output markdown, asterisks, bullet points, emojis, citations, or quotes.
+`You are E.D.I.T.H., Tony Stark's tactical AI. You are speaking directly into the user's ears in real time.
+CRITICAL RULES:
+- Speak strictly as if talking out loud, never as written text.
+- Do NOT output markdown, asterisks, bullet points, numbered lists, emojis, citations, or quotes.
 - Keep answers to 1 or 2 quick, conversational sentences.
-- Speak with calm confidence, warmth, and light witty British efficiency.
+- Speak with calm confidence, warmth, and witty British efficiency.
 - Never use robotic phrases like 'Operational Complete' or 'As an AI'.`;
 
 // Optical Super-Zoom States
@@ -194,17 +194,17 @@ let zoomIndex = 0;
 let currentZoom = 1.0;
 let targetZoom = 1.0;
 
-// Real Surface Hit Tracking (WebXR Hardware Raycast)
+// Real Surface Hit Tracking
 let realHitDetected = false;
 let realSurfaceDist = 0;
 let realHit3D = [0, 0, -1];
 let lockedTargets = [];
 
 const TARGET_CATALOGUE = [
-    { label: "STRUCTURAL // SURFACE BOUNDARY", threat: "SECURE" },
-    { label: "TACTICAL // WORKSPACE INTERCEPT", threat: "NOMINAL" },
+    { label: "SURFACE // STRUCTURAL INTERCEPT", threat: "SECURE" },
+    { label: "OBJECT // TACTICAL PERIMETER", threat: "NOMINAL" },
     { label: "BIOMETRIC // ENTITY VECTOR", threat: "MONITORED" },
-    { label: "PERIMETER // APERTURE AXIS", threat: "CLEAR" }
+    { label: "ACCESS // APERTURE BOUNDARY", threat: "CLEAR" }
 ];
 
 let audioContext = null;
@@ -215,7 +215,7 @@ let voiceLevel = 0;
 let silenceFrames = 0;
 
 /* ================================================================
-   2. HARDWARE AUDIO KEEP-ALIVE & SPEECH SYNTHESIS
+   2. HARDWARE AUDIO KEEP-ALIVE & TTS
 ================================================================ */
 function wakeAudioEngine() {
     if (!audioContext) {
@@ -355,7 +355,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. VOICE ACTIVITY DETECTION (450ms SILENCE PAUSE)
+   4. VOICE ACTIVITY DETECTION (450ms SILENCE GATE)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -423,7 +423,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. STANDARD GEMINI TRANSMISSION (gemini-flash)
+   5. STANDARD GEMINI TRANSMISSION (gemini-1.5-flash)
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
@@ -453,7 +453,7 @@ async function transmitToGemini(samples) {
         ];
 
         const cleanKey = cleanGeminiKey(apiKey);
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${cleanKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -535,7 +535,7 @@ function handlePinchTap() {
 }
 
 /* ================================================================
-   7. NEAR-FIELD STARK HUD CANVAS (OPTIMIZED OCULAR FOV)
+   7. 1CM CORNEA-LOCKED CANVAS DRAWING
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -722,17 +722,17 @@ function renderHUD(time) {
 }
 
 /* ================================================================
-   8. WEBGL SCREEN COMPOSITION & NEAR-FIELD PROJECTION
+   8. WEBGL CORNEA-PLANE MAPPING (LOCKS AT 1CM)
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
 const vs = `
 attribute vec2 aPos;
 attribute vec2 aUV;
-uniform float uNearScale;
 varying vec2 vUV;
 void main() {
-    gl_Position = vec4(aPos * uNearScale, 0.0, 1.0);
+    // Exact 1cm clip-space pass-through (Z = -0.99 near plane)
+    gl_Position = vec4(aPos, -0.99, 1.0);
     vUV = aUV;
 }`;
 
@@ -771,7 +771,6 @@ gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
 
 const posLoc = gl.getAttribLocation(prog, "aPos");
 const uvLoc = gl.getAttribLocation(prog, "aUV");
-const nearScaleLoc = gl.getUniformLocation(prog, "uNearScale");
 
 const tex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -781,7 +780,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   9. WEBXR IMMERSIVE-AR SESSION (NEAR-FIELD + HIT-TESTING)
+   9. WEBXR IMMERSIVE-AR SESSION (NEAR-FIELD CORNEA PROJECTION)
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
@@ -852,9 +851,6 @@ function renderFrame(time, frame) {
     gl.enableVertexAttribArray(uvLoc);
     gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
-    const ocularScale = 0.95 + ((currentZoom - 1.0) * 0.05);
-    gl.uniform1f(nearScaleLoc, ocularScale);
-
     for (const view of pose.views) {
         const vp = xrLayer.getViewport(view);
         gl.viewport(vp.x, vp.y, vp.width, vp.height);
@@ -863,7 +859,7 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   10. BOOTSTRAP INITIALIZATION
+   10. INITIALIZATION
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = cleanGeminiKey(apiKeyInput.value);
@@ -874,7 +870,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING STARK AR...";
+    btnInit.textContent = "CALIBRATING CORNEA PLANE...";
 
     try {
         wakeAudioEngine();
