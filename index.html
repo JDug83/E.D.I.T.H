@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // SPIDER TACTICAL AR</title>
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no">
+
+<title>E.D.I.T.H. // Optical Tactical Interface</title>
 
 <style>
 * {
@@ -19,7 +24,12 @@ body {
     height: 100%;
     overflow: hidden;
     background: #000;
-    font-family: "Consolas", "Courier New", monospace;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+body {
+    color: #00eaff;
+    touch-action: none;
 }
 
 #canvasXR {
@@ -28,169 +38,111 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    background: transparent;
 }
-
-/* ================================================================
-   BOOT SCREEN
-================================================================ */
 
 #setupScreen {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 1000;
+
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 
     background:
-        radial-gradient(circle at center,
-            rgba(15, 45, 85, .42),
-            rgba(0, 0, 0, .98) 72%);
+        radial-gradient(
+            circle at center,
+            #180407 0%,
+            #050102 45%,
+            #000 85%
+        );
 
-    color: #00eaff;
+    color: white;
+    text-align: center;
+    padding: 25px;
 }
 
 .logo {
-    color: white;
-    font-size: clamp(36px, 7vw, 64px);
+    color: #ff2142;
+    font-size: clamp(36px, 8vw, 70px);
     font-weight: 900;
-    letter-spacing: 12px;
+    letter-spacing: .28em;
+    margin-left: .28em;
 
     text-shadow:
-        0 0 10px #00eaff,
-        0 0 25px #008cff,
-        0 0 55px #00eaff;
+        0 0 10px #ff1538,
+        0 0 30px rgba(255,20,50,.75),
+        0 0 70px rgba(255,20,50,.25);
 }
 
 .subtitle {
-    margin-top: 8px;
-    margin-bottom: 22px;
+    margin-top: 12px;
+    margin-bottom: 35px;
 
-    color: rgba(0, 225, 255, .65);
+    color: #68767b;
     font-size: 10px;
-    letter-spacing: 3px;
-    text-align: center;
-}
-
-.setupBox {
-    width: min(480px, 92vw);
-    padding: 22px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(8, 20, 35, .96),
-            rgba(0, 5, 12, .96)
-        );
-
-    border: 1px solid rgba(0, 225, 255, .5);
-
-    box-shadow:
-        0 0 25px rgba(0, 170, 255, .15),
-        inset 0 0 30px rgba(0, 130, 255, .05);
-}
-
-.input-label {
-    display: block;
-    margin-bottom: 8px;
-
-    font-size: 10px;
-    color: rgba(0, 225, 255, .7);
-    letter-spacing: 2px;
-}
-
-.input-wrap {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 10px;
+    letter-spacing: .25em;
 }
 
 #apiKeyInput {
-    flex: 1;
-    height: 48px;
+    width: min(460px, 90vw);
 
-    border: 1px solid rgba(0, 225, 255, .55);
-    outline: none;
+    padding: 16px 20px;
 
-    background: rgba(0, 5, 10, .95);
+    background: rgba(15,2,5,.9);
     color: white;
 
-    padding: 0 14px;
+    border: 1px solid #ff2344;
+    outline: none;
 
     font-family: inherit;
-    font-size: 13px;
-}
-
-#btnToggleShow {
-    width: 70px;
-    height: 48px;
-
-    border: 1px solid rgba(0, 225, 255, .4);
-    background: rgba(0, 225, 255, .08);
-
-    color: #00eaff;
-    font-family: inherit;
-    font-size: 11px;
-    cursor: pointer;
-}
-
-.key-status {
-    min-height: 28px;
-    margin-bottom: 15px;
-
-    font-size: 10px;
-    letter-spacing: 1px;
-    line-height: 14px;
     text-align: center;
-}
 
-.btn-row {
-    display: flex;
-    gap: 10px;
-}
-
-button {
-    height: 50px;
-
-    border: 1px solid #00eaff;
-    background: rgba(0, 225, 255, .12);
-
-    color: #00eaff;
-    font-family: inherit;
-    font-weight: bold;
-    letter-spacing: 2px;
-    cursor: pointer;
-
-    transition:
-        background .2s,
-        box-shadow .2s,
-        transform .15s;
-}
-
-button:hover {
-    background: rgba(0, 225, 255, .3);
-    box-shadow: 0 0 15px rgba(0, 225, 255, .25);
-}
-
-button:active {
-    transform: scale(.98);
-}
-
-button:disabled {
-    opacity: .5;
-    cursor: wait;
-}
-
-#btnVerify {
-    width: 35%;
-    font-size: 11px;
+    box-shadow:
+        inset 0 0 20px rgba(255,30,55,.08);
 }
 
 #btnInit {
-    width: 65%;
-    font-size: 13px;
+    margin-top: 18px;
+
+    padding: 15px 35px;
+
+    background: rgba(255,25,55,.06);
+    color: #ff2948;
+
+    border: 1px solid #ff2948;
+
+    font-family: inherit;
+    font-weight: bold;
+    letter-spacing: .2em;
+
+    cursor: pointer;
+}
+
+#btnInit:hover {
+    background: #ff2948;
+    color: black;
+
+    box-shadow:
+        0 0 30px rgba(255,30,55,.7);
+}
+
+#setupError {
+    min-height: 20px;
+    margin-top: 18px;
+
+    color: #ff405a;
+    font-size: 10px;
+}
+
+.warning {
+    max-width: 500px;
+    margin-top: 25px;
+
+    color: #56646a;
+    font-size: 9px;
+    line-height: 1.7;
 }
 </style>
 </head>
@@ -202,385 +154,136 @@ button:disabled {
     <div class="logo">E.D.I.T.H.</div>
 
     <div class="subtitle">
-        SPIDER TACTICAL OPTICS // NEAR-FIELD AR SYSTEM
+        OPTICAL TACTICAL SYSTEM // QUEST AR
     </div>
 
-    <div class="setupBox">
+    <input
+        id="apiKeyInput"
+        type="password"
+        placeholder="GEMINI API KEY"
+        autocomplete="off"
+    >
 
-        <span class="input-label">
-            GEMINI AI STUDIO KEY
-        </span>
+    <button id="btnInit">
+        INITIALIZE SYSTEM
+    </button>
 
-        <div class="input-wrap">
-            <input
-                id="apiKeyInput"
-                type="password"
-                placeholder="Paste AIzaSy... key here"
-                autocomplete="off"
-            >
+    <div id="setupError"></div>
 
-            <button
-                id="btnToggleShow"
-                type="button">
-                SHOW
-            </button>
-        </div>
-
-        <div
-            class="key-status"
-            id="keyStatus">
-            ENTER KEY TO VALIDATE
-        </div>
-
-        <div class="btn-row">
-
-            <button
-                id="btnVerify"
-                type="button">
-                VERIFY
-            </button>
-
-            <button
-                id="btnInit"
-                type="button">
-                INITIALIZE AR
-            </button>
-
-        </div>
+    <div class="warning">
+        QUEST BROWSER + HTTPS REQUIRED.<br>
+        AFTER INITIALIZATION, JUST TALK — NO TRIGGER REQUIRED.
     </div>
+
 </div>
 
 <canvas id="canvasXR"></canvas>
 
 <script>
 
-/* ================================================================
-   1. DOM
-================================================================ */
-
-const apiKeyInput = document.getElementById("apiKeyInput");
-const btnToggleShow = document.getElementById("btnToggleShow");
-const btnInit = document.getElementById("btnInit");
-const btnVerify = document.getElementById("btnVerify");
-const keyStatus = document.getElementById("keyStatus");
-const setupScreen = document.getElementById("setupScreen");
-const canvas = document.getElementById("canvasXR");
-
+"use strict";
 
 /* ================================================================
-   2. GEMINI KEY
+   STATE
 ================================================================ */
 
-btnToggleShow.onclick = () => {
+let apiKey =
+    localStorage.getItem("edith_gemini_key") || "";
 
-    if (apiKeyInput.type === "password") {
-        apiKeyInput.type = "text";
-        btnToggleShow.textContent = "HIDE";
-    } else {
-        apiKeyInput.type = "password";
-        btnToggleShow.textContent = "SHOW";
-    }
+let xrSession = null;
+let xrRefSpace = null;
+let xrViewerSpace = null;
+let xrHitTestSource = null;
 
-};
+let lastHitPose = null;
 
+let audioContext = null;
 
-function cleanGeminiKey(raw) {
+let speechRecognition = null;
+let speechSupported = false;
+let speechStarting = false;
+let speechActive = false;
 
-    if (!raw) return "";
+let isSpeaking = false;
+let processingVoice = false;
 
-    let str = raw.trim();
+let systemStatus =
+    "SYSTEM STANDBY";
 
-    const match =
-        str.match(/AIzaSy[A-Za-z0-9_-]{33}/);
+let edithResponse =
+    "E.D.I.T.H. ONLINE. JUST TALK.";
 
-    if (match) {
-        return match[0];
-    }
+let debugLog =
+    "AWAITING VOICE INPUT";
 
-    return str.replace(/[\s\r\n\t"']/g, "");
-}
-
-
-const urlHash =
-    new URLSearchParams(
-        window.location.hash.substring(1)
-    );
-
-const urlParams =
-    new URLSearchParams(
-        window.location.search
-    );
+let transcriptBuffer = "";
 
 
-let apiKey = cleanGeminiKey(
-    urlHash.get("key") ||
-    urlParams.get("key") ||
-    localStorage.getItem("edith_gemini_key") ||
-    ""
-);
+/* ================================================================
+   DOM
+================================================================ */
 
+const setupScreen =
+    document.getElementById("setupScreen");
+
+const apiKeyInput =
+    document.getElementById("apiKeyInput");
+
+const btnInit =
+    document.getElementById("btnInit");
+
+const setupError =
+    document.getElementById("setupError");
+
+const canvas =
+    document.getElementById("canvasXR");
 
 apiKeyInput.value = apiKey;
 
 
-function updateKeyPreview() {
+/* ================================================================
+   AUDIO
+================================================================ */
 
-    apiKey =
-        cleanGeminiKey(apiKeyInput.value);
-
-    if (!apiKey) {
-
-        keyStatus.style.color = "#ff334f";
-        keyStatus.textContent = "KEY IS EMPTY";
-
-    } else {
-
-        keyStatus.style.color = "#00ff9a";
-
-        keyStatus.textContent =
-            `KEY LOADED (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
-    }
-}
-
-
-apiKeyInput.addEventListener(
-    "input",
-    updateKeyPreview
-);
-
-updateKeyPreview();
-
-
-btnVerify.onclick = async () => {
-
-    updateKeyPreview();
-
-    if (!apiKey) return;
-
-    keyStatus.style.color = "#00eaff";
-    keyStatus.textContent =
-        "CONNECTING TO GEMINI UPLINK...";
+function initAudio() {
 
     try {
 
-        const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${apiKey}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text: "ping"
-                                }
-                            ]
-                        }
-                    ]
-                })
+        if (!audioContext) {
+
+            const AudioContextClass =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            if (AudioContextClass) {
+                audioContext =
+                    new AudioContextClass();
             }
-        );
-
-        if (res.ok) {
-
-            keyStatus.style.color =
-                "#00ff88";
-
-            keyStatus.textContent =
-                "VERIFIED // NEURAL LINK ACTIVE";
-
-            localStorage.setItem(
-                "edith_gemini_key",
-                apiKey
-            );
-
-        } else {
-
-            const err =
-                await res.json();
-
-            keyStatus.style.color =
-                "#ff334f";
-
-            keyStatus.textContent =
-                `REJECTED: ${err.error?.message || res.status}`;
         }
 
-    } catch (e) {
+        if (
+            audioContext &&
+            audioContext.state === "suspended"
+        ) {
+            audioContext.resume();
+        }
 
-        keyStatus.style.color =
-            "#ff334f";
-
-        keyStatus.textContent =
-            `NETWORK ERROR: ${e.message}`;
-    }
-};
-
-
-/* ================================================================
-   3. AR STATE
-================================================================ */
-
-let session = null;
-let referenceSpace = null;
-let xrLayer = null;
-let hitTestSource = null;
-
-let isListening = false;
-let isProcessing = false;
-let hasError = false;
-
-let systemStatus =
-    "E.D.I.T.H. // OCULAR LINK ACTIVE";
-
-let edithResponse =
-    "Tactical optics aligned. Pinch to cycle optical magnification.";
-
-let subErrorMessage = "";
-
-let conversationHistory = [];
-
-
-/* ================================================================
-   4. E.D.I.T.H. PERSONALITY
-================================================================ */
-
-const EDITH_SYSTEM_PROMPT =
-
-`You are E.D.I.T.H., Tony Stark's tactical AI.
-You are speaking aloud through an advanced AR optical headset.
-
-CRITICAL:
-You are speaking, not typing.
-Do not use markdown.
-Do not use bullet points.
-Do not use emojis.
-Do not use citations.
-Keep answers to one or two quick conversational sentences.
-Speak with calm confidence, warmth and light witty British efficiency.
-Never say "As an AI".
-Never sound robotic.`;
-
-
-/* ================================================================
-   5. OPTICAL SYSTEM
-================================================================ */
-
-const ZOOM_LEVELS = [
-    1.0,
-    2.0,
-    4.0,
-    8.0
-];
-
-let zoomIndex = 0;
-let currentZoom = 1.0;
-let targetZoom = 1.0;
-
-
-/* ================================================================
-   6. REAL WORLD TARGET TRACKING
-================================================================ */
-
-let realHitDetected = false;
-let realSurfaceDist = 0;
-
-let realHit3D = [
-    0,
-    0,
-    -1
-];
-
-let lockedTargets = [];
-
-
-const TARGET_CATALOGUE = [
-
-    {
-        label: "STRUCTURAL // SURFACE BOUNDARY",
-        threat: "SECURE"
-    },
-
-    {
-        label: "TACTICAL // WORKSPACE INTERCEPT",
-        threat: "NOMINAL"
-    },
-
-    {
-        label: "BIOMETRIC // ENTITY VECTOR",
-        threat: "MONITORED"
-    },
-
-    {
-        label: "PERIMETER // APERTURE AXIS",
-        threat: "CLEAR"
-    }
-
-];
-
-
-/* ================================================================
-   7. AUDIO
-================================================================ */
-
-let audioContext = null;
-let micStream = null;
-let scriptProcessor = null;
-
-let pcmSamples = [];
-
-let voiceLevel = 0;
-let silenceFrames = 0;
-
-
-/* ================================================================
-   8. AUDIO ENGINE
-================================================================ */
-
-function wakeAudioEngine() {
-
-    if (!audioContext) {
-
-        audioContext =
-            new (
-                window.AudioContext ||
-                window.webkitAudioContext
-            )();
-    }
-
-    if (audioContext.state === "suspended") {
-        audioContext.resume();
-    }
-
-    const osc =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
-    gain.gain.value = 0.0001;
-
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-
-    osc.start();
-    osc.stop(
-        audioContext.currentTime + .01
-    );
+    } catch (_) {}
 }
 
 
-function playCue(
-    freq = 880,
-    dur = 0.05
+function playTone(
+    frequency,
+    duration,
+    type = "sine",
+    volume = .1
 ) {
 
     try {
 
-        wakeAudioEngine();
+        initAudio();
+
+        if (!audioContext) return;
 
         const osc =
             audioContext.createOscillator();
@@ -588,19 +291,21 @@ function playCue(
         const gain =
             audioContext.createGain();
 
+        osc.type = type;
+
         osc.frequency.setValueAtTime(
-            freq,
+            frequency,
             audioContext.currentTime
         );
 
         gain.gain.setValueAtTime(
-            .1,
+            volume,
             audioContext.currentTime
         );
 
         gain.gain.exponentialRampToValueAtTime(
             .0001,
-            audioContext.currentTime + dur
+            audioContext.currentTime + duration
         );
 
         osc.connect(gain);
@@ -609,900 +314,588 @@ function playCue(
         osc.start();
 
         osc.stop(
-            audioContext.currentTime +
-            dur +
-            .01
+            audioContext.currentTime + duration
         );
 
-    } catch (e) {}
-}
-
-
-function playServoSound(zoom) {
-
-    try {
-
-        wakeAudioEngine();
-
-        const osc =
-            audioContext.createOscillator();
-
-        const gain =
-            audioContext.createGain();
-
-        osc.type = "sawtooth";
-
-        const start =
-            300 + zoom * 80;
-
-        const end =
-            650 + zoom * 110;
-
-        osc.frequency.setValueAtTime(
-            start,
-            audioContext.currentTime
-        );
-
-        osc.frequency.exponentialRampToValueAtTime(
-            end,
-            audioContext.currentTime + .12
-        );
-
-        gain.gain.setValueAtTime(
-            .14,
-            audioContext.currentTime
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-            .001,
-            audioContext.currentTime + .14
-        );
-
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-
-        osc.start();
-
-        osc.stop(
-            audioContext.currentTime + .15
-        );
-
-    } catch (e) {}
-}
-
-
-function cleanSpokenText(raw) {
-
-    return raw
-        .replace(/[*_#`~[\]()<>]/g, "")
-        .replace(/https?:\/\/\S+/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-
-function speakVoice(text) {
-
-    if (!window.speechSynthesis) return;
-
-    wakeAudioEngine();
-
-    window.speechSynthesis.cancel();
-
-    systemStatus =
-        "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
-
-    const speechText =
-        cleanSpokenText(text);
-
-    const utt =
-        new SpeechSynthesisUtterance(
-            speechText
-        );
-
-    const voices =
-        window.speechSynthesis.getVoices();
-
-    const preferredVoice =
-        voices.find(
-            v =>
-                v.lang.includes("en-GB") &&
-                !v.name.includes("Google")
-        ) ||
-        voices.find(
-            v => v.lang.includes("en-GB")
-        ) ||
-        voices.find(
-            v => v.lang.includes("en-US")
-        );
-
-    if (preferredVoice) {
-        utt.voice = preferredVoice;
-    }
-
-    utt.rate = 1.08;
-    utt.pitch = .98;
-
-    utt.onend = () => {
-
-        if (!isListening && !hasError) {
-
-            systemStatus =
-                "E.D.I.T.H. // OCULAR LINK ACTIVE";
-        }
-    };
-
-    window.speechSynthesis.speak(utt);
+    } catch (_) {}
 }
 
 
 /* ================================================================
-   9. WAV ENCODING
+   TEXT TO SPEECH
 ================================================================ */
 
-function downsampleAndEncodeWAV(
-    samples,
-    inputSampleRate
-) {
+function speakText(text) {
 
-    const targetSampleRate = 16000;
+    if (!window.speechSynthesis) {
 
-    const compression =
-        inputSampleRate /
-        targetSampleRate;
-
-    const length =
-        Math.floor(
-            samples.length /
-            compression
-        );
-
-    const result =
-        new Float32Array(length);
-
-    let offsetResult = 0;
-    let offsetBuffer = 0;
-
-    while (
-        offsetResult <
-        result.length
-    ) {
-
-        const nextOffsetBuffer =
-            Math.round(
-                (offsetResult + 1) *
-                compression
-            );
-
-        let accum = 0;
-        let count = 0;
-
-        for (
-            let i = offsetBuffer;
-            i < nextOffsetBuffer &&
-            i < samples.length;
-            i++
-        ) {
-
-            accum += samples[i];
-            count++;
-        }
-
-        result[offsetResult] =
-            count > 0
-                ? accum / count
-                : 0;
-
-        offsetResult++;
-
-        offsetBuffer =
-            nextOffsetBuffer;
-    }
-
-
-    const buffer =
-        new ArrayBuffer(
-            44 + result.length * 2
-        );
-
-    const view =
-        new DataView(buffer);
-
-
-    function writeStr(
-        offset,
-        str
-    ) {
-
-        for (
-            let i = 0;
-            i < str.length;
-            i++
-        ) {
-
-            view.setUint8(
-                offset + i,
-                str.charCodeAt(i)
-            );
-        }
-    }
-
-
-    writeStr(0, "RIFF");
-
-    view.setUint32(
-        4,
-        36 + result.length * 2,
-        true
-    );
-
-    writeStr(8, "WAVE");
-    writeStr(12, "fmt ");
-
-    view.setUint32(
-        16,
-        16,
-        true
-    );
-
-    view.setUint16(
-        20,
-        1,
-        true
-    );
-
-    view.setUint16(
-        22,
-        1,
-        true
-    );
-
-    view.setUint32(
-        24,
-        16000,
-        true
-    );
-
-    view.setUint32(
-        28,
-        32000,
-        true
-    );
-
-    view.setUint16(
-        32,
-        2,
-        true
-    );
-
-    view.setUint16(
-        34,
-        16,
-        true
-    );
-
-    writeStr(36, "data");
-
-    view.setUint32(
-        40,
-        result.length * 2,
-        true
-    );
-
-
-    let offset = 44;
-
-    for (
-        let i = 0;
-        i < result.length;
-        i++
-    ) {
-
-        const s =
-            Math.max(
-                -1,
-                Math.min(
-                    1,
-                    result[i]
-                )
-            );
-
-        view.setInt16(
-            offset,
-            s < 0
-                ? s * 0x8000
-                : s * 0x7FFF,
-            true
-        );
-
-        offset += 2;
-    }
-
-    return new Uint8Array(buffer);
-}
-
-
-/* ================================================================
-   10. MICROPHONE / VAD
-================================================================ */
-
-async function setupAudioPipeline() {
-
-    wakeAudioEngine();
-
-    micStream =
-        await navigator.mediaDevices.getUserMedia({
-
-            audio: {
-                channelCount: 1,
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-            }
-
-        });
-
-
-    const source =
-        audioContext.createMediaStreamSource(
-            micStream
-        );
-
-    const analyser =
-        audioContext.createAnalyser();
-
-    analyser.fftSize = 256;
-
-
-    scriptProcessor =
-        audioContext.createScriptProcessor(
-            2048,
-            1,
-            1
-        );
-
-
-    source.connect(analyser);
-    source.connect(scriptProcessor);
-
-    scriptProcessor.connect(
-        audioContext.destination
-    );
-
-
-    const freqData =
-        new Uint8Array(
-            analyser.frequencyBinCount
-        );
-
-
-    const SPEECH_GATE = 16;
-
-    const SILENCE_LIMIT =
-        Math.round(
-            (
-                audioContext.sampleRate /
-                2048
-            ) * .45
-        );
-
-
-    scriptProcessor.onaudioprocess =
-        e => {
-
-            if (isProcessing) return;
-
-            analyser.getByteFrequencyData(
-                freqData
-            );
-
-            let sum = 0;
-
-            for (
-                let i = 0;
-                i < freqData.length;
-                i++
-            ) {
-
-                sum += freqData[i];
-            }
-
-            const avg =
-                sum / freqData.length;
-
-            voiceLevel =
-                avg / 35;
-
-
-            const input =
-                e.inputBuffer
-                    .getChannelData(0);
-
-
-            if (avg > SPEECH_GATE) {
-
-                if (!isListening) {
-
-                    isListening = true;
-
-                    hasError = false;
-                    subErrorMessage = "";
-
-                    pcmSamples = [];
-
-                    systemStatus =
-                        "AUDIO INPUT DETECTED // DIRECTIVE";
-
-                    playCue(
-                        540,
-                        .04
-                    );
-                }
-
-                silenceFrames = 0;
-
-                for (
-                    let i = 0;
-                    i < input.length;
-                    i++
-                ) {
-
-                    pcmSamples.push(
-                        input[i]
-                    );
-                }
-
-            } else if (isListening) {
-
-                for (
-                    let i = 0;
-                    i < input.length;
-                    i++
-                ) {
-
-                    pcmSamples.push(
-                        input[i]
-                    );
-                }
-
-                silenceFrames++;
-
-                if (
-                    silenceFrames >
-                    SILENCE_LIMIT
-                ) {
-
-                    isListening = false;
-                    isProcessing = true;
-
-                    systemStatus =
-                        "NEURAL PROCESSING // ANALYZING";
-
-                    playCue(
-                        920,
-                        .05
-                    );
-
-
-                    const recordedSnapshot =
-                        pcmSamples.slice();
-
-                    pcmSamples = [];
-
-                    transmitToGemini(
-                        recordedSnapshot
-                    );
-                }
-            }
-        };
-}
-
-
-/* ================================================================
-   11. GEMINI
-================================================================ */
-
-async function transmitToGemini(
-    samples
-) {
-
-    if (
-        samples.length <
-        audioContext.sampleRate * .25
-    ) {
-
-        isProcessing = false;
-
-        systemStatus =
-            "E.D.I.T.H. // OCULAR LINK ACTIVE";
+        debugLog =
+            "TTS NOT AVAILABLE";
 
         return;
     }
 
+    window.speechSynthesis.cancel();
 
-    try {
+    const utterance =
+        new SpeechSynthesisUtterance(text);
+
+    utterance.lang = "en-US";
+    utterance.rate = 1.08;
+    utterance.pitch = .94;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+
+        isSpeaking = true;
+    };
+
+    utterance.onend = () => {
+
+        isSpeaking = false;
+
+        /*
+           Restart listening after E.D.I.T.H.
+           finishes speaking.
+        */
+
+        setTimeout(
+            startVoiceRecognition,
+            250
+        );
+    };
+
+    utterance.onerror = () => {
+
+        isSpeaking = false;
+
+        setTimeout(
+            startVoiceRecognition,
+            250
+        );
+    };
+
+    isSpeaking = true;
+
+    window.speechSynthesis.speak(
+        utterance
+    );
+}
+
+
+/* ================================================================
+   CONTINUOUS VOICE RECOGNITION
+================================================================ */
+
+/*
+   No trigger.
+   No button.
+   No push-to-talk.
+
+   The browser continuously listens for speech and sends
+   completed phrases to Gemini.
+*/
+
+function setupVoiceRecognition() {
+
+    const Recognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+
+        speechSupported = false;
+
+        debugLog =
+            "SPEECH API NOT SUPPORTED";
 
         systemStatus =
-            "UPLINK SYNAPSE // GENERATING RESPONSE";
+            "VOICE UNAVAILABLE";
+
+        return false;
+    }
+
+    speechSupported = true;
+
+    speechRecognition =
+        new Recognition();
+
+    speechRecognition.lang =
+        "en-US";
+
+    speechRecognition.continuous =
+        true;
+
+    speechRecognition.interimResults =
+        true;
+
+    speechRecognition.maxAlternatives =
+        1;
 
 
-        const wavBytes =
-            downsampleAndEncodeWAV(
-                samples,
-                audioContext.sampleRate
-            );
+    speechRecognition.onstart =
+        () => {
 
+            speechStarting = false;
+            speechActive = true;
 
-        let binary = "";
+            if (!processingVoice) {
 
-        for (
-            let i = 0;
-            i < wavBytes.byteLength;
-            i++
-        ) {
+                systemStatus =
+                    "LISTENING";
 
-            binary += String.fromCharCode(
-                wavBytes[i]
-            );
-        }
-
-
-        const base64WAV =
-            btoa(binary);
-
-
-        const userTurn = {
-
-            role: "user",
-
-            parts: [
-
-                {
-                    inline_data: {
-                        mime_type: "audio/wav",
-                        data: base64WAV
-                    }
-                }
-
-            ]
+                debugLog =
+                    "VOICE INPUT ACTIVE";
+            }
         };
 
 
-        const contentsPayload = [
+    speechRecognition.onresult =
+        event => {
 
-            ...conversationHistory.slice(-4),
+            let interim = "";
+            let finalText = "";
 
-            userTurn
+            for (
+                let i =
+                    event.resultIndex;
+                i < event.results.length;
+                i++
+            ) {
 
-        ];
+                const result =
+                    event.results[i];
 
+                const text =
+                    result[0].transcript;
 
-        const cleanKey =
-            cleanGeminiKey(apiKey);
+                if (result.isFinal) {
 
+                    finalText += text;
 
-        const res =
-            await fetch(
+                } else {
 
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${cleanKey}`,
-
-                {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        system_instruction: {
-
-                            parts: [
-                                {
-                                    text:
-                                        EDITH_SYSTEM_PROMPT
-                                }
-                            ]
-
-                        },
-
-                        contents:
-                            contentsPayload,
-
-                        generationConfig: {
-
-                            temperature: .7,
-
-                            maxOutputTokens: 90
-
-                        }
-
-                    })
-
+                    interim += text;
                 }
-            );
+            }
+
+            if (interim) {
+
+                debugLog =
+                    "HEARING: " +
+                    interim
+                        .trim()
+                        .slice(0, 80);
+            }
+
+            if (finalText.trim()) {
+
+                handleVoiceCommand(
+                    finalText.trim()
+                );
+            }
+        };
 
 
-        if (!res.ok) {
+    speechRecognition.onerror =
+        event => {
 
-            let errDetail =
-                `HTTP ${res.status}`;
+            speechStarting = false;
 
-            try {
+            /*
+               These errors are often temporary on
+               mobile browsers.
+            */
 
-                const errBody =
-                    await res.json();
+            if (
+                event.error ===
+                    "not-allowed" ||
+                event.error ===
+                    "service-not-allowed"
+            ) {
 
-                if (
-                    errBody.error &&
-                    errBody.error.message
-                ) {
+                speechActive = false;
 
-                    errDetail =
-                        errBody.error.message;
-                }
+                systemStatus =
+                    "MIC PERMISSION";
 
-            } catch (e) {}
+                debugLog =
+                    "ALLOW MICROPHONE ACCESS";
 
-            throw new Error(
-                errDetail
-            );
-        }
+                return;
+            }
+
+            speechActive = false;
+
+            debugLog =
+                "VOICE: " +
+                event.error;
+        };
 
 
-        const data =
-            await res.json();
+    speechRecognition.onend =
+        () => {
 
+            speechActive = false;
+            speechStarting = false;
+
+            /*
+               Automatically restart unless we are
+               deliberately waiting for TTS.
+            */
+
+            if (
+                xrSession &&
+                !isSpeaking &&
+                !processingVoice
+            ) {
+
+                setTimeout(
+                    startVoiceRecognition,
+                    300
+                );
+            }
+        };
+
+
+    return true;
+}
+
+
+function startVoiceRecognition() {
+
+    if (
+        !speechRecognition ||
+        !speechSupported ||
+        speechStarting ||
+        speechActive ||
+        isSpeaking ||
+        processingVoice
+    ) {
+        return;
+    }
+
+    try {
+
+        speechStarting = true;
+
+        speechRecognition.start();
+
+    } catch (error) {
+
+        speechStarting = false;
+
+        setTimeout(
+            startVoiceRecognition,
+            1000
+        );
+    }
+}
+
+
+function stopVoiceRecognition() {
+
+    if (!speechRecognition) return;
+
+    try {
+
+        speechRecognition.stop();
+
+    } catch (_) {}
+
+    speechActive = false;
+}
+
+
+/* ================================================================
+   VOICE COMMAND
+================================================================ */
+
+async function handleVoiceCommand(
+    command
+) {
+
+    if (!command) return;
+
+    if (processingVoice) return;
+
+    /*
+       Ignore accidental recognition of our own TTS
+       if the browser leaks it into the microphone.
+    */
+
+    if (
+        command.length < 2
+    ) {
+        return;
+    }
+
+    processingVoice = true;
+
+    stopVoiceRecognition();
+
+    systemStatus =
+        "ANALYZING";
+
+    debugLog =
+        "COMMAND: " +
+        command.slice(0, 90);
+
+    edithResponse =
+        "PROCESSING...";
+
+    playTone(
+        600,
+        .07,
+        "triangle",
+        .08
+    );
+
+    try {
 
         const reply =
-            data.candidates?.[0]
-                ?.content
-                ?.parts?.[0]
-                ?.text
-                ?.trim();
-
-
-        if (!reply) {
-            throw new Error(
-                "EMPTY_DATA"
-            );
-        }
-
-
-        const cleanReply =
-            cleanSpokenText(reply);
-
-
-        conversationHistory.push(
-            userTurn
-        );
-
-        conversationHistory.push({
-
-            role: "model",
-
-            parts: [
-                {
-                    text: cleanReply
-                }
-            ]
-
-        });
-
-
-        hasError = false;
-        subErrorMessage = "";
+            await askGemini(command);
 
         edithResponse =
-            cleanReply;
+            reply;
 
-        isProcessing = false;
+        systemStatus =
+            "SYSTEM STANDBY";
 
-        playCue(
-            1200,
+        debugLog =
+            "COMMAND COMPLETE";
+
+        playTone(
+            1150,
+            .12,
+            "sine",
             .08
         );
 
-        speakVoice(
-            cleanReply
-        );
+        processingVoice = false;
 
+        speakText(reply);
 
-    } catch (err) {
+    } catch (error) {
 
-        console.error(
-            "Gemini Failure:",
-            err
-        );
-
-        isProcessing = false;
-        hasError = true;
+        processingVoice = false;
 
         systemStatus =
-            "UPLINK ERROR // DISCONNECTED";
+            "AI ERROR";
+
+        debugLog =
+            "AI: " +
+            error.message.slice(0, 100);
 
         edithResponse =
-            "I lost connection for a second. Try again?";
+            "I encountered a communication error.";
 
-        subErrorMessage =
-            "AI ERROR: " +
-            (err.message || "UNKNOWN")
-                .toUpperCase();
-
-        playCue(
-            300,
-            .2
+        playTone(
+            280,
+            .25,
+            "sawtooth",
+            .07
         );
 
-        speakVoice(
-            edithResponse
+        setTimeout(
+            startVoiceRecognition,
+            500
         );
     }
 }
 
 
 /* ================================================================
-   12. PINCH / TARGET LOCK
+   GEMINI TEXT REQUEST
 ================================================================ */
 
-function handlePinchTap() {
+async function askGemini(
+    command
+) {
 
-    zoomIndex =
-        (zoomIndex + 1) %
-        ZOOM_LEVELS.length;
+    if (!apiKey) {
 
-    targetZoom =
-        ZOOM_LEVELS[zoomIndex];
-
-
-    playServoSound(
-        targetZoom
-    );
-
-
-    if (realHitDetected) {
-
-        const template =
-            TARGET_CATALOGUE[
-                Math.floor(
-                    Math.random() *
-                    TARGET_CATALOGUE.length
-                )
-            ];
-
-
-        lockedTargets.push({
-
-            worldPos: [
-                realHit3D[0],
-                realHit3D[1],
-                realHit3D[2]
-            ],
-
-            dist:
-                realSurfaceDist.toFixed(2) +
-                "M",
-
-            label:
-                template.label,
-
-            threat:
-                template.threat,
-
-            timestamp:
-                Date.now()
-
-        });
-
-
-        if (
-            lockedTargets.length > 4
-        ) {
-
-            lockedTargets.shift();
-        }
+        throw new Error(
+            "NO GEMINI API KEY"
+        );
     }
+
+    const endpoint =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+        encodeURIComponent(apiKey);
+
+
+    const body = {
+
+        systemInstruction: {
+
+            parts: [{
+
+                text:
+`You are E.D.I.T.H., a fictional advanced tactical augmented-reality assistant.
+
+Answer the user concisely and naturally.
+Use one or two short sentences.
+Sound calm, intelligent and futuristic.
+Do not pretend to have access to sensors or cameras that were not provided.
+Do not claim to control real weapons or dangerous systems.`
+            }]
+        },
+
+        contents: [{
+
+            role: "user",
+
+            parts: [{
+
+                text: command
+            }]
+        }]
+    };
+
+
+    const response =
+        await fetch(
+            endpoint,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify(body)
+            }
+        );
+
+
+    if (!response.ok) {
+
+        let message =
+            "HTTP " +
+            response.status;
+
+        try {
+
+            const errorData =
+                await response.json();
+
+            message =
+                errorData.error?.message ||
+                message;
+
+        } catch (_) {}
+
+        throw new Error(message);
+    }
+
+
+    const data =
+        await response.json();
+
+
+    const reply =
+        data
+            ?.candidates?.[0]
+            ?.content?.parts
+            ?.map(
+                part =>
+                    part.text || ""
+            )
+            .join(" ")
+            .trim();
+
+
+    if (!reply) {
+
+        throw new Error(
+            "EMPTY AI RESPONSE"
+        );
+    }
+
+    return reply;
 }
 
 
 /* ================================================================
-   13. HUD CANVAS
+   HUD CANVAS
 ================================================================ */
 
-const hud =
-    document.createElement(
-        "canvas"
-    );
+const hudCanvas =
+    document.createElement("canvas");
 
-hud.width = 1920;
-hud.height = 1080;
+hudCanvas.width = 1600;
+hudCanvas.height = 900;
 
 const ctx =
-    hud.getContext("2d");
+    hudCanvas.getContext("2d");
 
 
-const W = 1920;
-const H = 1080;
+const CYAN =
+    "rgba(0,235,255,.94)";
 
-const CX = W / 2;
-const CY = H / 2;
+const CYAN_SOFT =
+    "rgba(0,220,255,.45)";
 
+const RED =
+    "rgba(255,25,50,.96)";
 
-/* ================================================================
-   14. SPIDER COLORS
-================================================================ */
+const GREEN =
+    "rgba(0,255,145,.95)";
 
-const SPIDER_RED =
-    "rgba(255,35,55,0.96)";
-
-const SPIDER_RED_DIM =
-    "rgba(255,35,55,0.28)";
-
-const SPIDER_BLUE =
-    "rgba(25,145,255,0.96)";
-
-const SPIDER_BLUE_DIM =
-    "rgba(25,145,255,0.28)";
-
-const SPIDER_WHITE =
-    "rgba(235,248,255,0.98)";
-
-const SPIDER_CYAN =
-    "rgba(0,225,255,0.95)";
-
-const SPIDER_GREEN =
-    "rgba(40,255,160,0.95)";
-
-const SPIDER_ORANGE =
-    "rgba(255,170,40,0.95)";
+const WHITE =
+    "rgba(235,250,255,.97)";
 
 
 /* ================================================================
-   15. HUD HELPERS
+   DRAW HELPERS
 ================================================================ */
 
-function glowStroke(
-    color,
-    width = 1.5,
-    blur = 8
+function hudText(
+    value,
+    x,
+    y,
+    size,
+    color = CYAN,
+    align = "left"
 ) {
 
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
+    ctx.fillStyle =
+        color;
+
+    ctx.font =
+        `600 ${size}px Consolas, Courier New, monospace`;
+
+    ctx.textAlign =
+        align;
+
+    ctx.textBaseline =
+        "middle";
+
+    ctx.fillText(
+        value,
+        x,
+        y
+    );
 }
 
 
-function glowFill(
-    color,
-    blur = 8
-) {
-
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur;
-}
-
-
-function spiderLine(
+function hudLine(
     x1,
     y1,
     x2,
     y2,
-    color = SPIDER_CYAN,
+    color,
     width = 1
 ) {
 
-    ctx.save();
+    ctx.strokeStyle =
+        color;
 
-    glowStroke(
-        color,
-        width,
-        6
-    );
+    ctx.lineWidth =
+        width;
 
     ctx.beginPath();
 
@@ -1517,1457 +910,54 @@ function spiderLine(
     );
 
     ctx.stroke();
-
-    ctx.restore();
 }
 
 
-function spiderArc(
+function wrappedText(
+    value,
     x,
     y,
-    r,
-    start,
-    end,
-    color,
-    width = 1.5
+    maxWidth,
+    lineHeight,
+    size
 ) {
-
-    ctx.save();
-
-    glowStroke(
-        color,
-        width,
-        8
-    );
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        r,
-        start,
-        end
-    );
-
-    ctx.stroke();
-
-    ctx.restore();
-}
-
-
-function spiderText(
-    text,
-    x,
-    y,
-    size,
-    color = SPIDER_CYAN,
-    align = "left"
-) {
-
-    ctx.save();
-
-    ctx.font =
-        `${size}px "Consolas", "Courier New", monospace`;
-
-    ctx.fillStyle = color;
-
-    ctx.textAlign = align;
-
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 7;
-
-    ctx.fillText(
-        text,
-        x,
-        y
-    );
-
-    ctx.restore();
-}
-
-
-function hexPoint(
-    cx,
-    cy,
-    r,
-    i
-) {
-
-    const a =
-        -Math.PI / 2 +
-        i * Math.PI / 3;
-
-    return [
-
-        cx +
-        Math.cos(a) * r,
-
-        cy +
-        Math.sin(a) * r
-
-    ];
-}
-
-
-function drawHex(
-    cx,
-    cy,
-    r,
-    color,
-    width = 1
-) {
-
-    ctx.save();
-
-    glowStroke(
-        color,
-        width,
-        8
-    );
-
-    ctx.beginPath();
-
-    for (
-        let i = 0;
-        i < 6;
-        i++
-    ) {
-
-        const p =
-            hexPoint(
-                cx,
-                cy,
-                r,
-                i
-            );
-
-        if (i === 0) {
-
-            ctx.moveTo(
-                p[0],
-                p[1]
-            );
-
-        } else {
-
-            ctx.lineTo(
-                p[0],
-                p[1]
-            );
-        }
-    }
-
-    ctx.closePath();
-    ctx.stroke();
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   16. SPIDER WEB
-================================================================ */
-
-function drawSpiderWeb(
-    cx,
-    cy,
-    radius,
-    color,
-    alpha = .35
-) {
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        color.replace(
-            /[\d.]+\)$/,
-            `${alpha})`
-        );
-
-    ctx.lineWidth = .75;
-
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 5;
-
-
-    const strands = 16;
-
-    for (
-        let i = 0;
-        i < strands;
-        i++
-    ) {
-
-        const a =
-            Math.PI * 2 /
-            strands *
-            i;
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            cx,
-            cy
-        );
-
-        ctx.lineTo(
-
-            cx +
-            Math.cos(a) *
-            radius,
-
-            cy +
-            Math.sin(a) *
-            radius
-
-        );
-
-        ctx.stroke();
-    }
-
-
-    for (
-        let ring = .15;
-        ring <= 1;
-        ring += .12
-    ) {
-
-        const r =
-            radius * ring;
-
-        ctx.beginPath();
-
-        for (
-            let i = 0;
-            i <= strands;
-            i++
-        ) {
-
-            const a =
-                Math.PI * 2 /
-                strands *
-                i;
-
-            const p = [
-
-                cx +
-                Math.cos(a) * r,
-
-                cy +
-                Math.sin(a) * r
-
-            ];
-
-            if (i === 0) {
-
-                ctx.moveTo(
-                    p[0],
-                    p[1]
-                );
-
-            } else {
-
-                ctx.lineTo(
-                    p[0],
-                    p[1]
-                );
-            }
-        }
-
-        ctx.stroke();
-    }
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   17. CORNER BRACKETS
-================================================================ */
-
-function drawCornerBrackets(
-    cx,
-    cy,
-    size,
-    color
-) {
-
-    const len = 32;
-
-    spiderLine(
-        cx - size,
-        cy - size,
-        cx - size + len,
-        cy - size,
-        color,
-        2
-    );
-
-    spiderLine(
-        cx - size,
-        cy - size,
-        cx - size,
-        cy - size + len,
-        color,
-        2
-    );
-
-
-    spiderLine(
-        cx + size,
-        cy - size,
-        cx + size - len,
-        cy - size,
-        color,
-        2
-    );
-
-    spiderLine(
-        cx + size,
-        cy - size,
-        cx + size,
-        cy - size + len,
-        color,
-        2
-    );
-
-
-    spiderLine(
-        cx - size,
-        cy + size,
-        cx - size + len,
-        cy + size,
-        color,
-        2
-    );
-
-    spiderLine(
-        cx - size,
-        cy + size,
-        cx - size,
-        cy + size - len,
-        color,
-        2
-    );
-
-
-    spiderLine(
-        cx + size,
-        cy + size,
-        cx + size - len,
-        cy + size,
-        color,
-        2
-    );
-
-    spiderLine(
-        cx + size,
-        cy + size,
-        cx + size,
-        cy + size - len,
-        color,
-        2
-    );
-}
-
-
-/* ================================================================
-   18. SCAN SWEEP
-================================================================ */
-
-function drawScanSweep(
-    cx,
-    cy,
-    radius,
-    time,
-    color
-) {
-
-    const angle =
-        (time * .0011) %
-        (Math.PI * 2);
-
-
-    ctx.save();
-
-    const grad =
-        ctx.createRadialGradient(
-            cx,
-            cy,
-            0,
-            cx,
-            cy,
-            radius
-        );
-
-    grad.addColorStop(
-        0,
-        "rgba(0,225,255,.14)"
-    );
-
-    grad.addColorStop(
-        .65,
-        "rgba(0,225,255,.025)"
-    );
-
-    grad.addColorStop(
-        1,
-        "rgba(0,225,255,0)"
-    );
-
-    ctx.fillStyle = grad;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        cx,
-        cy
-    );
-
-    ctx.arc(
-        cx,
-        cy,
-        radius,
-        angle - .1,
-        angle + .1
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-
-    spiderLine(
-
-        cx,
-        cy,
-
-        cx +
-        Math.cos(angle) *
-        radius,
-
-        cy +
-        Math.sin(angle) *
-        radius,
-
-        color,
-        1
-    );
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   19. HUD PANEL
-================================================================ */
-
-function drawHUDPanel(
-    x,
-    y,
-    w,
-    h,
-    color,
-    title,
-    value
-) {
-
-    ctx.save();
 
     ctx.fillStyle =
-        "rgba(0,8,18,.52)";
-
-    ctx.fillRect(
-        x,
-        y,
-        w,
-        h
-    );
-
-
-    ctx.strokeStyle =
-        color;
-
-    ctx.lineWidth = 1;
-
-    ctx.shadowColor =
-        color;
-
-    ctx.shadowBlur = 8;
-
-    ctx.strokeRect(
-        x,
-        y,
-        w,
-        h
-    );
-
-
-    spiderText(
-        title,
-        x + 10,
-        y + 15,
-        7.5,
-        color
-    );
-
-    spiderText(
-        value,
-        x + 10,
-        y + 35,
-        11,
-        SPIDER_WHITE
-    );
-
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   20. VOICE WAVE
-================================================================ */
-
-function drawVoiceWave(
-    cx,
-    cy,
-    time,
-    active
-) {
-
-    const bars = 32;
-    const width = 210;
-    const gap = width / bars;
-
-
-    for (
-        let i = 0;
-        i < bars;
-        i++
-    ) {
-
-        const wave =
-            Math.sin(
-                time * .015 +
-                i * .7
-            ) *
-            Math.sin(
-                time * .004 +
-                i
-            );
-
-
-        const energy =
-            active
-                ? Math.max(
-                    3,
-                    Math.abs(wave) *
-                    25 *
-                    Math.max(
-                        voiceLevel,
-                        .2
-                    )
-                )
-                : 2;
-
-
-        const x =
-            cx -
-            width / 2 +
-            i * gap;
-
-
-        ctx.save();
-
-        ctx.fillStyle =
-            active
-                ? SPIDER_RED
-                : SPIDER_CYAN;
-
-        ctx.shadowColor =
-            active
-                ? SPIDER_RED
-                : SPIDER_CYAN;
-
-        ctx.shadowBlur = 5;
-
-
-        ctx.fillRect(
-            x,
-            cy - energy / 2,
-            2,
-            energy
-        );
-
-        ctx.restore();
-    }
-}
-
-
-/* ================================================================
-   21. SPIDER SENSE
-================================================================ */
-
-function drawThreatPulse(
-    cx,
-    cy,
-    radius,
-    time,
-    active
-) {
-
-    if (!active) return;
-
-    const pulse =
-        (
-            Math.sin(
-                time * .008
-            ) + 1
-        ) / 2;
-
-
-    ctx.save();
-
-    ctx.globalAlpha =
-        .2 + pulse * .4;
-
-    spiderArc(
-        cx,
-        cy,
-        radius + pulse * 20,
-        0,
-        Math.PI * 2,
-        SPIDER_RED,
-        2
-    );
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   22. MAIN HUD RENDER
-================================================================ */
-
-function renderHUD(time) {
-
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-
-    currentZoom +=
-        (
-            targetZoom -
-            currentZoom
-        ) * .16;
-
-
-    const isZoomed =
-        currentZoom > 1.05;
-
-
-    const pulse =
-        (
-            Math.sin(
-                time * .004
-            ) + 1
-        ) / 2;
-
-
-    const mainCol =
-
-        isListening
-            ? SPIDER_RED
-
-        : hasError
-            ? SPIDER_RED
-
-        : isProcessing
-            ? SPIDER_ORANGE
-
-        : realHitDetected
-            ? SPIDER_GREEN
-
-        : SPIDER_CYAN;
-
-
-    /* ============================================================
-       BACKGROUND GRID
-    ============================================================ */
-
-    ctx.save();
-
-    ctx.globalAlpha = .08;
-
-    const grid = 80;
-
-    for (
-        let x = 0;
-        x < W;
-        x += grid
-    ) {
-
-        spiderLine(
-            x,
-            0,
-            x,
-            H,
-            SPIDER_BLUE_DIM,
-            .5
-        );
-    }
-
-    for (
-        let y = 0;
-        y < H;
-        y += grid
-    ) {
-
-        spiderLine(
-            0,
-            y,
-            W,
-            y,
-            SPIDER_BLUE_DIM,
-            .5
-        );
-    }
-
-    ctx.restore();
-
-
-    /* ============================================================
-       HUGE SUBTLE WEB
-    ============================================================ */
-
-    drawSpiderWeb(
-        CX,
-        CY,
-        500,
-        SPIDER_CYAN,
-        .09
-    );
-
-
-    /* ============================================================
-       PERIPHERAL WEBS
-    ============================================================ */
-
-    ctx.save();
-
-    ctx.translate(
-        CX - 480,
-        CY
-    );
-
-    ctx.scale(
-        .62,
-        1
-    );
-
-    drawSpiderWeb(
-        0,
-        0,
-        330,
-        SPIDER_BLUE,
-        .12
-    );
-
-    ctx.restore();
-
-
-    ctx.save();
-
-    ctx.translate(
-        CX + 480,
-        CY
-    );
-
-    ctx.scale(
-        .62,
-        1
-    );
-
-    drawSpiderWeb(
-        0,
-        0,
-        330,
-        SPIDER_BLUE,
-        .12
-    );
-
-    ctx.restore();
-
-
-    /* ============================================================
-       PERIPHERAL RINGS
-    ============================================================ */
-
-    const sideColor =
-        isZoomed
-            ? SPIDER_GREEN
-            : SPIDER_BLUE;
-
-
-    spiderArc(
-        CX,
-        CY,
-        435,
-        Math.PI * .66,
-        Math.PI * 1.34,
-        sideColor,
-        2
-    );
-
-    spiderArc(
-        CX,
-        CY,
-        435,
-        -Math.PI * .34,
-        Math.PI * .34,
-        sideColor,
-        2
-    );
-
-
-    spiderArc(
-        CX,
-        CY,
-        458,
-        Math.PI * .75,
-        Math.PI * 1.25,
-        SPIDER_BLUE_DIM,
-        1
-    );
-
-    spiderArc(
-        CX,
-        CY,
-        458,
-        -Math.PI * .25,
-        Math.PI * .25,
-        SPIDER_BLUE_DIM,
-        1
-    );
-
-
-    /* ============================================================
-       SCANNER
-    ============================================================ */
-
-    drawScanSweep(
-        CX,
-        CY,
-        isZoomed ? 310 : 260,
-        time,
-        mainCol
-    );
-
-
-    /* ============================================================
-       TOP TELEMETRY
-    ============================================================ */
-
-    const ukTime =
-        new Date().toLocaleTimeString(
-            "en-GB",
-            {
-                timeZone:
-                    "Europe/London",
-                hour12: false
-            }
-        );
-
-
-    const ukDate =
-        new Date().toLocaleDateString(
-            "en-GB",
-            {
-                timeZone:
-                    "Europe/London",
-                day: "2-digit",
-                month: "short",
-                year: "numeric"
-            }
-        ).toUpperCase();
-
-
-    drawHUDPanel(
-        CX - 270,
-        35,
-        150,
-        46,
-        SPIDER_CYAN,
-        "SYSTEM TIME",
-        ukTime
-    );
-
-
-    drawHUDPanel(
-        CX + 120,
-        35,
-        150,
-        46,
-        SPIDER_GREEN,
-        "NETWORK",
-        "SECURE"
-    );
-
-
-    spiderText(
-        `// ${ukDate}`,
-        CX,
-        102,
-        8,
-        SPIDER_BLUE,
-        "center"
-    );
-
-
-    /* ============================================================
-       CENTRAL RETICLE
-    ============================================================ */
-
-    const radius =
-        (
-            56 +
-            voiceLevel * 12
-        ) *
-        (
-            isZoomed
-                ? 1.24
-                : 1
-        );
-
-
-    /* outer rings */
-
-    spiderArc(
-        CX,
-        CY,
-        radius + 32,
-        0,
-        Math.PI * 2,
-        mainCol,
-        1
-    );
-
-
-    spiderArc(
-        CX,
-        CY,
-        radius + 17,
-        -.8,
-        .8,
-        mainCol,
-        2
-    );
-
-
-    spiderArc(
-        CX,
-        CY,
-        radius + 17,
-        Math.PI - .8,
-        Math.PI + .8,
-        mainCol,
-        2
-    );
-
-
-    /* central spider web */
-
-    drawSpiderWeb(
-        CX,
-        CY,
-        radius,
-        mainCol,
-        .4
-    );
-
-
-    /* central hex */
-
-    drawHex(
-        CX,
-        CY,
-        radius * .56,
-        mainCol,
-        1.5
-    );
-
-
-    /* centre eye */
-
-    ctx.save();
-
-    glowFill(
-        mainCol,
-        14
-    );
-
-    ctx.beginPath();
-
-    ctx.arc(
-        CX,
-        CY,
-        isListening ? 7 : 4,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.restore();
-
-
-    /* crosshair */
-
-    spiderLine(
-        CX - radius - 48,
-        CY,
-        CX - radius - 8,
-        CY,
-        mainCol,
-        2
-    );
-
-    spiderLine(
-        CX + radius + 8,
-        CY,
-        CX + radius + 48,
-        CY,
-        mainCol,
-        2
-    );
-
-    spiderLine(
-        CX,
-        CY - radius - 48,
-        CX,
-        CY - radius - 8,
-        mainCol,
-        2
-    );
-
-    spiderLine(
-        CX,
-        CY + radius + 8,
-        CX,
-        CY + radius + 48,
-        mainCol,
-        2
-    );
-
-
-    /* ============================================================
-       TARGET BRACKETS
-    ============================================================ */
-
-    const bracketSize =
-        isZoomed
-            ? 160
-            : 128;
-
-
-    drawCornerBrackets(
-        CX,
-        CY,
-        bracketSize,
-        isZoomed
-            ? SPIDER_GREEN
-            : mainCol
-    );
-
-
-    /* ============================================================
-       SPIDER SENSE
-    ============================================================ */
-
-    drawThreatPulse(
-        CX,
-        CY,
-        bracketSize + 30,
-        time,
-        isListening || hasError
-    );
-
-
-    if (
-        isListening ||
-        hasError
-    ) {
-
-        spiderText(
-            "!! SPIDER-SENSE // ATTENTION !!",
-            CX,
-            CY - bracketSize - 25,
-            10,
-            SPIDER_RED,
-            "center"
-        );
-    }
-
-
-    /* ============================================================
-       REAL SURFACE LOCK
-    ============================================================ */
-
-    if (realHitDetected) {
-
-        const lockPulse =
-            1 +
-            Math.sin(
-                time * .006
-            ) * .12;
-
-
-        const lockSize =
-            43 * lockPulse;
-
-
-        spiderArc(
-            CX,
-            CY,
-            lockSize,
-            0,
-            Math.PI * 2,
-            SPIDER_GREEN,
-            2
-        );
-
-
-        spiderText(
-            "SURFACE ACQUIRED",
-            CX,
-            CY - 82,
-            9,
-            SPIDER_GREEN,
-            "center"
-        );
-
-
-        spiderText(
-            `RANGE // ${realSurfaceDist.toFixed(2)}M`,
-            CX,
-            CY + 106,
-            9,
-            SPIDER_GREEN,
-            "center"
-        );
-    }
-
-
-    /* ============================================================
-       ZOOM
-    ============================================================ */
-
-    if (isZoomed) {
-
-        drawHex(
-            CX,
-            CY,
-            bracketSize + 22,
-            SPIDER_GREEN,
-            1
-        );
-
-
-        spiderText(
-            `OPTICAL MAG // ${currentZoom.toFixed(1)}X`,
-            CX,
-            CY + bracketSize + 25,
-            10,
-            SPIDER_GREEN,
-            "center"
-        );
-
-
-        spiderText(
-            "TELESCOPIC MODE",
-            CX,
-            CY + bracketSize + 41,
-            7.5,
-            SPIDER_GREEN,
-            "center"
-        );
-
-    } else {
-
-        spiderText(
-            "PINCH // OPTICAL MAGNIFICATION",
-            CX,
-            CY + bracketSize + 25,
-            8,
-            SPIDER_CYAN,
-            "center"
-        );
-    }
-
-
-    /* ============================================================
-       LOCKED TARGETS
-    ============================================================ */
-
-    const now =
-        Date.now();
-
-
-    for (
-        let i = 0;
-        i < lockedTargets.length;
-        i++
-    ) {
-
-        const tgt =
-            lockedTargets[i];
-
-
-        const age =
-            now -
-            tgt.timestamp;
-
-
-        const fade =
-            Math.max(
-                .35,
-                1 -
-                age / 30000
-            );
-
-
-        const targetPulse =
-            Math.sin(
-                age * .006
-            ) * 4;
-
-
-        /*
-         * Intentionally compressed toward
-         * the centre of the field of view.
-         */
-
-        const targetX =
-            CX +
-            tgt.worldPos[0] *
-            235;
-
-
-        const targetY =
-            CY -
-            tgt.worldPos[1] *
-            235;
-
-
-        const size =
-            34 +
-            targetPulse;
-
-
-        ctx.save();
-
-        ctx.globalAlpha =
-            fade;
-
-
-        drawCornerBrackets(
-            targetX,
-            targetY,
-            size,
-            SPIDER_GREEN
-        );
-
-
-        spiderLine(
-            targetX,
-            targetY,
-            CX,
-            CY,
-            SPIDER_GREEN,
-            .7
-        );
-
-
-        spiderText(
-            `LOCK ${String(i + 1).padStart(2, "0")}`,
-            targetX + size + 9,
-            targetY - 5,
-            8,
-            SPIDER_WHITE
-        );
-
-
-        spiderText(
-            `${tgt.dist} // ${tgt.threat}`,
-            targetX + size + 9,
-            targetY + 10,
-            7.5,
-            SPIDER_GREEN
-        );
-
-
-        ctx.restore();
-    }
-
-
-    /* ============================================================
-       LEFT COMPACT DATA
-    ============================================================ */
-
-    drawHUDPanel(
-        CX - 390,
-        CY - 120,
-        120,
-        55,
-        SPIDER_BLUE,
-        "VISUAL",
-        realHitDetected
-            ? "LOCKED"
-            : "SCANNING"
-    );
-
-
-    drawHUDPanel(
-        CX - 390,
-        CY - 55,
-        120,
-        55,
-        SPIDER_CYAN,
-        "MAG",
-        `${currentZoom.toFixed(1)}X`
-    );
-
-
-    /* ============================================================
-       RIGHT COMPACT DATA
-    ============================================================ */
-
-    drawHUDPanel(
-        CX + 270,
-        CY - 120,
-        120,
-        55,
-        SPIDER_GREEN,
-        "TARGETS",
-        String(
-            lockedTargets.length
-        ).padStart(2, "0")
-    );
-
-
-    drawHUDPanel(
-        CX + 270,
-        CY - 55,
-        120,
-        55,
-        isListening
-            ? SPIDER_RED
-            : SPIDER_CYAN,
-        "AUDIO",
-        isListening
-            ? "LIVE"
-            : "READY"
-    );
-
-
-    /* ============================================================
-       VOICE WAVE
-    ============================================================ */
-
-    drawVoiceWave(
-        CX,
-        CY + 158,
-        time,
-        isListening ||
-        isProcessing
-    );
-
-
-    /* ============================================================
-       STATUS
-    ============================================================ */
-
-    spiderText(
-        `● ${systemStatus}`,
-        CX,
-        CY + 190,
-        9.5,
-        mainCol,
-        "center"
-    );
-
-
-    /* ============================================================
-       RESPONSE
-    ============================================================ */
-
-    ctx.save();
+        WHITE;
 
     ctx.font =
-        "14px Consolas, monospace";
-
-    ctx.fillStyle =
-        SPIDER_WHITE;
+        `${size}px Consolas, Courier New, monospace`;
 
     ctx.textAlign =
         "center";
 
-    ctx.shadowColor =
-        hasError
-            ? SPIDER_RED
-            : SPIDER_CYAN;
-
-    ctx.shadowBlur = 7;
-
-
-    const maxWidth = 520;
+    ctx.textBaseline =
+        "top";
 
     const words =
-        edithResponse.split(" ");
+        value.split(/\s+/);
 
+    const lines = [];
 
     let line = "";
 
-    let y =
-        CY + 216;
-
-
     for (
-        let i = 0;
-        i < words.length;
-        i++
+        const word of words
     ) {
 
         const test =
-            line +
-            words[i] +
-            " ";
-
+            line
+                ? line + " " + word
+                : word;
 
         if (
-            ctx.measureText(
-                test
-            ).width >
-            maxWidth &&
-            i > 0
+            ctx.measureText(test).width >
+                maxWidth &&
+            line
         ) {
 
-            ctx.fillText(
-                line,
-                CX,
-                y
-            );
-
-            y += 19;
-
-            line =
-                words[i] +
-                " ";
+            lines.push(line);
+            line = word;
 
         } else {
 
@@ -2975,263 +965,787 @@ function renderHUD(time) {
         }
     }
 
+    if (line) {
+        lines.push(line);
+    }
 
-    ctx.fillText(
-        line,
-        CX,
-        y
-    );
+    lines
+        .slice(0, 3)
+        .forEach(
+            (lineText, i) => {
+
+                ctx.fillText(
+                    lineText,
+                    x,
+                    y +
+                    i * lineHeight
+                );
+            }
+        );
+}
 
 
-    ctx.restore();
+/* ================================================================
+   RED SIDE HUD
+================================================================ */
+
+function drawRedSideGraphics(time) {
+
+    const pulse =
+        .65 +
+        Math.sin(time * .003) * .2;
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        `rgba(255,25,50,${pulse})`;
+
+    ctx.lineWidth = 2;
+
+    ctx.shadowColor =
+        RED;
+
+    ctx.shadowBlur = 12;
 
 
-    /* ============================================================
-       ERROR
-    ============================================================ */
+    /* LEFT */
 
-    if (
-        hasError ||
-        subErrorMessage
+    ctx.beginPath();
+
+    ctx.moveTo(65, 140);
+    ctx.lineTo(155, 78);
+    ctx.lineTo(245, 78);
+
+    ctx.moveTo(40, 245);
+    ctx.lineTo(115, 200);
+    ctx.lineTo(185, 200);
+
+    ctx.moveTo(70, 705);
+    ctx.lineTo(150, 765);
+    ctx.lineTo(250, 765);
+
+    ctx.stroke();
+
+
+    /* RIGHT */
+
+    ctx.beginPath();
+
+    ctx.moveTo(1535, 140);
+    ctx.lineTo(1445, 78);
+    ctx.lineTo(1355, 78);
+
+    ctx.moveTo(1560, 245);
+    ctx.lineTo(1485, 200);
+    ctx.lineTo(1415, 200);
+
+    ctx.moveTo(1530, 705);
+    ctx.lineTo(1450, 765);
+    ctx.lineTo(1350, 765);
+
+    ctx.stroke();
+
+
+    /* little red tactical bars */
+
+    for (
+        let i = 0;
+        i < 7;
+        i++
     ) {
 
-        spiderText(
-            subErrorMessage ||
-            "NEURAL UPLINK FAILURE",
-            CX,
-            y + 24,
-            8.5,
-            SPIDER_RED,
-            "center"
+        const y =
+            315 + i * 31;
+
+        ctx.globalAlpha =
+            .3 + i * .08;
+
+        ctx.fillStyle =
+            RED;
+
+        ctx.fillRect(
+            60,
+            y,
+            28 + i * 6,
+            2
+        );
+
+        ctx.fillRect(
+            1512 - i * 6,
+            y,
+            28 + i * 6,
+            2
         );
     }
 
-
-    /* ============================================================
-       OUTER CORNER TECHNOLOGY
-    ============================================================ */
-
-    const edge = 45;
-    const corner = 38;
+    ctx.restore();
+}
 
 
-    // top left
-    spiderLine(
-        edge,
-        edge,
-        edge + corner,
-        edge,
-        SPIDER_BLUE,
-        2
+/* ================================================================
+   TOP LADDER
+================================================================ */
+
+function drawLadder(time) {
+
+    const cx = 800;
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        CYAN_SOFT;
+
+    ctx.lineWidth = 1;
+
+    hudText(
+        "N",
+        cx,
+        42,
+        11,
+        WHITE,
+        "center"
     );
 
-    spiderLine(
-        edge,
-        edge,
-        edge,
-        edge + corner,
-        SPIDER_BLUE,
-        2
-    );
-
-
-    // top right
-    spiderLine(
-        W - edge,
-        edge,
-        W - edge - corner,
-        edge,
-        SPIDER_BLUE,
-        2
-    );
-
-    spiderLine(
-        W - edge,
-        edge,
-        W - edge,
-        edge + corner,
-        SPIDER_BLUE,
-        2
-    );
-
-
-    // bottom left
-    spiderLine(
-        edge,
-        H - edge,
-        edge + corner,
-        H - edge,
-        SPIDER_BLUE,
-        2
-    );
-
-    spiderLine(
-        edge,
-        H - edge,
-        edge,
-        H - edge - corner,
-        SPIDER_BLUE,
-        2
-    );
-
-
-    // bottom right
-    spiderLine(
-        W - edge,
-        H - edge,
-        W - edge - corner,
-        H - edge,
-        SPIDER_BLUE,
-        2
-    );
-
-    spiderLine(
-        W - edge,
-        H - edge,
-        W - edge,
-        H - edge - corner,
-        SPIDER_BLUE,
-        2
-    );
-
-
-    /* ============================================================
-       BOTTOM SYSTEM BAR
-    ============================================================ */
-
-    const stripY =
-        H - 66;
-
-
-    spiderLine(
-        CX - 350,
-        stripY,
-        CX + 350,
-        stripY,
-        SPIDER_BLUE_DIM,
-        1
-    );
-
-
-    spiderText(
-        "E.D.I.T.H.",
-        CX - 330,
-        stripY + 20,
+    hudText(
+        "03",
+        cx - 145,
+        42,
         8,
-        SPIDER_RED
+        CYAN_SOFT,
+        "center"
     );
 
-
-    spiderText(
-        "SPIDER-TACTICAL OPTICAL SYSTEM",
-        CX,
-        stripY + 20,
-        7.5,
-        SPIDER_BLUE,
+    hudText(
+        "06",
+        cx + 145,
+        42,
+        8,
+        CYAN_SOFT,
         "center"
     );
 
 
-    spiderText(
-        "AR // ONLINE",
-        CX + 330,
-        stripY + 20,
-        8,
-        SPIDER_GREEN,
-        "right"
+    hudLine(
+        cx,
+        58,
+        cx,
+        120,
+        CYAN
     );
 
 
-    /* ============================================================
-       ANIMATED DATA NODES
-    ============================================================ */
-
     for (
-        let i = 0;
-        i < 16;
+        let i = -5;
+        i <= 5;
         i++
     ) {
 
-        const a =
-            time * .0003 +
-            i *
-            (
-                Math.PI * 2 /
-                16
-            );
+        const y =
+            90 + i * 8;
 
+        const major =
+            i === 0 ||
+            Math.abs(i) === 3;
 
-        const r =
-            425;
+        const width =
+            major ? 43 : 19;
 
-
-        const x =
-            CX +
-            Math.cos(a) *
-            r;
-
-
-        const yDot =
-            CY +
-            Math.sin(a) *
-            r;
-
-
-        ctx.save();
-
-        ctx.globalAlpha =
-            .25 +
-            pulse * .45;
-
-
-        glowFill(
-            SPIDER_CYAN,
-            5
+        hudLine(
+            cx - width,
+            y,
+            cx + width,
+            y,
+            major
+                ? CYAN
+                : CYAN_SOFT,
+            major ? 1.5 : 1
         );
-
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            yDot,
-            2,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-        ctx.restore();
     }
 
 
-    /* ============================================================
-       FINAL EYE CROSS
-    ============================================================ */
+    const scanY =
+        88 +
+        Math.sin(time * .002) * 25;
 
-    spiderLine(
-        CX - 9,
-        CY,
-        CX + 9,
-        CY,
-        SPIDER_WHITE,
-        1
+    hudLine(
+        cx - 70,
+        scanY,
+        cx - 45,
+        scanY,
+        WHITE
     );
 
-    spiderLine(
-        CX,
-        CY - 9,
-        CX,
-        CY + 9,
-        SPIDER_WHITE,
-        1
+    hudLine(
+        cx + 45,
+        scanY,
+        cx + 70,
+        scanY,
+        WHITE
+    );
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   TOP DATA
+================================================================ */
+
+function drawTopData(time) {
+
+    hudText(
+        "E.D.I.T.H.",
+        100,
+        45,
+        17,
+        WHITE
+    );
+
+    hudText(
+        "OPTICAL TACTICAL SYSTEM",
+        100,
+        66,
+        8,
+        CYAN_SOFT
+    );
+
+
+    const voiceColor =
+        isSpeaking
+            ? GREEN
+            : processingVoice
+                ? RED
+                : speechActive
+                    ? CYAN
+                    : CYAN_SOFT;
+
+
+    hudText(
+        isSpeaking
+            ? "VOICE OUTPUT"
+            : processingVoice
+                ? "ANALYZING"
+                : speechActive
+                    ? "LISTENING"
+                    : "VOICE STANDBY",
+        1320,
+        43,
+        9,
+        voiceColor
+    );
+
+
+    for (
+        let i = 0;
+        i < 12;
+        i++
+    ) {
+
+        let height = 3;
+
+        if (
+            speechActive ||
+            isSpeaking ||
+            processingVoice
+        ) {
+
+            height =
+                4 +
+                Math.abs(
+                    Math.sin(
+                        time * .018 + i
+                    )
+                ) * 17;
+        }
+
+        ctx.fillStyle =
+            voiceColor;
+
+        ctx.fillRect(
+            1320 + i * 10,
+            62 - height / 2,
+            5,
+            height
+        );
+    }
+}
+
+
+/* ================================================================
+   CENTER RETICLE
+================================================================ */
+
+function drawReticle(time) {
+
+    const cx = 800;
+    const cy = 440;
+
+    const color =
+        processingVoice
+            ? RED
+            : isSpeaking
+                ? GREEN
+                : CYAN;
+
+
+    const radius =
+        31 +
+        Math.sin(time * .005) * 2;
+
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        color;
+
+    ctx.lineWidth =
+        1.5;
+
+    ctx.shadowColor =
+        color;
+
+    ctx.shadowBlur =
+        13;
+
+
+    /* outer ring */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        cy,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.stroke();
+
+
+    /* broken outer ring */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        cy,
+        radius + 11,
+        -.7,
+        .55
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        cy,
+        radius + 11,
+        2.2,
+        3.9
+    );
+
+    ctx.stroke();
+
+
+    /* crosshair */
+
+    hudLine(
+        cx - 72,
+        cy,
+        cx - 45,
+        cy,
+        color
+    );
+
+    hudLine(
+        cx + 45,
+        cy,
+        cx + 72,
+        cy,
+        color
+    );
+
+    hudLine(
+        cx,
+        cy - 72,
+        cx,
+        cy - 45,
+        color
+    );
+
+    hudLine(
+        cx,
+        cy + 45,
+        cx,
+        cy + 72,
+        color
+    );
+
+
+    /* center dot */
+
+    ctx.fillStyle =
+        color;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        cy,
+        3,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.shadowBlur = 0;
+
+
+    hudText(
+        "OPTICAL AXIS",
+        cx,
+        cy - 92,
+        8,
+        color,
+        "center"
+    );
+
+
+    hudText(
+        lastHitPose
+            ? "SURFACE LOCK"
+            : "SCANNING",
+        cx,
+        cy + 92,
+        8,
+        color,
+        "center"
+    );
+
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   AI DISPLAY
+================================================================ */
+
+function drawAI() {
+
+    const cx = 800;
+
+
+    hudText(
+        "● " + systemStatus,
+        cx,
+        635,
+        10,
+        processingVoice
+            ? RED
+            : isSpeaking
+                ? GREEN
+                : CYAN,
+        "center"
+    );
+
+
+    hudText(
+        debugLog,
+        cx,
+        658,
+        7,
+        "rgba(255,190,40,.75)",
+        "center"
+    );
+
+
+    wrappedText(
+        edithResponse,
+        cx,
+        695,
+        610,
+        20,
+        13
+    );
+
+
+    if (
+        !speechSupported
+    ) {
+
+        hudText(
+            "BROWSER SPEECH RECOGNITION UNAVAILABLE",
+            cx,
+            790,
+            8,
+            RED,
+            "center"
+        );
+
+    } else {
+
+        hudText(
+            "VOICE CONTROL // ALWAYS LISTENING",
+            cx,
+            790,
+            8,
+            CYAN_SOFT,
+            "center"
+        );
+    }
+}
+
+
+/* ================================================================
+   TELEMETRY
+================================================================ */
+
+function drawTelemetry() {
+
+    hudText(
+        "AR",
+        120,
+        820,
+        7,
+        CYAN_SOFT
+    );
+
+    hudText(
+        xrSession
+            ? "ACTIVE"
+            : "OFFLINE",
+        120,
+        842,
+        9,
+        xrSession
+            ? GREEN
+            : RED
+    );
+
+
+    hudText(
+        "OPTICS",
+        320,
+        820,
+        7,
+        CYAN_SOFT
+    );
+
+    hudText(
+        "PASS-THROUGH",
+        320,
+        842,
+        9,
+        GREEN
+    );
+
+
+    hudText(
+        "VOICE",
+        1240,
+        820,
+        7,
+        CYAN_SOFT
+    );
+
+    hudText(
+        speechActive
+            ? "LIVE"
+            : "STANDBY",
+        1240,
+        842,
+        9,
+        speechActive
+            ? GREEN
+            : CYAN
+    );
+
+
+    hudText(
+        "AI",
+        1460,
+        820,
+        7,
+        CYAN_SOFT
+    );
+
+    hudText(
+        apiKey
+            ? "READY"
+            : "NO KEY",
+        1460,
+        842,
+        9,
+        apiKey
+            ? GREEN
+            : RED
     );
 }
 
 
 /* ================================================================
-   23. WEBGL
+   RENDER HUD
+================================================================ */
+
+function renderHUD(time) {
+
+    ctx.clearRect(
+        0,
+        0,
+        1600,
+        900
+    );
+
+    drawRedSideGraphics(time);
+
+    drawTopData(time);
+
+    drawLadder(time);
+
+    drawReticle(time);
+
+    drawAI();
+
+    drawTelemetry();
+
+
+    /*
+       Very subtle scan lines.
+    */
+
+    ctx.save();
+
+    ctx.globalAlpha =
+        .035;
+
+    for (
+        let y = 0;
+        y < 900;
+        y += 12
+    ) {
+
+        ctx.fillStyle =
+            "#00eaff";
+
+        ctx.fillRect(
+            0,
+            y,
+            1600,
+            1
+        );
+    }
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   WEBGL SHADERS
+================================================================ */
+
+/*
+   FIXED:
+   The HUD is now a real 3D plane.
+
+   It is positioned about 45cm in front of
+   the user's head.
+
+   This makes it feel like an optical HUD rather
+   than a giant screen sitting somewhere in space.
+*/
+
+const vertexShaderSource = `
+
+attribute vec3 aPosition;
+attribute vec2 aUV;
+
+uniform mat4 uModel;
+uniform mat4 uView;
+uniform mat4 uProjection;
+
+varying vec2 vUV;
+
+void main() {
+
+    gl_Position =
+        uProjection *
+        uView *
+        uModel *
+        vec4(
+            aPosition,
+            1.0
+        );
+
+    vUV = aUV;
+}
+`;
+
+
+const fragmentShaderSource = `
+
+precision mediump float;
+
+uniform sampler2D uTexture;
+
+varying vec2 vUV;
+
+void main() {
+
+    vec4 color =
+        texture2D(
+            uTexture,
+            vUV
+        );
+
+    gl_FragColor =
+        color;
+}
+`;
+
+
+/* ================================================================
+   BLUE TINT SHADERS
+================================================================ */
+
+const tintVertexSource = `
+
+attribute vec2 aPosition;
+
+void main() {
+
+    gl_Position =
+        vec4(
+            aPosition,
+            0.0,
+            1.0
+        );
+}
+`;
+
+
+const tintFragmentSource = `
+
+precision mediump float;
+
+uniform vec4 uColor;
+
+void main() {
+
+    gl_FragColor =
+        uColor;
+}
+`;
+
+
+/* ================================================================
+   WEBGL SETUP
 ================================================================ */
 
 const gl =
@@ -3239,67 +1753,27 @@ const gl =
         "webgl",
         {
             alpha: true,
-            depth: false,
-            antialias: false
+            antialias: true,
+            premultipliedAlpha: true,
+            xrCompatible: true
         }
     );
 
 
 if (!gl) {
 
-    alert(
-        "WebGL is required for this AR HUD."
+    setupError.textContent =
+        "WEBGL IS NOT AVAILABLE.";
+
+    throw new Error(
+        "WebGL unavailable"
     );
 }
 
 
-const vs = `
-
-attribute vec2 aPos;
-attribute vec2 aUV;
-
-uniform float uNearScale;
-
-varying vec2 vUV;
-
-void main() {
-
-    gl_Position =
-        vec4(
-            aPos * uNearScale,
-            0.0,
-            1.0
-        );
-
-    vUV = aUV;
-}
-
-`;
-
-
-const fs = `
-
-precision mediump float;
-
-uniform sampler2D uTex;
-
-varying vec2 vUV;
-
-void main() {
-
-    gl_FragColor =
-        texture2D(
-            uTex,
-            vUV
-        );
-}
-
-`;
-
-
-function createShader(
+function compileShader(
     type,
-    src
+    source
 ) {
 
     const shader =
@@ -3307,105 +1781,138 @@ function createShader(
 
     gl.shaderSource(
         shader,
-        src
+        source
     );
 
-    gl.compileShader(
-        shader
-    );
+    gl.compileShader(shader);
+
+    if (
+        !gl.getShaderParameter(
+            shader,
+            gl.COMPILE_STATUS
+        )
+    ) {
+
+        console.error(
+            gl.getShaderInfoLog(
+                shader
+            )
+        );
+    }
 
     return shader;
 }
 
 
-const prog =
-    gl.createProgram();
+function createProgram(
+    vertex,
+    fragment
+) {
+
+    const program =
+        gl.createProgram();
+
+    gl.attachShader(
+        program,
+        compileShader(
+            gl.VERTEX_SHADER,
+            vertex
+        )
+    );
+
+    gl.attachShader(
+        program,
+        compileShader(
+            gl.FRAGMENT_SHADER,
+            fragment
+        )
+    );
+
+    gl.linkProgram(program);
+
+    return program;
+}
 
 
-gl.attachShader(
-    prog,
-    createShader(
-        gl.VERTEX_SHADER,
-        vs
-    )
-);
-
-gl.attachShader(
-    prog,
-    createShader(
-        gl.FRAGMENT_SHADER,
-        fs
-    )
-);
+const hudProgram =
+    createProgram(
+        vertexShaderSource,
+        fragmentShaderSource
+    );
 
 
-gl.linkProgram(
-    prog
-);
+const tintProgram =
+    createProgram(
+        tintVertexSource,
+        tintFragmentSource
+    );
 
 
-const quad =
+/* ================================================================
+   HUD PLANE
+================================================================ */
+
+/*
+   Plane is about 1.15 meters wide.
+
+   Because it is only 0.45m away, it fills a useful
+   portion of your field of view without feeling like
+   a physical monitor.
+*/
+
+const planeVertices =
     new Float32Array([
 
-        -1, -1, 0, 1,
-         1, -1, 1, 1,
+        /*
+           position              UV
+        */
 
-        -1,  1, 0, 0,
-        -1,  1, 0, 0,
+        -.58, -.326, 0,
+        0, 1,
 
-         1, -1, 1, 1,
-         1,  1, 1, 0
+         .58, -.326, 0,
+        1, 1,
 
+        -.58,  .326, 0,
+        0, 0,
+
+        -.58,  .326, 0,
+        0, 0,
+
+         .58, -.326, 0,
+        1, 1,
+
+         .58,  .326, 0,
+        1, 0
     ]);
 
 
-const buf =
+const planeBuffer =
     gl.createBuffer();
-
 
 gl.bindBuffer(
     gl.ARRAY_BUFFER,
-    buf
+    planeBuffer
 );
-
 
 gl.bufferData(
     gl.ARRAY_BUFFER,
-    quad,
+    planeVertices,
     gl.STATIC_DRAW
 );
 
 
-const posLoc =
-    gl.getAttribLocation(
-        prog,
-        "aPos"
-    );
+/* ================================================================
+   HUD TEXTURE
+================================================================ */
 
-
-const uvLoc =
-    gl.getAttribLocation(
-        prog,
-        "aUV"
-    );
-
-
-const nearScaleLoc =
-    gl.getUniformLocation(
-        prog,
-        "uNearScale"
-    );
-
-
-const tex =
+const hudTexture =
     gl.createTexture();
-
 
 gl.bindTexture(
     gl.TEXTURE_2D,
-    tex
+    hudTexture
 );
-
 
 gl.texParameteri(
     gl.TEXTURE_2D,
@@ -3433,199 +1940,446 @@ gl.texParameteri(
 
 
 /* ================================================================
-   24. WEBXR
+   FULL SCREEN QUAD FOR BLUE TINT
 ================================================================ */
 
-async function launchAR() {
+const tintVertices =
+    new Float32Array([
 
-    if (
-        !navigator.xr
+        -1, -1,
+         1, -1,
+
+        -1,  1,
+
+        -1,  1,
+         1, -1,
+
+         1,  1
+    ]);
+
+
+const tintBuffer =
+    gl.createBuffer();
+
+gl.bindBuffer(
+    gl.ARRAY_BUFFER,
+    tintBuffer
+);
+
+gl.bufferData(
+    gl.ARRAY_BUFFER,
+    tintVertices,
+    gl.STATIC_DRAW
+);
+
+
+/* ================================================================
+   MATRIX FUNCTIONS
+================================================================ */
+
+function identityMatrix() {
+
+    return new Float32Array([
+
+        1,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        0,0,0,1
+    ]);
+}
+
+
+function multiplyMatrices(
+    a,
+    b
+) {
+
+    const out =
+        new Float32Array(16);
+
+    for (
+        let column = 0;
+        column < 4;
+        column++
     ) {
 
-        throw new Error(
-            "WebXR is not supported on this device."
-        );
-    }
+        for (
+            let row = 0;
+            row < 4;
+            row++
+        ) {
 
+            out[
+                column * 4 + row
+            ] =
+                a[row] *
+                b[column * 4] +
 
-    await gl.makeXRCompatible();
+                a[4 + row] *
+                b[column * 4 + 1] +
 
+                a[8 + row] *
+                b[column * 4 + 2] +
 
-    session =
-        await navigator.xr.requestSession(
-            "immersive-ar",
-            {
-
-                requiredFeatures: [
-                    "hit-test"
-                ],
-
-                optionalFeatures: [
-                    "local-floor",
-                    "unbounded",
-                    "local",
-                    "hand-tracking"
-                ]
-
-            }
-        );
-
-
-    xrLayer =
-        new XRWebGLLayer(
-            session,
-            gl,
-            {
-                alpha: true,
-                depth: false
-            }
-        );
-
-
-    session.updateRenderState({
-        baseLayer: xrLayer
-    });
-
-
-    try {
-
-        referenceSpace =
-            await session.requestReferenceSpace(
-                "local-floor"
-            );
-
-    } catch (e) {
-
-        referenceSpace =
-            await session.requestReferenceSpace(
-                "local"
-            );
-    }
-
-
-    const viewerSpace =
-        await session.requestReferenceSpace(
-            "viewer"
-        );
-
-
-    hitTestSource =
-        await session.requestHitTestSource({
-            space: viewerSpace
-        });
-
-
-    session.addEventListener(
-        "select",
-        () => {
-            handlePinchTap();
+                a[12 + row] *
+                b[column * 4 + 3];
         }
+    }
+
+    return out;
+}
+
+
+function translationMatrix(
+    x,
+    y,
+    z
+) {
+
+    const m =
+        identityMatrix();
+
+    m[12] = x;
+    m[13] = y;
+    m[14] = z;
+
+    return m;
+}
+
+
+/* ================================================================
+   DRAW HUD PLANE
+================================================================ */
+
+function drawHUDPlane(
+    viewerPose,
+    view
+) {
+
+    /*
+       The user's head position/orientation.
+
+       The plane is created relative to the viewer:
+
+          X = left/right
+          Y = up/down
+          Z = forward/back
+
+       -0.45m = directly in front of the user.
+    */
+
+    const viewerMatrix =
+        viewerPose.transform.matrix;
+
+
+    const localHUD =
+        translationMatrix(
+            0,
+            0,
+            -0.45
+        );
+
+
+    const model =
+        multiplyMatrices(
+            viewerMatrix,
+            localHUD
+        );
+
+
+    gl.useProgram(
+        hudProgram
     );
 
 
-    session.addEventListener(
-        "end",
-        () => {
-
-            session = null;
-            hitTestSource = null;
-        }
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        planeBuffer
     );
 
 
-    session.requestAnimationFrame(
-        renderFrame
+    const positionLocation =
+        gl.getAttribLocation(
+            hudProgram,
+            "aPosition"
+        );
+
+    const uvLocation =
+        gl.getAttribLocation(
+            hudProgram,
+            "aUV"
+        );
+
+
+    gl.enableVertexAttribArray(
+        positionLocation
+    );
+
+    gl.vertexAttribPointer(
+        positionLocation,
+        3,
+        gl.FLOAT,
+        false,
+        20,
+        0
+    );
+
+
+    gl.enableVertexAttribArray(
+        uvLocation
+    );
+
+    gl.vertexAttribPointer(
+        uvLocation,
+        2,
+        gl.FLOAT,
+        false,
+        20,
+        12
+    );
+
+
+    gl.uniformMatrix4fv(
+        gl.getUniformLocation(
+            hudProgram,
+            "uModel"
+        ),
+        false,
+        model
+    );
+
+
+    gl.uniformMatrix4fv(
+        gl.getUniformLocation(
+            hudProgram,
+            "uView"
+        ),
+        false,
+        view.transform.matrix
+            ? view.transform.inverse.matrix
+            : view.viewMatrix
+    );
+
+
+    gl.uniformMatrix4fv(
+        gl.getUniformLocation(
+            hudProgram,
+            "uProjection"
+        ),
+        false,
+        view.projectionMatrix
+    );
+
+
+    gl.activeTexture(
+        gl.TEXTURE0
+    );
+
+    gl.bindTexture(
+        gl.TEXTURE_2D,
+        hudTexture
+    );
+
+
+    gl.uniform1i(
+        gl.getUniformLocation(
+            hudProgram,
+            "uTexture"
+        ),
+        0
+    );
+
+
+    gl.drawArrays(
+        gl.TRIANGLES,
+        0,
+        6
     );
 }
 
 
 /* ================================================================
-   25. AR FRAME
+   BLUE PASSTHROUGH TINT
 ================================================================ */
 
-function renderFrame(
+function drawBlueTint() {
+
+    gl.useProgram(
+        tintProgram
+    );
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        tintBuffer
+    );
+
+    const position =
+        gl.getAttribLocation(
+            tintProgram,
+            "aPosition"
+        );
+
+    gl.enableVertexAttribArray(
+        position
+    );
+
+    gl.vertexAttribPointer(
+        position,
+        2,
+        gl.FLOAT,
+        false,
+        8,
+        0
+    );
+
+
+    /*
+       Very subtle blue optical-glass effect.
+    */
+
+    gl.uniform4f(
+        gl.getUniformLocation(
+            tintProgram,
+            "uColor"
+        ),
+
+        0.0,
+        0.18,
+        0.38,
+        0.10
+    );
+
+
+    gl.drawArrays(
+        gl.TRIANGLES,
+        0,
+        6
+    );
+}
+
+
+/* ================================================================
+   HIT TEST
+================================================================ */
+
+function updateHitTest(
+    frame
+) {
+
+    lastHitPose = null;
+
+    if (
+        !xrHitTestSource ||
+        !xrRefSpace
+    ) {
+        return;
+    }
+
+    try {
+
+        const results =
+            frame.getHitTestResults(
+                xrHitTestSource
+            );
+
+        if (
+            results &&
+            results.length
+        ) {
+
+            lastHitPose =
+                results[0]
+                    .getPose(
+                        xrRefSpace
+                    );
+        }
+
+    } catch (_) {}
+}
+
+
+/* ================================================================
+   XR FRAME
+================================================================ */
+
+function onXRFrame(
     time,
     frame
 ) {
 
-    if (!session) return;
+    if (!xrSession) {
+        return;
+    }
 
-    session.requestAnimationFrame(
-        renderFrame
+    xrSession.requestAnimationFrame(
+        onXRFrame
     );
 
 
-    const pose =
+    const viewerPose =
         frame.getViewerPose(
-            referenceSpace
+            xrRefSpace
         );
 
-
-    if (!pose) return;
-
-
-    /* ============================================================
-       HIT TEST
-    ============================================================ */
-
-    if (hitTestSource) {
-
-        const hits =
-            frame.getHitTestResults(
-                hitTestSource
-            );
-
-
-        if (hits.length > 0) {
-
-            const hitPose =
-                hits[0].getPose(
-                    referenceSpace
-                );
-
-
-            if (hitPose) {
-
-                realHitDetected =
-                    true;
-
-
-                const pos =
-                    hitPose.transform.position;
-
-
-                realHit3D = [
-                    pos.x,
-                    pos.y,
-                    pos.z
-                ];
-
-
-                realSurfaceDist =
-                    Math.sqrt(
-                        pos.x * pos.x +
-                        pos.y * pos.y +
-                        pos.z * pos.z
-                    );
-            }
-
-        } else {
-
-            realHitDetected =
-                false;
-        }
+    if (!viewerPose) {
+        return;
     }
 
 
-    /* ============================================================
-       RENDER HUD
-    ============================================================ */
+    updateHitTest(frame);
+
+
+    renderHUD(time);
+
+
+    /*
+       Upload HUD canvas.
+    */
+
+    gl.bindTexture(
+        gl.TEXTURE_2D,
+        hudTexture
+    );
+
+    gl.pixelStorei(
+        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+        true
+    );
+
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        hudCanvas
+    );
+
+
+    const layer =
+        xrSession.renderState.baseLayer;
+
 
     gl.bindFramebuffer(
         gl.FRAMEBUFFER,
-        xrLayer.framebuffer
+        layer.framebuffer
     );
 
+
+    gl.enable(
+        gl.BLEND
+    );
+
+    gl.blendFunc(
+        gl.SRC_ALPHA,
+        gl.ONE_MINUS_SRC_ALPHA
+    );
+
+
+    /*
+       IMPORTANT:
+       Don't paint black over passthrough.
+    */
 
     gl.clearColor(
         0,
@@ -3634,159 +2388,197 @@ function renderFrame(
         0
     );
 
-
     gl.clear(
-        gl.COLOR_BUFFER_BIT
-    );
-
-
-    gl.enable(
-        gl.BLEND
-    );
-
-
-    gl.blendFunc(
-        gl.SRC_ALPHA,
-        gl.ONE_MINUS_SRC_ALPHA
-    );
-
-
-    renderHUD(time);
-
-
-    /* ============================================================
-       HUD TEXTURE
-    ============================================================ */
-
-    gl.bindTexture(
-        gl.TEXTURE_2D,
-        tex
-    );
-
-
-    gl.pixelStorei(
-        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-        true
-    );
-
-
-    gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        hud
-    );
-
-
-    gl.useProgram(
-        prog
-    );
-
-
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        buf
-    );
-
-
-    gl.enableVertexAttribArray(
-        posLoc
-    );
-
-
-    gl.vertexAttribPointer(
-        posLoc,
-        2,
-        gl.FLOAT,
-        false,
-        16,
-        0
-    );
-
-
-    gl.enableVertexAttribArray(
-        uvLoc
-    );
-
-
-    gl.vertexAttribPointer(
-        uvLoc,
-        2,
-        gl.FLOAT,
-        false,
-        16,
-        8
-    );
-
-
-    /*
-     * Slightly larger near-field composition.
-     * The actual HUD elements are already compressed
-     * toward the centre, so this provides additional
-     * perceived proximity without simply stretching
-     * the entire interface excessively.
-     */
-
-    const ocularScale =
-        .98 +
-        (
-            currentZoom - 1
-        ) * .035;
-
-
-    gl.uniform1f(
-        nearScaleLoc,
-        ocularScale
+        gl.COLOR_BUFFER_BIT |
+        gl.DEPTH_BUFFER_BIT
     );
 
 
     for (
-        const view of pose.views
+        const view of viewerPose.views
     ) {
 
-        const vp =
-            xrLayer.getViewport(
+        const viewport =
+            layer.getViewport(
                 view
             );
 
-
         gl.viewport(
-            vp.x,
-            vp.y,
-            vp.width,
-            vp.height
+            viewport.x,
+            viewport.y,
+            viewport.width,
+            viewport.height
         );
 
 
-        gl.drawArrays(
-            gl.TRIANGLES,
-            0,
-            6
+        /*
+           Blue-tinted passthrough.
+        */
+
+        drawBlueTint();
+
+
+        /*
+           HUD at ~45cm from the user's head.
+        */
+
+        drawHUDPlane(
+            viewerPose,
+            view
         );
     }
 }
 
 
 /* ================================================================
-   26. BOOT
+   START XR
 ================================================================ */
 
-btnInit.onclick =
-    async () => {
+async function startXR() {
 
-        apiKey =
-            cleanGeminiKey(
-                apiKeyInput.value
+    if (!navigator.xr) {
+
+        throw new Error(
+            "WebXR unavailable. Open this in Quest Browser."
+        );
+    }
+
+
+    const supported =
+        await navigator.xr.isSessionSupported(
+            "immersive-ar"
+        );
+
+
+    if (!supported) {
+
+        throw new Error(
+            "Quest immersive AR is unavailable."
+        );
+    }
+
+
+    xrSession =
+        await navigator.xr.requestSession(
+            "immersive-ar",
+            {
+                requiredFeatures: [],
+
+                optionalFeatures: [
+                    "local-floor",
+                    "bounded-floor",
+                    "viewer",
+                    "hit-test",
+                    "plane-detection"
+                ]
+            }
+        );
+
+
+    const layer =
+        new XRWebGLLayer(
+            xrSession,
+            gl,
+            {
+                alpha: true,
+                antialias: true
+            }
+        );
+
+
+    xrSession.updateRenderState({
+        baseLayer: layer
+    });
+
+
+    xrRefSpace =
+        await xrSession.requestReferenceSpace(
+            "local"
+        );
+
+
+    /*
+       Viewer space for hit testing.
+    */
+
+    try {
+
+        xrViewerSpace =
+            await xrSession.requestReferenceSpace(
+                "viewer"
             );
 
+        if (
+            xrSession.requestHitTestSource
+        ) {
+
+            xrHitTestSource =
+                await xrSession.requestHitTestSource({
+                    space:
+                        xrViewerSpace
+                });
+        }
+
+    } catch (_) {
+
+        debugLog =
+            "HIT TEST UNAVAILABLE";
+    }
+
+
+    xrSession.addEventListener(
+        "end",
+        () => {
+
+            xrSession = null;
+
+            stopVoiceRecognition();
+
+            systemStatus =
+                "AR SESSION ENDED";
+
+            debugLog =
+                "WEBXR SESSION CLOSED";
+        }
+    );
+
+
+    /*
+       Start hands-free voice.
+    */
+
+    if (speechSupported) {
+
+        setTimeout(
+            startVoiceRecognition,
+            500
+        );
+    }
+
+
+    xrSession.requestAnimationFrame(
+        onXRFrame
+    );
+}
+
+
+/* ================================================================
+   INITIALIZATION BUTTON
+================================================================ */
+
+btnInit.addEventListener(
+    "click",
+    async () => {
+
+        setupError.textContent = "";
+
+        apiKey =
+            apiKeyInput.value.trim();
 
         if (!apiKey) {
 
-            alert(
-                "Enter your Gemini API key."
-            );
+            setupError.textContent =
+                "ENTER YOUR GEMINI API KEY.";
 
             return;
         }
@@ -3798,87 +2590,101 @@ btnInit.onclick =
         );
 
 
-        btnInit.disabled =
-            true;
+        btnInit.disabled = true;
 
         btnInit.textContent =
-            "INITIALIZING SPIDER AR...";
+            "INITIALIZING...";
 
 
         try {
 
-            wakeAudioEngine();
+            initAudio();
 
-            await setupAudioPipeline();
+            /*
+               Set up browser speech recognition.
+            */
 
-            await launchAR();
+            setupVoiceRecognition();
+
+
+            await startXR();
 
 
             setupScreen.style.display =
                 "none";
 
 
-            playCue(
-                880,
-                .1
+            systemStatus =
+                "SYSTEM STANDBY";
+
+            debugLog =
+                speechSupported
+                    ? "VOICE SYSTEM ONLINE"
+                    : "SPEECH API UNAVAILABLE";
+
+
+            edithResponse =
+                speechSupported
+                    ? "E.D.I.T.H. online. I'm listening."
+                    : "E.D.I.T.H. online. Voice recognition is unavailable in this browser.";
+
+
+            playTone(
+                700,
+                .1,
+                "sine",
+                .08
             );
 
 
-        } catch (err) {
+            setTimeout(
+                () => {
 
-            console.error(
-                "AR startup failure:",
-                err
+                    playTone(
+                        1100,
+                        .14,
+                        "sine",
+                        .08
+                    );
+
+                    if (
+                        speechSupported
+                    ) {
+
+                        startVoiceRecognition();
+                    }
+
+                },
+                120
             );
 
+
+        } catch (error) {
+
+            console.error(error);
+
+            setupError.textContent =
+                error.message;
 
             btnInit.disabled =
                 false;
 
             btnInit.textContent =
-                "INITIALIZE AR";
-
-
-            alert(
-                "Startup failed: " +
-                err.message
-            );
-        }
-    };
-
-
-/* ================================================================
-   27. CLEANUP
-================================================================ */
-
-window.addEventListener(
-    "beforeunload",
-    () => {
-
-        if (micStream) {
-
-            micStream
-                .getTracks()
-                .forEach(
-                    track =>
-                        track.stop()
-                );
-        }
-
-
-        if (session) {
-
-            session.end();
+                "INITIALIZE SYSTEM";
         }
     }
 );
 
 
 /* ================================================================
-   28. INITIAL HUD FRAME
+   INITIAL STATE
 ================================================================ */
 
-renderHUD(0);
+systemStatus =
+    "SYSTEM STANDBY";
+
+debugLog =
+    "AWAITING INITIALIZATION";
 
 </script>
 
