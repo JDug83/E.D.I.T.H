@@ -73,9 +73,9 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // TACTICAL AR INTERFACE</div>
+    <div class="subtitle">STARK DEFENCE OPTICS // STANDARD GEMINI PIPELINE</div>
     <div class="setupBox">
-        <span class="input-label">GEMINI AI STUDIO KEY (HEADSET STORAGE ONLY)</span>
+        <span class="input-label">GEMINI AI STUDIO KEY</span>
         <div class="input-wrap">
             <input id="apiKeyInput" type="password" placeholder="Paste AIzaSy... key here">
             <button id="btnToggleShow" type="button">SHOW</button>
@@ -92,7 +92,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT
+   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT (gemini-flash)
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
@@ -142,16 +142,16 @@ btnVerify.onclick = async () => {
     updateKeyPreview();
     if (!apiKey) return;
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "TESTING STANDARD GEMINI 1.5 FLASH...";
+    keyStatus.textContent = "CONNECTING TO DEFAULT GEMINI UPLINK...";
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${apiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
         });
         if (res.ok) {
             keyStatus.style.color = "#00ff88";
-            keyStatus.textContent = "VERIFIED! STANDARD GEMINI KEY ACTIVE (1,500 RPD)";
+            keyStatus.textContent = "VERIFIED! STANDARD GEMINI NEURAL LINK ACTIVE";
             localStorage.setItem("edith_gemini_key", apiKey);
         } else {
             const err = await res.json();
@@ -423,7 +423,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. STANDARD GEMINI 1.5 FLASH TRANSMISSION
+   5. STANDARD GEMINI TRANSMISSION (gemini-flash)
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
@@ -453,7 +453,7 @@ async function transmitToGemini(samples) {
         ];
 
         const cleanKey = cleanGeminiKey(apiKey);
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${cleanKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -595,7 +595,7 @@ function renderHUD(time) {
     drawText(`UK // ${ukTimeStr} BST`, CX - 320, 90, 14, WHITE, "left");
     drawText(`DATE // ${ukDateStr}`, CX - 320, 110, 10, CYAN_DIM, "left");
 
-    drawText(`STARK-NET // 128.02.5.4`, CX + 320, 90, 11, GREEN, "right");
+    drawText(`STARK-NET // SECURE`, CX + 320, 90, 11, GREEN, "right");
     drawText(`MAG // ${currentZoom.toFixed(1)}X TELESCOPIC`, CX + 320, 110, 12, isZoomed ? GREEN : CYAN, "right");
 
     drawLine(CX - 325, 75, CX + 325, 75, CYAN_DIM, 1);
@@ -630,7 +630,7 @@ function renderHUD(time) {
         ctx.lineWidth = 2;
         const b = 130;
         drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
-        drawLine(CX - b, CY - b, CX - b, CY - b + 24, GREEN, 2);
+        drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
         drawLine(CX + b, CY - b, CX + b - 24, CY - b, GREEN, 2);
         drawLine(CX + b, CY - b, CX + b, CY - b + 24, GREEN, 2);
         drawLine(CX - b, CY + b, CX - b + 24, CY + b, GREEN, 2);
@@ -863,7 +863,7 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   10. INITIALIZATION
+   10. BOOTSTRAP INITIALIZATION
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = cleanGeminiKey(apiKeyInput.value);
