@@ -2,2691 +2,900 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width,
-               initial-scale=1.0,
-               maximum-scale=1.0,
-               user-scalable=no">
-
-<title>E.D.I.T.H. // Optical Tactical Interface</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>E.D.I.T.H. // STARK TACTICAL AR</title>
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #000; font-family: "Consolas", "Courier New", monospace;
 }
-
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-    font-family: Consolas, "Courier New", monospace;
-}
-
-body {
-    color: #00eaff;
-    touch-action: none;
-}
-
 #canvasXR {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    display: block; background: transparent;
 }
-
 #setupScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #180407 0%,
-            #050102 45%,
-            #000 85%
-        );
-
-    color: white;
-    text-align: center;
-    padding: 25px;
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,70,100,.35), #000 75%);
+    color: #00eaff;
 }
-
 .logo {
-    color: #ff2142;
-    font-size: clamp(36px, 8vw, 70px);
-    font-weight: 900;
-    letter-spacing: .28em;
-    margin-left: .28em;
-
-    text-shadow:
-        0 0 10px #ff1538,
-        0 0 30px rgba(255,20,50,.75),
-        0 0 70px rgba(255,20,50,.25);
+    color: white; font-size: clamp(36px, 7vw, 64px);
+    font-weight: 900; letter-spacing: 12px;
+    text-shadow: 0 0 10px #00eaff, 0 0 25px #00eaff;
 }
-
 .subtitle {
-    margin-top: 12px;
-    margin-bottom: 35px;
-
-    color: #68767b;
-    font-size: 10px;
-    letter-spacing: .25em;
+    margin-top: 8px; margin-bottom: 22px;
+    color: rgba(0,235,255,.6); font-size: 10px; letter-spacing: 3px;
 }
-
+.setupBox {
+    width: min(480px, 92vw); padding: 22px;
+    background: rgba(0,10,15,.94); border: 1px solid rgba(0,235,255,.45);
+    box-shadow: 0 0 35px rgba(0,235,255,.12);
+}
+.input-label {
+    font-size: 10px; color: rgba(0,235,255,0.7); letter-spacing: 2px;
+    margin-bottom: 8px; display: block;
+}
+.input-wrap {
+    display: flex; gap: 6px; margin-bottom: 10px;
+}
 #apiKeyInput {
-    width: min(460px, 90vw);
-
-    padding: 16px 20px;
-
-    background: rgba(15,2,5,.9);
-    color: white;
-
-    border: 1px solid #ff2344;
-    outline: none;
-
-    font-family: inherit;
-    text-align: center;
-
-    box-shadow:
-        inset 0 0 20px rgba(255,30,55,.08);
+    flex: 1; height: 48px; border: 1px solid rgba(0,235,255,.55);
+    outline: none; background: rgba(0,5,8,.95); color: white;
+    text-align: left; padding: 0 14px; font-family: inherit; font-size: 13px;
 }
-
-#btnInit {
-    margin-top: 18px;
-
-    padding: 15px 35px;
-
-    background: rgba(255,25,55,.06);
-    color: #ff2948;
-
-    border: 1px solid #ff2948;
-
-    font-family: inherit;
-    font-weight: bold;
-    letter-spacing: .2em;
-
-    cursor: pointer;
+#btnToggleShow {
+    width: 70px; height: 48px; border: 1px solid rgba(0,235,255,.4);
+    background: rgba(0,235,255,.08); color: #00eaff;
+    font-family: inherit; font-size: 11px; cursor: pointer;
 }
-
-#btnInit:hover {
-    background: #ff2948;
-    color: black;
-
-    box-shadow:
-        0 0 30px rgba(255,30,55,.7);
+.key-status {
+    font-size: 10px; margin-bottom: 15px; letter-spacing: 1px;
+    min-height: 28px; line-height: 14px; text-align: center;
 }
-
-#setupError {
-    min-height: 20px;
-    margin-top: 18px;
-
-    color: #ff405a;
-    font-size: 10px;
+.btn-row {
+    display: flex; gap: 10px;
 }
-
-.warning {
-    max-width: 500px;
-    margin-top: 25px;
-
-    color: #56646a;
-    font-size: 9px;
-    line-height: 1.7;
+button {
+    height: 50px; border: 1px solid #00eaff;
+    background: rgba(0,235,255,.12); color: #00eaff;
+    font-family: inherit; font-weight: bold; letter-spacing: 2px; cursor: pointer;
+    transition: all 0.2s;
 }
+#btnVerify { width: 35%; font-size: 11px; }
+#btnInit { width: 65%; font-size: 13px; }
+button:hover { background: rgba(0,235,255,.3); }
 </style>
 </head>
-
 <body>
 
 <div id="setupScreen">
-
     <div class="logo">E.D.I.T.H.</div>
-
-    <div class="subtitle">
-        OPTICAL TACTICAL SYSTEM // QUEST AR
+    <div class="subtitle">STARK DEFENCE OPTICS // STANDARD GEMINI PIPELINE</div>
+    <div class="setupBox">
+        <span class="input-label">GEMINI AI STUDIO KEY</span>
+        <div class="input-wrap">
+            <input id="apiKeyInput" type="password" placeholder="Paste AIzaSy... key here">
+            <button id="btnToggleShow" type="button">SHOW</button>
+        </div>
+        <div class="key-status" id="keyStatus">ENTER KEY TO VALIDATE</div>
+        <div class="btn-row">
+            <button id="btnVerify" type="button">VERIFY</button>
+            <button id="btnInit" type="button">INITIALIZE AR</button>
+        </div>
     </div>
-
-    <input
-        id="apiKeyInput"
-        type="password"
-        placeholder="GEMINI API KEY"
-        autocomplete="off"
-    >
-
-    <button id="btnInit">
-        INITIALIZE SYSTEM
-    </button>
-
-    <div id="setupError"></div>
-
-    <div class="warning">
-        QUEST BROWSER + HTTPS REQUIRED.<br>
-        AFTER INITIALIZATION, JUST TALK — NO TRIGGER REQUIRED.
-    </div>
-
 </div>
 
 <canvas id="canvasXR"></canvas>
 
 <script>
-
-"use strict";
-
 /* ================================================================
-   STATE
+   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT (gemini-flash)
 ================================================================ */
+const apiKeyInput = document.getElementById("apiKeyInput");
+const btnToggleShow = document.getElementById("btnToggleShow");
+const btnInit = document.getElementById("btnInit");
+const btnVerify = document.getElementById("btnVerify");
+const keyStatus = document.getElementById("keyStatus");
+const setupScreen = document.getElementById("setupScreen");
+const canvas = document.getElementById("canvasXR");
 
-let apiKey =
-    localStorage.getItem("edith_gemini_key") || "";
+btnToggleShow.onclick = () => {
+    if (apiKeyInput.type === "password") {
+        apiKeyInput.type = "text";
+        btnToggleShow.textContent = "HIDE";
+    } else {
+        apiKeyInput.type = "password";
+        btnToggleShow.textContent = "SHOW";
+    }
+};
 
-let xrSession = null;
-let xrRefSpace = null;
-let xrViewerSpace = null;
-let xrHitTestSource = null;
+function cleanGeminiKey(raw) {
+    if (!raw) return "";
+    let str = raw.trim();
+    const match = str.match(/AIzaSy[A-Za-z0-9_-]{33}/);
+    if (match) return match[0];
+    return str.replace(/[\s\r\n\t"']/g, "");
+}
 
-let lastHitPose = null;
-
-let audioContext = null;
-
-let speechRecognition = null;
-let speechSupported = false;
-let speechStarting = false;
-let speechActive = false;
-
-let isSpeaking = false;
-let processingVoice = false;
-
-let systemStatus =
-    "SYSTEM STANDBY";
-
-let edithResponse =
-    "E.D.I.T.H. ONLINE. JUST TALK.";
-
-let debugLog =
-    "AWAITING VOICE INPUT";
-
-let transcriptBuffer = "";
-
-
-/* ================================================================
-   DOM
-================================================================ */
-
-const setupScreen =
-    document.getElementById("setupScreen");
-
-const apiKeyInput =
-    document.getElementById("apiKeyInput");
-
-const btnInit =
-    document.getElementById("btnInit");
-
-const setupError =
-    document.getElementById("setupError");
-
-const canvas =
-    document.getElementById("canvasXR");
-
+const urlHash = new URLSearchParams(window.location.hash.substring(1));
+const urlParams = new URLSearchParams(window.location.search);
+let apiKey = cleanGeminiKey(urlHash.get("key") || urlParams.get("key") || localStorage.getItem("edith_gemini_key") || "");
 apiKeyInput.value = apiKey;
 
+function updateKeyPreview() {
+    apiKey = cleanGeminiKey(apiKeyInput.value);
+    if (!apiKey) {
+        keyStatus.style.color = "#ff4444";
+        keyStatus.textContent = "KEY IS EMPTY";
+    } else {
+        keyStatus.style.color = "#00ff88";
+        keyStatus.textContent = `KEY LOADED (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
+    }
+}
+apiKeyInput.addEventListener("input", updateKeyPreview);
+updateKeyPreview();
+
+btnVerify.onclick = async () => {
+    updateKeyPreview();
+    if (!apiKey) return;
+    keyStatus.style.color = "#00eaff";
+    keyStatus.textContent = "CONNECTING TO DEFAULT GEMINI UPLINK...";
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
+        });
+        if (res.ok) {
+            keyStatus.style.color = "#00ff88";
+            keyStatus.textContent = "VERIFIED! STANDARD GEMINI NEURAL LINK ACTIVE";
+            localStorage.setItem("edith_gemini_key", apiKey);
+        } else {
+            const err = await res.json();
+            keyStatus.style.color = "#ff4444";
+            keyStatus.textContent = `REJECTED: ${err.error?.message || res.status}`;
+        }
+    } catch (e) {
+        keyStatus.style.color = "#ff4444";
+        keyStatus.textContent = `NETWORK ERROR: ${e.message}`;
+    }
+};
+
+let session = null;
+let referenceSpace = null;
+let xrLayer = null;
+let hitTestSource = null;
+
+let isListening = false;
+let isProcessing = false;
+let hasError = false;
+
+let systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
+let edithResponse = "Tactical optics aligned. Speak normally or pinch to engage zoom & target locks.";
+let subErrorMessage = "";
+
+let conversationHistory = [];
+
+const EDITH_SYSTEM_PROMPT = 
+`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside an AR optical headset.
+CRITICAL SPOKEN INSTRUCTIONS:
+- You are speaking aloud, NOT typing text.
+- Do NOT output markdown, asterisks, bullet points, emojis, citations, or quotes.
+- Keep answers to 1 or 2 quick, conversational sentences.
+- Speak with calm confidence, warmth, and light witty British efficiency.
+- Never use robotic phrases like 'Operational Complete' or 'As an AI'.`;
+
+// Optical Super-Zoom States
+const ZOOM_LEVELS = [1.0, 2.0, 4.0, 8.0];
+let zoomIndex = 0;
+let currentZoom = 1.0;
+let targetZoom = 1.0;
+
+// Real Surface Hit Tracking (WebXR Hardware Raycast)
+let realHitDetected = false;
+let realSurfaceDist = 0;
+let realHit3D = [0, 0, -1];
+let lockedTargets = [];
+
+const TARGET_CATALOGUE = [
+    { label: "STRUCTURAL // SURFACE BOUNDARY", threat: "SECURE" },
+    { label: "TACTICAL // WORKSPACE INTERCEPT", threat: "NOMINAL" },
+    { label: "BIOMETRIC // ENTITY VECTOR", threat: "MONITORED" },
+    { label: "PERIMETER // APERTURE AXIS", threat: "CLEAR" }
+];
+
+let audioContext = null;
+let micStream = null;
+let scriptProcessor = null;
+let pcmSamples = [];
+let voiceLevel = 0;
+let silenceFrames = 0;
 
 /* ================================================================
-   AUDIO
+   2. HARDWARE AUDIO KEEP-ALIVE & SPEECH SYNTHESIS
 ================================================================ */
-
-function initAudio() {
-
-    try {
-
-        if (!audioContext) {
-
-            const AudioContextClass =
-                window.AudioContext ||
-                window.webkitAudioContext;
-
-            if (AudioContextClass) {
-                audioContext =
-                    new AudioContextClass();
-            }
-        }
-
-        if (
-            audioContext &&
-            audioContext.state === "suspended"
-        ) {
-            audioContext.resume();
-        }
-
-    } catch (_) {}
+function wakeAudioEngine() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    gain.gain.value = 0.0001;
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+    osc.start();
 }
 
-
-function playTone(
-    frequency,
-    duration,
-    type = "sine",
-    volume = .1
-) {
-
+function playCue(freq = 880, dur = 0.05) {
     try {
-
-        initAudio();
-
-        if (!audioContext) return;
-
-        const osc =
-            audioContext.createOscillator();
-
-        const gain =
-            audioContext.createGain();
-
-        osc.type = type;
-
-        osc.frequency.setValueAtTime(
-            frequency,
-            audioContext.currentTime
-        );
-
-        gain.gain.setValueAtTime(
-            volume,
-            audioContext.currentTime
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-            .0001,
-            audioContext.currentTime + duration
-        );
-
+        wakeAudioEngine();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + dur);
         osc.connect(gain);
         gain.connect(audioContext.destination);
-
         osc.start();
-
-        osc.stop(
-            audioContext.currentTime + duration
-        );
-
-    } catch (_) {}
+        osc.stop(audioContext.currentTime + dur + 0.01);
+    } catch(e) {}
 }
 
+function playServoSound(zoom) {
+    try {
+        wakeAudioEngine();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = "sawtooth";
+        const start = 300 + (zoom * 80);
+        const end = 650 + (zoom * 110);
+        osc.frequency.setValueAtTime(start, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(end, audioContext.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.14, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.14);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.15);
+    } catch(e) {}
+}
 
-/* ================================================================
-   TEXT TO SPEECH
-================================================================ */
+function cleanSpokenText(raw) {
+    return raw
+        .replace(/[*_#`~[\]()<>]/g, "")
+        .replace(/https?:\/\/\S+/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
-function speakText(text) {
-
-    if (!window.speechSynthesis) {
-
-        debugLog =
-            "TTS NOT AVAILABLE";
-
-        return;
-    }
-
+function speakVoice(text) {
+    if (!window.speechSynthesis) return;
+    wakeAudioEngine();
     window.speechSynthesis.cancel();
 
-    const utterance =
-        new SpeechSynthesisUtterance(text);
+    systemStatus = "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
 
-    utterance.lang = "en-US";
-    utterance.rate = 1.08;
-    utterance.pitch = .94;
-    utterance.volume = 1;
+    const speechText = cleanSpokenText(text);
+    const utt = new SpeechSynthesisUtterance(speechText);
+    
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => v.lang.includes("en-GB") && !v.name.includes("Google")) 
+                        || voices.find(v => v.lang.includes("en-GB"))
+                        || voices.find(v => v.lang.includes("en-US"));
+    if (preferredVoice) utt.voice = preferredVoice;
 
-    utterance.onstart = () => {
+    utt.rate = 1.08;
+    utt.pitch = 0.98;
 
-        isSpeaking = true;
+    utt.onend = () => {
+        if (!isListening && !hasError) {
+            systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
+        }
     };
-
-    utterance.onend = () => {
-
-        isSpeaking = false;
-
-        /*
-           Restart listening after E.D.I.T.H.
-           finishes speaking.
-        */
-
-        setTimeout(
-            startVoiceRecognition,
-            250
-        );
-    };
-
-    utterance.onerror = () => {
-
-        isSpeaking = false;
-
-        setTimeout(
-            startVoiceRecognition,
-            250
-        );
-    };
-
-    isSpeaking = true;
-
-    window.speechSynthesis.speak(
-        utterance
-    );
+    window.speechSynthesis.speak(utt);
 }
-
 
 /* ================================================================
-   CONTINUOUS VOICE RECOGNITION
+   3. RESAMPLED 16kHz WAV ENCODER
 ================================================================ */
+function downsampleAndEncodeWAV(samples, inputSampleRate) {
+    const targetSampleRate = 16000;
+    const compression = inputSampleRate / targetSampleRate;
+    const length = Math.floor(samples.length / compression);
+    const result = new Float32Array(length);
 
-/*
-   No trigger.
-   No button.
-   No push-to-talk.
-
-   The browser continuously listens for speech and sends
-   completed phrases to Gemini.
-*/
-
-function setupVoiceRecognition() {
-
-    const Recognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
-    if (!Recognition) {
-
-        speechSupported = false;
-
-        debugLog =
-            "SPEECH API NOT SUPPORTED";
-
-        systemStatus =
-            "VOICE UNAVAILABLE";
-
-        return false;
+    let offsetResult = 0;
+    let offsetBuffer = 0;
+    while (offsetResult < result.length) {
+        const nextOffsetBuffer = Math.round((offsetResult + 1) * compression);
+        let accum = 0, count = 0;
+        for (let i = offsetBuffer; i < nextOffsetBuffer && i < samples.length; i++) {
+            accum += samples[i];
+            count++;
+        }
+        result[offsetResult] = count > 0 ? accum / count : 0;
+        offsetResult++;
+        offsetBuffer = nextOffsetBuffer;
     }
 
-    speechSupported = true;
+    const buffer = new ArrayBuffer(44 + result.length * 2);
+    const view = new DataView(buffer);
 
-    speechRecognition =
-        new Recognition();
+    function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    }
 
-    speechRecognition.lang =
-        "en-US";
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + result.length * 2, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, 16000, true);
+    view.setUint32(28, 16000 * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeStr(36, 'data');
+    view.setUint32(40, result.length * 2, true);
 
-    speechRecognition.continuous =
-        true;
-
-    speechRecognition.interimResults =
-        true;
-
-    speechRecognition.maxAlternatives =
-        1;
-
-
-    speechRecognition.onstart =
-        () => {
-
-            speechStarting = false;
-            speechActive = true;
-
-            if (!processingVoice) {
-
-                systemStatus =
-                    "LISTENING";
-
-                debugLog =
-                    "VOICE INPUT ACTIVE";
-            }
-        };
-
-
-    speechRecognition.onresult =
-        event => {
-
-            let interim = "";
-            let finalText = "";
-
-            for (
-                let i =
-                    event.resultIndex;
-                i < event.results.length;
-                i++
-            ) {
-
-                const result =
-                    event.results[i];
-
-                const text =
-                    result[0].transcript;
-
-                if (result.isFinal) {
-
-                    finalText += text;
-
-                } else {
-
-                    interim += text;
-                }
-            }
-
-            if (interim) {
-
-                debugLog =
-                    "HEARING: " +
-                    interim
-                        .trim()
-                        .slice(0, 80);
-            }
-
-            if (finalText.trim()) {
-
-                handleVoiceCommand(
-                    finalText.trim()
-                );
-            }
-        };
-
-
-    speechRecognition.onerror =
-        event => {
-
-            speechStarting = false;
-
-            /*
-               These errors are often temporary on
-               mobile browsers.
-            */
-
-            if (
-                event.error ===
-                    "not-allowed" ||
-                event.error ===
-                    "service-not-allowed"
-            ) {
-
-                speechActive = false;
-
-                systemStatus =
-                    "MIC PERMISSION";
-
-                debugLog =
-                    "ALLOW MICROPHONE ACCESS";
-
-                return;
-            }
-
-            speechActive = false;
-
-            debugLog =
-                "VOICE: " +
-                event.error;
-        };
-
-
-    speechRecognition.onend =
-        () => {
-
-            speechActive = false;
-            speechStarting = false;
-
-            /*
-               Automatically restart unless we are
-               deliberately waiting for TTS.
-            */
-
-            if (
-                xrSession &&
-                !isSpeaking &&
-                !processingVoice
-            ) {
-
-                setTimeout(
-                    startVoiceRecognition,
-                    300
-                );
-            }
-        };
-
-
-    return true;
+    let offset = 44;
+    for (let i = 0; i < result.length; i++) {
+        const s = Math.max(-1, Math.min(1, result[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+    }
+    return new Uint8Array(buffer);
 }
 
+/* ================================================================
+   4. VOICE ACTIVITY DETECTION (450ms SILENCE PAUSE)
+================================================================ */
+async function setupAudioPipeline() {
+    wakeAudioEngine();
 
-function startVoiceRecognition() {
+    micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+        }
+    });
 
-    if (
-        !speechRecognition ||
-        !speechSupported ||
-        speechStarting ||
-        speechActive ||
-        isSpeaking ||
-        processingVoice
-    ) {
+    const source = audioContext.createMediaStreamSource(micStream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+
+    scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+    source.connect(analyser);
+    source.connect(scriptProcessor);
+    scriptProcessor.connect(audioContext.destination);
+
+    const freqData = new Uint8Array(analyser.frequencyBinCount);
+    const SPEECH_GATE = 16;
+    const SILENCE_LIMIT = Math.round((audioContext.sampleRate / 2048) * 0.45);
+
+    scriptProcessor.onaudioprocess = (e) => {
+        if (isProcessing) return;
+
+        analyser.getByteFrequencyData(freqData);
+        let sum = 0;
+        for (let i = 0; i < freqData.length; i++) sum += freqData[i];
+        const avg = sum / freqData.length;
+        voiceLevel = avg / 35.0;
+
+        const input = e.inputBuffer.getChannelData(0);
+
+        if (avg > SPEECH_GATE) {
+            if (!isListening) {
+                isListening = true;
+                hasError = false;
+                subErrorMessage = "";
+                pcmSamples = [];
+                systemStatus = "AUDIO INPUT DETECTED // STREAMING DIRECTIVE";
+                playCue(540, 0.04);
+            }
+            silenceFrames = 0;
+            for (let i = 0; i < input.length; i++) pcmSamples.push(input[i]);
+        } else if (isListening) {
+            for (let i = 0; i < input.length; i++) pcmSamples.push(input[i]);
+            silenceFrames++;
+
+            if (silenceFrames > SILENCE_LIMIT) {
+                isListening = false;
+                isProcessing = true;
+                systemStatus = "NEURAL PROCESSING // ANALYZING";
+                playCue(920, 0.05);
+
+                const recordedSnapshot = pcmSamples.slice();
+                pcmSamples = [];
+                transmitToGemini(recordedSnapshot);
+            }
+        }
+    };
+}
+
+/* ================================================================
+   5. STANDARD GEMINI TRANSMISSION (gemini-flash)
+================================================================ */
+async function transmitToGemini(samples) {
+    if (samples.length < audioContext.sampleRate * 0.25) {
+        isProcessing = false;
+        systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
         return;
     }
 
     try {
+        systemStatus = "UPLINK SYNAPSE // GENERATING RESPONSE";
 
-        speechStarting = true;
+        const wavBytes = downsampleAndEncodeWAV(samples, audioContext.sampleRate);
+        let binary = '';
+        for (let i = 0; i < wavBytes.byteLength; i++) {
+            binary += String.fromCharCode(wavBytes[i]);
+        }
+        const base64WAV = btoa(binary);
 
-        speechRecognition.start();
-
-    } catch (error) {
-
-        speechStarting = false;
-
-        setTimeout(
-            startVoiceRecognition,
-            1000
-        );
-    }
-}
-
-
-function stopVoiceRecognition() {
-
-    if (!speechRecognition) return;
-
-    try {
-
-        speechRecognition.stop();
-
-    } catch (_) {}
-
-    speechActive = false;
-}
-
-
-/* ================================================================
-   VOICE COMMAND
-================================================================ */
-
-async function handleVoiceCommand(
-    command
-) {
-
-    if (!command) return;
-
-    if (processingVoice) return;
-
-    /*
-       Ignore accidental recognition of our own TTS
-       if the browser leaks it into the microphone.
-    */
-
-    if (
-        command.length < 2
-    ) {
-        return;
-    }
-
-    processingVoice = true;
-
-    stopVoiceRecognition();
-
-    systemStatus =
-        "ANALYZING";
-
-    debugLog =
-        "COMMAND: " +
-        command.slice(0, 90);
-
-    edithResponse =
-        "PROCESSING...";
-
-    playTone(
-        600,
-        .07,
-        "triangle",
-        .08
-    );
-
-    try {
-
-        const reply =
-            await askGemini(command);
-
-        edithResponse =
-            reply;
-
-        systemStatus =
-            "SYSTEM STANDBY";
-
-        debugLog =
-            "COMMAND COMPLETE";
-
-        playTone(
-            1150,
-            .12,
-            "sine",
-            .08
-        );
-
-        processingVoice = false;
-
-        speakText(reply);
-
-    } catch (error) {
-
-        processingVoice = false;
-
-        systemStatus =
-            "AI ERROR";
-
-        debugLog =
-            "AI: " +
-            error.message.slice(0, 100);
-
-        edithResponse =
-            "I encountered a communication error.";
-
-        playTone(
-            280,
-            .25,
-            "sawtooth",
-            .07
-        );
-
-        setTimeout(
-            startVoiceRecognition,
-            500
-        );
-    }
-}
-
-
-/* ================================================================
-   GEMINI TEXT REQUEST
-================================================================ */
-
-async function askGemini(
-    command
-) {
-
-    if (!apiKey) {
-
-        throw new Error(
-            "NO GEMINI API KEY"
-        );
-    }
-
-    const endpoint =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-        encodeURIComponent(apiKey);
-
-
-    const body = {
-
-        systemInstruction: {
-
-            parts: [{
-
-                text:
-`You are E.D.I.T.H., a fictional advanced tactical augmented-reality assistant.
-
-Answer the user concisely and naturally.
-Use one or two short sentences.
-Sound calm, intelligent and futuristic.
-Do not pretend to have access to sensors or cameras that were not provided.
-Do not claim to control real weapons or dangerous systems.`
-            }]
-        },
-
-        contents: [{
-
+        const userTurn = {
             role: "user",
+            parts: [{ inline_data: { mime_type: "audio/wav", data: base64WAV } }]
+        };
 
-            parts: [{
+        const contentsPayload = [
+            ...conversationHistory.slice(-4),
+            userTurn
+        ];
 
-                text: command
-            }]
-        }]
-    };
-
-
-    const response =
-        await fetch(
-            endpoint,
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
+        const cleanKey = cleanGeminiKey(apiKey);
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${cleanKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                system_instruction: {
+                    parts: [{ text: EDITH_SYSTEM_PROMPT }]
                 },
+                contents: contentsPayload,
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 90
+                }
+            })
+        });
 
-                body:
-                    JSON.stringify(body)
-            }
-        );
+        if (!res.ok) {
+            let errDetail = `HTTP ${res.status}`;
+            try {
+                const errBody = await res.json();
+                if (errBody.error && errBody.error.message) {
+                    errDetail = errBody.error.message;
+                }
+            } catch(e) {}
+            throw new Error(errDetail);
+        }
 
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (!reply) throw new Error("EMPTY_DATA");
 
-    if (!response.ok) {
+        const cleanReply = cleanSpokenText(reply);
 
-        let message =
-            "HTTP " +
-            response.status;
+        conversationHistory.push(userTurn);
+        conversationHistory.push({
+            role: "model",
+            parts: [{ text: cleanReply }]
+        });
 
-        try {
+        hasError = false;
+        subErrorMessage = "";
+        edithResponse = cleanReply;
+        isProcessing = false;
 
-            const errorData =
-                await response.json();
+        playCue(1200, 0.08);
+        speakVoice(cleanReply);
 
-            message =
-                errorData.error?.message ||
-                message;
+    } catch (err) {
+        console.error("Gemini Failure:", err);
+        isProcessing = false;
+        hasError = true;
 
-        } catch (_) {}
+        systemStatus = "UPLINK ERROR // DISCONNECTED";
+        edithResponse = "I lost connection for a second. Try again?";
+        subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
 
-        throw new Error(message);
+        playCue(300, 0.2);
+        speakVoice(edithResponse);
     }
-
-
-    const data =
-        await response.json();
-
-
-    const reply =
-        data
-            ?.candidates?.[0]
-            ?.content?.parts
-            ?.map(
-                part =>
-                    part.text || ""
-            )
-            .join(" ")
-            .trim();
-
-
-    if (!reply) {
-
-        throw new Error(
-            "EMPTY AI RESPONSE"
-        );
-    }
-
-    return reply;
 }
 
-
 /* ================================================================
-   HUD CANVAS
+   6. USER INTERACTION: OPTICAL ZOOM & REAL TARGET LOCK
 ================================================================ */
+function handlePinchTap() {
+    zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
+    targetZoom = ZOOM_LEVELS[zoomIndex];
+    playServoSound(targetZoom);
 
-const hudCanvas =
-    document.createElement("canvas");
-
-hudCanvas.width = 1600;
-hudCanvas.height = 900;
-
-const ctx =
-    hudCanvas.getContext("2d");
-
-
-const CYAN =
-    "rgba(0,235,255,.94)";
-
-const CYAN_SOFT =
-    "rgba(0,220,255,.45)";
-
-const RED =
-    "rgba(255,25,50,.96)";
-
-const GREEN =
-    "rgba(0,255,145,.95)";
-
-const WHITE =
-    "rgba(235,250,255,.97)";
-
-
-/* ================================================================
-   DRAW HELPERS
-================================================================ */
-
-function hudText(
-    value,
-    x,
-    y,
-    size,
-    color = CYAN,
-    align = "left"
-) {
-
-    ctx.fillStyle =
-        color;
-
-    ctx.font =
-        `600 ${size}px Consolas, Courier New, monospace`;
-
-    ctx.textAlign =
-        align;
-
-    ctx.textBaseline =
-        "middle";
-
-    ctx.fillText(
-        value,
-        x,
-        y
-    );
+    if (realHitDetected) {
+        const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
+        lockedTargets.push({
+            worldPos: [realHit3D[0], realHit3D[1], realHit3D[2]],
+            dist: realSurfaceDist.toFixed(2) + "M",
+            label: template.label,
+            threat: template.threat,
+            timestamp: Date.now()
+        });
+        if (lockedTargets.length > 3) lockedTargets.shift();
+    }
 }
 
+/* ================================================================
+   7. NEAR-FIELD STARK HUD CANVAS (OPTIMIZED OCULAR FOV)
+================================================================ */
+const hud = document.createElement("canvas");
+hud.width = 1920;
+hud.height = 1080;
+const ctx = hud.getContext("2d");
 
-function hudLine(
-    x1,
-    y1,
-    x2,
-    y2,
-    color,
-    width = 1
-) {
+const W = 1920, H = 1080;
+const CX = W / 2, CY = H / 2;
 
-    ctx.strokeStyle =
-        color;
+const CYAN = "rgba(0, 235, 255, 0.95)";
+const CYAN_DIM = "rgba(0, 235, 255, 0.35)";
+const RED = "rgba(255, 25, 45, 0.95)";
+const GREEN = "rgba(0, 255, 145, 0.95)";
+const WHITE = "rgba(240, 255, 255, 0.98)";
 
-    ctx.lineWidth =
-        width;
+function drawText(val, x, y, size, col = CYAN, align = "left") {
+    ctx.save();
+    ctx.font = `${size}px "Consolas", monospace`;
+    ctx.fillStyle = col;
+    ctx.textAlign = align;
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 6;
+    ctx.fillText(val, x, y);
+    ctx.restore();
+}
+
+function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
+    ctx.save();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function renderHUD(time) {
+    ctx.clearRect(0, 0, W, H);
+
+    currentZoom += (targetZoom - currentZoom) * 0.2;
+    const isZoomed = currentZoom > 1.05;
+
+    /* 1. Curved Peripheral Guides */
+    ctx.save();
+    ctx.strokeStyle = isZoomed ? "rgba(0, 255, 145, 0.6)" : "rgba(0, 235, 255, 0.35)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(140, 100); ctx.bezierCurveTo(80, 320, 80, 760, 140, 980);
+    ctx.moveTo(W - 140, 100); ctx.bezierCurveTo(W - 80, 320, W - 80, 760, W - 140, 980);
+    ctx.stroke();
+    ctx.restore();
+
+    /* 2. Top Banner: UK Clock & Telemetry */
+    const ukTimeStr = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour12: false });
+    const ukDateStr = new Date().toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+
+    drawText(`UK // ${ukTimeStr} BST`, CX - 320, 90, 14, WHITE, "left");
+    drawText(`DATE // ${ukDateStr}`, CX - 320, 110, 10, CYAN_DIM, "left");
+
+    drawText(`STARK-NET // SECURE`, CX + 320, 90, 11, GREEN, "right");
+    drawText(`MAG // ${currentZoom.toFixed(1)}X TELESCOPIC`, CX + 320, 110, 12, isZoomed ? GREEN : CYAN, "right");
+
+    drawLine(CX - 325, 75, CX + 325, 75, CYAN_DIM, 1);
+
+    /* 3. Central Tactical Reticle & Scope Frame */
+    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (realHitDetected ? GREEN : CYAN);
+
+    ctx.save();
+    const scopeRadius = (55 + (voiceLevel * 14)) * (isZoomed ? 1.35 : 1.0);
+
+    ctx.strokeStyle = mainCol;
+    ctx.shadowColor = mainCol;
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
 
     ctx.beginPath();
-
-    ctx.moveTo(
-        x1,
-        y1
-    );
-
-    ctx.lineTo(
-        x2,
-        y2
-    );
-
+    ctx.arc(CX, CY, scopeRadius, 0, Math.PI * 2);
     ctx.stroke();
-}
 
+    ctx.fillStyle = mainCol;
+    ctx.beginPath();
+    ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
+    ctx.fill();
 
-function wrappedText(
-    value,
-    x,
-    y,
-    maxWidth,
-    lineHeight,
-    size
-) {
+    drawLine(CX - scopeRadius - 35, CY, CX - scopeRadius + 12, CY, mainCol, 1.5);
+    drawLine(CX + scopeRadius - 12, CY, CX + scopeRadius + 35, CY, mainCol, 1.5);
+    drawLine(CX, CY - scopeRadius - 35, CX, CY - scopeRadius + 12, mainCol, 1.5);
+    drawLine(CX, CY + scopeRadius - 12, CX, CY + scopeRadius + 35, mainCol, 1.5);
 
-    ctx.fillStyle =
-        WHITE;
+    if (isZoomed) {
+        ctx.strokeStyle = GREEN;
+        ctx.lineWidth = 2;
+        const b = 130;
+        drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
+        drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
+        drawLine(CX + b, CY - b, CX + b - 24, CY - b, GREEN, 2);
+        drawLine(CX + b, CY - b, CX + b, CY - b + 24, GREEN, 2);
+        drawLine(CX - b, CY + b, CX - b + 24, CY + b, GREEN, 2);
+        drawLine(CX - b, CY + b, CX - b, CY + b - 24, GREEN, 2);
+        drawLine(CX + b, CY + b, CX + b - 24, CY + b, GREEN, 2);
+        drawLine(CX + b, CY + b, CX + b, CY + b - 24, GREEN, 2);
 
-    ctx.font =
-        `${size}px Consolas, Courier New, monospace`;
+        drawText(`[ TELESCOPIC ZOOM: ${currentZoom.toFixed(1)}X ]`, CX, CY - scopeRadius - 22, 11, GREEN, "center");
+    }
 
-    ctx.textAlign =
-        "center";
+    if (realHitDetected) {
+        drawText(`[ REAL SURFACE RANGE: ${realSurfaceDist.toFixed(2)}M ]`, CX, CY + scopeRadius + 22, 10.5, GREEN, "center");
+    } else {
+        drawText(`[ PINCH TO CYCLE ZOOM & ACQUIRE LOCK ]`, CX, CY + scopeRadius + 22, 9.5, CYAN_DIM, "center");
+    }
+    ctx.restore();
 
-    ctx.textBaseline =
-        "top";
+    /* 4. Real 3D Physical Object Anchors */
+    const now = Date.now();
+    for (let i = 0; i < lockedTargets.length; i++) {
+        const tgt = lockedTargets[i];
+        const age = now - tgt.timestamp;
+        const pulse = Math.sin(age * 0.006) * 3;
 
-    const words =
-        value.split(/\s+/);
+        const targetX = CX + (tgt.worldPos[0] * 320);
+        const targetY = CY - (tgt.worldPos[1] * 320);
+        const sz = 32 + pulse;
 
-    const lines = [];
+        ctx.save();
+        ctx.strokeStyle = GREEN;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = GREEN;
+        ctx.shadowBlur = 8;
 
+        drawLine(targetX - sz, targetY - sz, targetX - sz + 10, targetY - sz, GREEN, 2);
+        drawLine(targetX - sz, targetY - sz, targetX - sz, targetY - sz + 10, GREEN, 2);
+        drawLine(targetX + sz, targetY - sz, targetX + sz - 10, targetY - sz, GREEN, 2);
+        drawLine(targetX + sz, targetY - sz, targetX + sz, targetY - sz + 10, GREEN, 2);
+        drawLine(targetX - sz, targetY + sz, targetX - sz + 10, targetY + sz, GREEN, 2);
+        drawLine(targetX - sz, targetY + sz, targetX - sz, targetY + sz - 10, GREEN, 2);
+        drawLine(targetX + sz, targetY + sz, targetX + sz - 10, targetY + sz, GREEN, 2);
+        drawLine(targetX + sz, targetY + sz, targetX + sz, targetY + sz - 10, GREEN, 2);
+
+        ctx.setLineDash([2, 5]);
+        drawLine(targetX, targetY, CX, CY, "rgba(0, 255, 145, 0.25)", 1);
+        ctx.setLineDash([]);
+
+        drawText(tgt.label, targetX + sz + 8, targetY - 6, 9.5, WHITE, "left");
+        drawText(`RANGE: ${tgt.dist} // ${tgt.threat}`, targetX + sz + 8, targetY + 8, 8.5, GREEN, "left");
+        ctx.restore();
+    }
+
+    /* 5. Central Corridor: Voice Subtitles & Status */
+    const barW = 150, barH = 4;
+    ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
+    ctx.fillRect(CX - barW / 2, CY + 54, barW, barH);
+    ctx.fillStyle = isListening ? RED : GREEN;
+    ctx.fillRect(CX - barW / 2, CY + 54, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
+
+    drawText(`● ${systemStatus}`, CX, CY + 76, 11, mainCol, "center");
+
+    ctx.save();
+    ctx.font = "15px Consolas, monospace";
+    ctx.fillStyle = WHITE;
+    ctx.textAlign = "center";
+    ctx.shadowColor = hasError ? RED : CYAN;
+    ctx.shadowBlur = 5;
+
+    const words = edithResponse.split(" ");
     let line = "";
+    let y = CY + 100;
 
-    for (
-        const word of words
-    ) {
-
-        const test =
-            line
-                ? line + " " + word
-                : word;
-
-        if (
-            ctx.measureText(test).width >
-                maxWidth &&
-            line
-        ) {
-
-            lines.push(line);
-            line = word;
-
+    for (let i = 0; i < words.length; i++) {
+        const test = line + words[i] + " ";
+        if (ctx.measureText(test).width > 460 && i > 0) {
+            ctx.fillText(line, CX, y);
+            y += 20;
+            line = words[i] + " ";
         } else {
-
             line = test;
         }
     }
-
-    if (line) {
-        lines.push(line);
-    }
-
-    lines
-        .slice(0, 3)
-        .forEach(
-            (lineText, i) => {
-
-                ctx.fillText(
-                    lineText,
-                    x,
-                    y +
-                    i * lineHeight
-                );
-            }
-        );
-}
-
-
-/* ================================================================
-   RED SIDE HUD
-================================================================ */
-
-function drawRedSideGraphics(time) {
-
-    const pulse =
-        .65 +
-        Math.sin(time * .003) * .2;
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        `rgba(255,25,50,${pulse})`;
-
-    ctx.lineWidth = 2;
-
-    ctx.shadowColor =
-        RED;
-
-    ctx.shadowBlur = 12;
-
-
-    /* LEFT */
-
-    ctx.beginPath();
-
-    ctx.moveTo(65, 140);
-    ctx.lineTo(155, 78);
-    ctx.lineTo(245, 78);
-
-    ctx.moveTo(40, 245);
-    ctx.lineTo(115, 200);
-    ctx.lineTo(185, 200);
-
-    ctx.moveTo(70, 705);
-    ctx.lineTo(150, 765);
-    ctx.lineTo(250, 765);
-
-    ctx.stroke();
-
-
-    /* RIGHT */
-
-    ctx.beginPath();
-
-    ctx.moveTo(1535, 140);
-    ctx.lineTo(1445, 78);
-    ctx.lineTo(1355, 78);
-
-    ctx.moveTo(1560, 245);
-    ctx.lineTo(1485, 200);
-    ctx.lineTo(1415, 200);
-
-    ctx.moveTo(1530, 705);
-    ctx.lineTo(1450, 765);
-    ctx.lineTo(1350, 765);
-
-    ctx.stroke();
-
-
-    /* little red tactical bars */
-
-    for (
-        let i = 0;
-        i < 7;
-        i++
-    ) {
-
-        const y =
-            315 + i * 31;
-
-        ctx.globalAlpha =
-            .3 + i * .08;
-
-        ctx.fillStyle =
-            RED;
-
-        ctx.fillRect(
-            60,
-            y,
-            28 + i * 6,
-            2
-        );
-
-        ctx.fillRect(
-            1512 - i * 6,
-            y,
-            28 + i * 6,
-            2
-        );
-    }
-
+    ctx.fillText(line, CX, y);
     ctx.restore();
-}
 
-
-/* ================================================================
-   TOP LADDER
-================================================================ */
-
-function drawLadder(time) {
-
-    const cx = 800;
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        CYAN_SOFT;
-
-    ctx.lineWidth = 1;
-
-    hudText(
-        "N",
-        cx,
-        42,
-        11,
-        WHITE,
-        "center"
-    );
-
-    hudText(
-        "03",
-        cx - 145,
-        42,
-        8,
-        CYAN_SOFT,
-        "center"
-    );
-
-    hudText(
-        "06",
-        cx + 145,
-        42,
-        8,
-        CYAN_SOFT,
-        "center"
-    );
-
-
-    hudLine(
-        cx,
-        58,
-        cx,
-        120,
-        CYAN
-    );
-
-
-    for (
-        let i = -5;
-        i <= 5;
-        i++
-    ) {
-
-        const y =
-            90 + i * 8;
-
-        const major =
-            i === 0 ||
-            Math.abs(i) === 3;
-
-        const width =
-            major ? 43 : 19;
-
-        hudLine(
-            cx - width,
-            y,
-            cx + width,
-            y,
-            major
-                ? CYAN
-                : CYAN_SOFT,
-            major ? 1.5 : 1
-        );
-    }
-
-
-    const scanY =
-        88 +
-        Math.sin(time * .002) * 25;
-
-    hudLine(
-        cx - 70,
-        scanY,
-        cx - 45,
-        scanY,
-        WHITE
-    );
-
-    hudLine(
-        cx + 45,
-        scanY,
-        cx + 70,
-        scanY,
-        WHITE
-    );
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   TOP DATA
-================================================================ */
-
-function drawTopData(time) {
-
-    hudText(
-        "E.D.I.T.H.",
-        100,
-        45,
-        17,
-        WHITE
-    );
-
-    hudText(
-        "OPTICAL TACTICAL SYSTEM",
-        100,
-        66,
-        8,
-        CYAN_SOFT
-    );
-
-
-    const voiceColor =
-        isSpeaking
-            ? GREEN
-            : processingVoice
-                ? RED
-                : speechActive
-                    ? CYAN
-                    : CYAN_SOFT;
-
-
-    hudText(
-        isSpeaking
-            ? "VOICE OUTPUT"
-            : processingVoice
-                ? "ANALYZING"
-                : speechActive
-                    ? "LISTENING"
-                    : "VOICE STANDBY",
-        1320,
-        43,
-        9,
-        voiceColor
-    );
-
-
-    for (
-        let i = 0;
-        i < 12;
-        i++
-    ) {
-
-        let height = 3;
-
-        if (
-            speechActive ||
-            isSpeaking ||
-            processingVoice
-        ) {
-
-            height =
-                4 +
-                Math.abs(
-                    Math.sin(
-                        time * .018 + i
-                    )
-                ) * 17;
-        }
-
-        ctx.fillStyle =
-            voiceColor;
-
-        ctx.fillRect(
-            1320 + i * 10,
-            62 - height / 2,
-            5,
-            height
-        );
+    if (hasError || subErrorMessage) {
+        drawText(subErrorMessage, CX, y + 22, 10.5, RED, "center");
     }
 }
 
-
 /* ================================================================
-   CENTER RETICLE
+   8. WEBGL SCREEN COMPOSITION & NEAR-FIELD PROJECTION
 ================================================================ */
+const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
-function drawReticle(time) {
-
-    const cx = 800;
-    const cy = 440;
-
-    const color =
-        processingVoice
-            ? RED
-            : isSpeaking
-                ? GREEN
-                : CYAN;
-
-
-    const radius =
-        31 +
-        Math.sin(time * .005) * 2;
-
-
-    ctx.save();
-
-    ctx.strokeStyle =
-        color;
-
-    ctx.lineWidth =
-        1.5;
-
-    ctx.shadowColor =
-        color;
-
-    ctx.shadowBlur =
-        13;
-
-
-    /* outer ring */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        radius,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.stroke();
-
-
-    /* broken outer ring */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        radius + 11,
-        -.7,
-        .55
-    );
-
-    ctx.stroke();
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        radius + 11,
-        2.2,
-        3.9
-    );
-
-    ctx.stroke();
-
-
-    /* crosshair */
-
-    hudLine(
-        cx - 72,
-        cy,
-        cx - 45,
-        cy,
-        color
-    );
-
-    hudLine(
-        cx + 45,
-        cy,
-        cx + 72,
-        cy,
-        color
-    );
-
-    hudLine(
-        cx,
-        cy - 72,
-        cx,
-        cy - 45,
-        color
-    );
-
-    hudLine(
-        cx,
-        cy + 45,
-        cx,
-        cy + 72,
-        color
-    );
-
-
-    /* center dot */
-
-    ctx.fillStyle =
-        color;
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        cy,
-        3,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    ctx.shadowBlur = 0;
-
-
-    hudText(
-        "OPTICAL AXIS",
-        cx,
-        cy - 92,
-        8,
-        color,
-        "center"
-    );
-
-
-    hudText(
-        lastHitPose
-            ? "SURFACE LOCK"
-            : "SCANNING",
-        cx,
-        cy + 92,
-        8,
-        color,
-        "center"
-    );
-
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   AI DISPLAY
-================================================================ */
-
-function drawAI() {
-
-    const cx = 800;
-
-
-    hudText(
-        "● " + systemStatus,
-        cx,
-        635,
-        10,
-        processingVoice
-            ? RED
-            : isSpeaking
-                ? GREEN
-                : CYAN,
-        "center"
-    );
-
-
-    hudText(
-        debugLog,
-        cx,
-        658,
-        7,
-        "rgba(255,190,40,.75)",
-        "center"
-    );
-
-
-    wrappedText(
-        edithResponse,
-        cx,
-        695,
-        610,
-        20,
-        13
-    );
-
-
-    if (
-        !speechSupported
-    ) {
-
-        hudText(
-            "BROWSER SPEECH RECOGNITION UNAVAILABLE",
-            cx,
-            790,
-            8,
-            RED,
-            "center"
-        );
-
-    } else {
-
-        hudText(
-            "VOICE CONTROL // ALWAYS LISTENING",
-            cx,
-            790,
-            8,
-            CYAN_SOFT,
-            "center"
-        );
-    }
-}
-
-
-/* ================================================================
-   TELEMETRY
-================================================================ */
-
-function drawTelemetry() {
-
-    hudText(
-        "AR",
-        120,
-        820,
-        7,
-        CYAN_SOFT
-    );
-
-    hudText(
-        xrSession
-            ? "ACTIVE"
-            : "OFFLINE",
-        120,
-        842,
-        9,
-        xrSession
-            ? GREEN
-            : RED
-    );
-
-
-    hudText(
-        "OPTICS",
-        320,
-        820,
-        7,
-        CYAN_SOFT
-    );
-
-    hudText(
-        "PASS-THROUGH",
-        320,
-        842,
-        9,
-        GREEN
-    );
-
-
-    hudText(
-        "VOICE",
-        1240,
-        820,
-        7,
-        CYAN_SOFT
-    );
-
-    hudText(
-        speechActive
-            ? "LIVE"
-            : "STANDBY",
-        1240,
-        842,
-        9,
-        speechActive
-            ? GREEN
-            : CYAN
-    );
-
-
-    hudText(
-        "AI",
-        1460,
-        820,
-        7,
-        CYAN_SOFT
-    );
-
-    hudText(
-        apiKey
-            ? "READY"
-            : "NO KEY",
-        1460,
-        842,
-        9,
-        apiKey
-            ? GREEN
-            : RED
-    );
-}
-
-
-/* ================================================================
-   RENDER HUD
-================================================================ */
-
-function renderHUD(time) {
-
-    ctx.clearRect(
-        0,
-        0,
-        1600,
-        900
-    );
-
-    drawRedSideGraphics(time);
-
-    drawTopData(time);
-
-    drawLadder(time);
-
-    drawReticle(time);
-
-    drawAI();
-
-    drawTelemetry();
-
-
-    /*
-       Very subtle scan lines.
-    */
-
-    ctx.save();
-
-    ctx.globalAlpha =
-        .035;
-
-    for (
-        let y = 0;
-        y < 900;
-        y += 12
-    ) {
-
-        ctx.fillStyle =
-            "#00eaff";
-
-        ctx.fillRect(
-            0,
-            y,
-            1600,
-            1
-        );
-    }
-
-    ctx.restore();
-}
-
-
-/* ================================================================
-   WEBGL SHADERS
-================================================================ */
-
-/*
-   FIXED:
-   The HUD is now a real 3D plane.
-
-   It is positioned about 45cm in front of
-   the user's head.
-
-   This makes it feel like an optical HUD rather
-   than a giant screen sitting somewhere in space.
-*/
-
-const vertexShaderSource = `
-
-attribute vec3 aPosition;
+const vs = `
+attribute vec2 aPos;
 attribute vec2 aUV;
-
-uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProjection;
-
+uniform float uNearScale;
 varying vec2 vUV;
-
 void main() {
-
-    gl_Position =
-        uProjection *
-        uView *
-        uModel *
-        vec4(
-            aPosition,
-            1.0
-        );
-
+    gl_Position = vec4(aPos * uNearScale, 0.0, 1.0);
     vUV = aUV;
-}
-`;
+}`;
 
-
-const fragmentShaderSource = `
-
+const fs = `
 precision mediump float;
-
-uniform sampler2D uTexture;
-
+uniform sampler2D uTex;
 varying vec2 vUV;
-
 void main() {
+    gl_FragColor = texture2D(uTex, vUV);
+}`;
 
-    vec4 color =
-        texture2D(
-            uTexture,
-            vUV
-        );
-
-    gl_FragColor =
-        color;
+function createShader(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
 }
-`;
 
+const prog = gl.createProgram();
+gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vs));
+gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fs));
+gl.linkProgram(prog);
+
+const quad = new Float32Array([
+    -1, -1, 0, 1,
+     1, -1, 1, 1,
+    -1,  1, 0, 0,
+    -1,  1, 0, 0,
+     1, -1, 1, 1,
+     1,  1, 1, 0
+]);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+
+const posLoc = gl.getAttribLocation(prog, "aPos");
+const uvLoc = gl.getAttribLocation(prog, "aUV");
+const nearScaleLoc = gl.getUniformLocation(prog, "uNearScale");
+
+const tex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, tex);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   BLUE TINT SHADERS
+   9. WEBXR IMMERSIVE-AR SESSION (NEAR-FIELD + HIT-TESTING)
 ================================================================ */
-
-const tintVertexSource = `
-
-attribute vec2 aPosition;
-
-void main() {
-
-    gl_Position =
-        vec4(
-            aPosition,
-            0.0,
-            1.0
-        );
-}
-`;
-
-
-const tintFragmentSource = `
-
-precision mediump float;
-
-uniform vec4 uColor;
-
-void main() {
-
-    gl_FragColor =
-        uColor;
-}
-`;
-
-
-/* ================================================================
-   WEBGL SETUP
-================================================================ */
-
-const gl =
-    canvas.getContext(
-        "webgl",
-        {
-            alpha: true,
-            antialias: true,
-            premultipliedAlpha: true,
-            xrCompatible: true
-        }
-    );
-
-
-if (!gl) {
-
-    setupError.textContent =
-        "WEBGL IS NOT AVAILABLE.";
-
-    throw new Error(
-        "WebGL unavailable"
-    );
-}
-
-
-function compileShader(
-    type,
-    source
-) {
-
-    const shader =
-        gl.createShader(type);
-
-    gl.shaderSource(
-        shader,
-        source
-    );
-
-    gl.compileShader(shader);
-
-    if (
-        !gl.getShaderParameter(
-            shader,
-            gl.COMPILE_STATUS
-        )
-    ) {
-
-        console.error(
-            gl.getShaderInfoLog(
-                shader
-            )
-        );
-    }
-
-    return shader;
-}
-
-
-function createProgram(
-    vertex,
-    fragment
-) {
-
-    const program =
-        gl.createProgram();
-
-    gl.attachShader(
-        program,
-        compileShader(
-            gl.VERTEX_SHADER,
-            vertex
-        )
-    );
-
-    gl.attachShader(
-        program,
-        compileShader(
-            gl.FRAGMENT_SHADER,
-            fragment
-        )
-    );
-
-    gl.linkProgram(program);
-
-    return program;
-}
-
-
-const hudProgram =
-    createProgram(
-        vertexShaderSource,
-        fragmentShaderSource
-    );
-
-
-const tintProgram =
-    createProgram(
-        tintVertexSource,
-        tintFragmentSource
-    );
-
-
-/* ================================================================
-   HUD PLANE
-================================================================ */
-
-/*
-   Plane is about 1.15 meters wide.
-
-   Because it is only 0.45m away, it fills a useful
-   portion of your field of view without feeling like
-   a physical monitor.
-*/
-
-const planeVertices =
-    new Float32Array([
-
-        /*
-           position              UV
-        */
-
-        -.58, -.326, 0,
-        0, 1,
-
-         .58, -.326, 0,
-        1, 1,
-
-        -.58,  .326, 0,
-        0, 0,
-
-        -.58,  .326, 0,
-        0, 0,
-
-         .58, -.326, 0,
-        1, 1,
-
-         .58,  .326, 0,
-        1, 0
-    ]);
-
-
-const planeBuffer =
-    gl.createBuffer();
-
-gl.bindBuffer(
-    gl.ARRAY_BUFFER,
-    planeBuffer
-);
-
-gl.bufferData(
-    gl.ARRAY_BUFFER,
-    planeVertices,
-    gl.STATIC_DRAW
-);
-
-
-/* ================================================================
-   HUD TEXTURE
-================================================================ */
-
-const hudTexture =
-    gl.createTexture();
-
-gl.bindTexture(
-    gl.TEXTURE_2D,
-    hudTexture
-);
-
-gl.texParameteri(
-    gl.TEXTURE_2D,
-    gl.TEXTURE_MIN_FILTER,
-    gl.LINEAR
-);
-
-gl.texParameteri(
-    gl.TEXTURE_2D,
-    gl.TEXTURE_MAG_FILTER,
-    gl.LINEAR
-);
-
-gl.texParameteri(
-    gl.TEXTURE_2D,
-    gl.TEXTURE_WRAP_S,
-    gl.CLAMP_TO_EDGE
-);
-
-gl.texParameteri(
-    gl.TEXTURE_2D,
-    gl.TEXTURE_WRAP_T,
-    gl.CLAMP_TO_EDGE
-);
-
-
-/* ================================================================
-   FULL SCREEN QUAD FOR BLUE TINT
-================================================================ */
-
-const tintVertices =
-    new Float32Array([
-
-        -1, -1,
-         1, -1,
-
-        -1,  1,
-
-        -1,  1,
-         1, -1,
-
-         1,  1
-    ]);
-
-
-const tintBuffer =
-    gl.createBuffer();
-
-gl.bindBuffer(
-    gl.ARRAY_BUFFER,
-    tintBuffer
-);
-
-gl.bufferData(
-    gl.ARRAY_BUFFER,
-    tintVertices,
-    gl.STATIC_DRAW
-);
-
-
-/* ================================================================
-   MATRIX FUNCTIONS
-================================================================ */
-
-function identityMatrix() {
-
-    return new Float32Array([
-
-        1,0,0,0,
-        0,1,0,0,
-        0,0,1,0,
-        0,0,0,1
-    ]);
-}
-
-
-function multiplyMatrices(
-    a,
-    b
-) {
-
-    const out =
-        new Float32Array(16);
-
-    for (
-        let column = 0;
-        column < 4;
-        column++
-    ) {
-
-        for (
-            let row = 0;
-            row < 4;
-            row++
-        ) {
-
-            out[
-                column * 4 + row
-            ] =
-                a[row] *
-                b[column * 4] +
-
-                a[4 + row] *
-                b[column * 4 + 1] +
-
-                a[8 + row] *
-                b[column * 4 + 2] +
-
-                a[12 + row] *
-                b[column * 4 + 3];
-        }
-    }
-
-    return out;
-}
-
-
-function translationMatrix(
-    x,
-    y,
-    z
-) {
-
-    const m =
-        identityMatrix();
-
-    m[12] = x;
-    m[13] = y;
-    m[14] = z;
-
-    return m;
-}
-
-
-/* ================================================================
-   DRAW HUD PLANE
-================================================================ */
-
-function drawHUDPlane(
-    viewerPose,
-    view
-) {
-
-    /*
-       The user's head position/orientation.
-
-       The plane is created relative to the viewer:
-
-          X = left/right
-          Y = up/down
-          Z = forward/back
-
-       -0.45m = directly in front of the user.
-    */
-
-    const viewerMatrix =
-        viewerPose.transform.matrix;
-
-
-    const localHUD =
-        translationMatrix(
-            0,
-            0,
-            -0.45
-        );
-
-
-    const model =
-        multiplyMatrices(
-            viewerMatrix,
-            localHUD
-        );
-
-
-    gl.useProgram(
-        hudProgram
-    );
-
-
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        planeBuffer
-    );
-
-
-    const positionLocation =
-        gl.getAttribLocation(
-            hudProgram,
-            "aPosition"
-        );
-
-    const uvLocation =
-        gl.getAttribLocation(
-            hudProgram,
-            "aUV"
-        );
-
-
-    gl.enableVertexAttribArray(
-        positionLocation
-    );
-
-    gl.vertexAttribPointer(
-        positionLocation,
-        3,
-        gl.FLOAT,
-        false,
-        20,
-        0
-    );
-
-
-    gl.enableVertexAttribArray(
-        uvLocation
-    );
-
-    gl.vertexAttribPointer(
-        uvLocation,
-        2,
-        gl.FLOAT,
-        false,
-        20,
-        12
-    );
-
-
-    gl.uniformMatrix4fv(
-        gl.getUniformLocation(
-            hudProgram,
-            "uModel"
-        ),
-        false,
-        model
-    );
-
-
-    gl.uniformMatrix4fv(
-        gl.getUniformLocation(
-            hudProgram,
-            "uView"
-        ),
-        false,
-        view.transform.matrix
-            ? view.transform.inverse.matrix
-            : view.viewMatrix
-    );
-
-
-    gl.uniformMatrix4fv(
-        gl.getUniformLocation(
-            hudProgram,
-            "uProjection"
-        ),
-        false,
-        view.projectionMatrix
-    );
-
-
-    gl.activeTexture(
-        gl.TEXTURE0
-    );
-
-    gl.bindTexture(
-        gl.TEXTURE_2D,
-        hudTexture
-    );
-
-
-    gl.uniform1i(
-        gl.getUniformLocation(
-            hudProgram,
-            "uTexture"
-        ),
-        0
-    );
-
-
-    gl.drawArrays(
-        gl.TRIANGLES,
-        0,
-        6
-    );
-}
-
-
-/* ================================================================
-   BLUE PASSTHROUGH TINT
-================================================================ */
-
-function drawBlueTint() {
-
-    gl.useProgram(
-        tintProgram
-    );
-
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        tintBuffer
-    );
-
-    const position =
-        gl.getAttribLocation(
-            tintProgram,
-            "aPosition"
-        );
-
-    gl.enableVertexAttribArray(
-        position
-    );
-
-    gl.vertexAttribPointer(
-        position,
-        2,
-        gl.FLOAT,
-        false,
-        8,
-        0
-    );
-
-
-    /*
-       Very subtle blue optical-glass effect.
-    */
-
-    gl.uniform4f(
-        gl.getUniformLocation(
-            tintProgram,
-            "uColor"
-        ),
-
-        0.0,
-        0.18,
-        0.38,
-        0.10
-    );
-
-
-    gl.drawArrays(
-        gl.TRIANGLES,
-        0,
-        6
-    );
-}
-
-
-/* ================================================================
-   HIT TEST
-================================================================ */
-
-function updateHitTest(
-    frame
-) {
-
-    lastHitPose = null;
-
-    if (
-        !xrHitTestSource ||
-        !xrRefSpace
-    ) {
-        return;
-    }
+async function launchAR() {
+    await gl.makeXRCompatible();
+
+    session = await navigator.xr.requestSession("immersive-ar", {
+        requiredFeatures: ["hit-test"],
+        optionalFeatures: ["local-floor", "unbounded", "local", "hand-tracking"]
+    });
+
+    xrLayer = new XRWebGLLayer(session, gl, { alpha: true, depth: false });
+    session.updateRenderState({ baseLayer: xrLayer });
 
     try {
+        referenceSpace = await session.requestReferenceSpace("local-floor");
+    } catch(e) {
+        referenceSpace = await session.requestReferenceSpace("local");
+    }
 
-        const results =
-            frame.getHitTestResults(
-                xrHitTestSource
-            );
+    const viewerSpace = await session.requestReferenceSpace("viewer");
+    hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
 
-        if (
-            results &&
-            results.length
-        ) {
+    session.addEventListener("select", () => {
+        handlePinchTap();
+    });
 
-            lastHitPose =
-                results[0]
-                    .getPose(
-                        xrRefSpace
-                    );
-        }
-
-    } catch (_) {}
+    session.requestAnimationFrame(renderFrame);
 }
 
+function renderFrame(time, frame) {
+    if (!session) return;
+    session.requestAnimationFrame(renderFrame);
 
-/* ================================================================
-   XR FRAME
-================================================================ */
+    const pose = frame.getViewerPose(referenceSpace);
+    if (!pose) return;
 
-function onXRFrame(
-    time,
-    frame
-) {
-
-    if (!xrSession) {
-        return;
+    if (hitTestSource) {
+        const hits = frame.getHitTestResults(hitTestSource);
+        if (hits.length > 0) {
+            const hitPose = hits[0].getPose(referenceSpace);
+            if (hitPose) {
+                realHitDetected = true;
+                const pos = hitPose.transform.position;
+                realHit3D = [pos.x, pos.y, pos.z];
+                realSurfaceDist = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
+            }
+        } else {
+            realHitDetected = false;
+        }
     }
 
-    xrSession.requestAnimationFrame(
-        onXRFrame
-    );
+    gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
-
-    const viewerPose =
-        frame.getViewerPose(
-            xrRefSpace
-        );
-
-    if (!viewerPose) {
-        return;
-    }
-
-
-    updateHitTest(frame);
-
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     renderHUD(time);
 
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hud);
 
-    /*
-       Upload HUD canvas.
-    */
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 16, 0);
+    gl.enableVertexAttribArray(uvLoc);
+    gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
-    gl.bindTexture(
-        gl.TEXTURE_2D,
-        hudTexture
-    );
+    const ocularScale = 0.95 + ((currentZoom - 1.0) * 0.05);
+    gl.uniform1f(nearScaleLoc, ocularScale);
 
-    gl.pixelStorei(
-        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-        true
-    );
-
-    gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        hudCanvas
-    );
-
-
-    const layer =
-        xrSession.renderState.baseLayer;
-
-
-    gl.bindFramebuffer(
-        gl.FRAMEBUFFER,
-        layer.framebuffer
-    );
-
-
-    gl.enable(
-        gl.BLEND
-    );
-
-    gl.blendFunc(
-        gl.SRC_ALPHA,
-        gl.ONE_MINUS_SRC_ALPHA
-    );
-
-
-    /*
-       IMPORTANT:
-       Don't paint black over passthrough.
-    */
-
-    gl.clearColor(
-        0,
-        0,
-        0,
-        0
-    );
-
-    gl.clear(
-        gl.COLOR_BUFFER_BIT |
-        gl.DEPTH_BUFFER_BIT
-    );
-
-
-    for (
-        const view of viewerPose.views
-    ) {
-
-        const viewport =
-            layer.getViewport(
-                view
-            );
-
-        gl.viewport(
-            viewport.x,
-            viewport.y,
-            viewport.width,
-            viewport.height
-        );
-
-
-        /*
-           Blue-tinted passthrough.
-        */
-
-        drawBlueTint();
-
-
-        /*
-           HUD at ~45cm from the user's head.
-        */
-
-        drawHUDPlane(
-            viewerPose,
-            view
-        );
+    for (const view of pose.views) {
+        const vp = xrLayer.getViewport(view);
+        gl.viewport(vp.x, vp.y, vp.width, vp.height);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 }
 
-
 /* ================================================================
-   START XR
+   10. BOOTSTRAP INITIALIZATION
 ================================================================ */
-
-async function startXR() {
-
-    if (!navigator.xr) {
-
-        throw new Error(
-            "WebXR unavailable. Open this in Quest Browser."
-        );
+btnInit.onclick = async () => {
+    apiKey = cleanGeminiKey(apiKeyInput.value);
+    if (!apiKey) {
+        alert("Enter your Gemini API key.");
+        return;
     }
+    localStorage.setItem("edith_gemini_key", apiKey);
 
-
-    const supported =
-        await navigator.xr.isSessionSupported(
-            "immersive-ar"
-        );
-
-
-    if (!supported) {
-
-        throw new Error(
-            "Quest immersive AR is unavailable."
-        );
-    }
-
-
-    xrSession =
-        await navigator.xr.requestSession(
-            "immersive-ar",
-            {
-                requiredFeatures: [],
-
-                optionalFeatures: [
-                    "local-floor",
-                    "bounded-floor",
-                    "viewer",
-                    "hit-test",
-                    "plane-detection"
-                ]
-            }
-        );
-
-
-    const layer =
-        new XRWebGLLayer(
-            xrSession,
-            gl,
-            {
-                alpha: true,
-                antialias: true
-            }
-        );
-
-
-    xrSession.updateRenderState({
-        baseLayer: layer
-    });
-
-
-    xrRefSpace =
-        await xrSession.requestReferenceSpace(
-            "local"
-        );
-
-
-    /*
-       Viewer space for hit testing.
-    */
+    btnInit.disabled = true;
+    btnInit.textContent = "INITIALIZING STARK AR...";
 
     try {
+        wakeAudioEngine();
+        await setupAudioPipeline();
+        await launchAR();
 
-        xrViewerSpace =
-            await xrSession.requestReferenceSpace(
-                "viewer"
-            );
-
-        if (
-            xrSession.requestHitTestSource
-        ) {
-
-            xrHitTestSource =
-                await xrSession.requestHitTestSource({
-                    space:
-                        xrViewerSpace
-                });
-        }
-
-    } catch (_) {
-
-        debugLog =
-            "HIT TEST UNAVAILABLE";
+        setupScreen.style.display = "none";
+        playCue(880, 0.1);
+    } catch (err) {
+        btnInit.disabled = false;
+        btnInit.textContent = "INITIALIZE AR";
+        alert("Startup failed: " + err.message);
     }
+};
 
+window.addEventListener("beforeunload", () => {
+    if (micStream) micStream.getTracks().forEach(t => t.stop());
+    if (session) session.end();
+});
 
-    xrSession.addEventListener(
-        "end",
-        () => {
-
-            xrSession = null;
-
-            stopVoiceRecognition();
-
-            systemStatus =
-                "AR SESSION ENDED";
-
-            debugLog =
-                "WEBXR SESSION CLOSED";
-        }
-    );
-
-
-    /*
-       Start hands-free voice.
-    */
-
-    if (speechSupported) {
-
-        setTimeout(
-            startVoiceRecognition,
-            500
-        );
-    }
-
-
-    xrSession.requestAnimationFrame(
-        onXRFrame
-    );
-}
-
-
-/* ================================================================
-   INITIALIZATION BUTTON
-================================================================ */
-
-btnInit.addEventListener(
-    "click",
-    async () => {
-
-        setupError.textContent = "";
-
-        apiKey =
-            apiKeyInput.value.trim();
-
-        if (!apiKey) {
-
-            setupError.textContent =
-                "ENTER YOUR GEMINI API KEY.";
-
-            return;
-        }
-
-
-        localStorage.setItem(
-            "edith_gemini_key",
-            apiKey
-        );
-
-
-        btnInit.disabled = true;
-
-        btnInit.textContent =
-            "INITIALIZING...";
-
-
-        try {
-
-            initAudio();
-
-            /*
-               Set up browser speech recognition.
-            */
-
-            setupVoiceRecognition();
-
-
-            await startXR();
-
-
-            setupScreen.style.display =
-                "none";
-
-
-            systemStatus =
-                "SYSTEM STANDBY";
-
-            debugLog =
-                speechSupported
-                    ? "VOICE SYSTEM ONLINE"
-                    : "SPEECH API UNAVAILABLE";
-
-
-            edithResponse =
-                speechSupported
-                    ? "E.D.I.T.H. online. I'm listening."
-                    : "E.D.I.T.H. online. Voice recognition is unavailable in this browser.";
-
-
-            playTone(
-                700,
-                .1,
-                "sine",
-                .08
-            );
-
-
-            setTimeout(
-                () => {
-
-                    playTone(
-                        1100,
-                        .14,
-                        "sine",
-                        .08
-                    );
-
-                    if (
-                        speechSupported
-                    ) {
-
-                        startVoiceRecognition();
-                    }
-
-                },
-                120
-            );
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            setupError.textContent =
-                error.message;
-
-            btnInit.disabled =
-                false;
-
-            btnInit.textContent =
-                "INITIALIZE SYSTEM";
-        }
-    }
-);
-
-
-/* ================================================================
-   INITIAL STATE
-================================================================ */
-
-systemStatus =
-    "SYSTEM STANDBY";
-
-debugLog =
-    "AWAITING INITIALIZATION";
-
+renderHUD(0);
 </script>
-
 </body>
 </html>
