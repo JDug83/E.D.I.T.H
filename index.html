@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK OPTICAL AR</title>
+<title>E.D.I.T.H. // NATURAL VOICE INTERFACE</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -73,7 +73,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK OPTICAL AR // CHAT ENGINE &amp; SUPER-ZOOM</div>
+    <div class="subtitle">STARK OPTICAL AR // NATURAL VOICE COMM</div>
     <div class="setupBox">
         <span class="input-label">GEMINI AI STUDIO KEY</span>
         <div class="input-wrap">
@@ -92,7 +92,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY RECOVERY & PERSISTENT CONVERSATION HISTORY
+   1. KEY RECOVERY & NATURAL SPOKEN SYSTEM PROMPT
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
@@ -171,21 +171,21 @@ let isListening = false;
 let isProcessing = false;
 let hasError = false;
 
-// Advanced AI Chatbot Persona States
 let systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
-let edithResponse = "E.D.I.T.H. online. Systems fully operational. What's on your mind?";
+let edithResponse = "I'm here. What do you need?";
 let subErrorMessage = "";
 
-// Retains conversational history across queries
 let conversationHistory = [];
 
 const EDITH_SYSTEM_PROMPT = 
-`You are E.D.I.T.H. (Even Dead, I'm The Hero), Tony Stark's advanced augmented tactical intelligence.
-You are chatting with the user wearing the tactical optical interface.
-Tone: Calm, intelligent, witty, concise, highly capable, slightly British/formal yet warmly conversational like in Spider-Man.
-Constraints: Keep responses concise—typically 1 to 2 engaging, natural sentences. Never say 'Operational Complete' or robotic boilerplate. Respond like an authentic, highly advanced AI assistant.`;
+`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside a headset.
+CRITICAL SPOKEN VOICE INSTRUCTIONS:
+- You must speak strictly as if talking in an authentic conversation, NOT writing text.
+- Do NOT use markdown, bullet points, asterisks, citations, emojis, quotes, or numbered lists.
+- Keep responses short, natural, and conversational—usually 1 to 2 sentences.
+- Speak with calm confidence, warmth, and light witty British efficiency.
+- Never say robotic phrases like 'Operational Complete', 'As an AI', or formal summaries. Just answer like a smart peer talking out loud.`;
 
-// Telescopic Zoom Levels
 const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
 let zoomIndex = 0;
 let currentZoom = 1.0;
@@ -199,7 +199,7 @@ let voiceLevel = 0;
 let silenceFrames = 0;
 
 /* ================================================================
-   2. AUDIO ENGINE & NATURAL SPEECH
+   2. HARDWARE AUDIO & VOICE ENGINE
 ================================================================ */
 function wakeAudioEngine() {
     if (!audioContext) {
@@ -216,13 +216,13 @@ function wakeAudioEngine() {
     osc.start();
 }
 
-function playCue(freq = 880, dur = 0.06) {
+function playCue(freq = 880, dur = 0.05) {
     try {
         wakeAudioEngine();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.frequency.setValueAtTime(freq, audioContext.currentTime);
-        gain.gain.setValueAtTime(0.12, audioContext.currentTime);
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + dur);
         osc.connect(gain);
         gain.connect(audioContext.destination);
@@ -250,17 +250,33 @@ function playZoomServo(zoomFactor) {
     } catch(e) {}
 }
 
+function cleanSpokenText(raw) {
+    return raw
+        .replace(/[*_#`~[\]()<>]/g, "")
+        .replace(/https?:\/\/\S+/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
 function speakVoice(text) {
     if (!window.speechSynthesis) return;
     wakeAudioEngine();
     window.speechSynthesis.cancel();
 
-    systemStatus = "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
+    systemStatus = "E.D.I.T.H. // SPEAKING";
 
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = "en-US";
+    const speechText = cleanSpokenText(text);
+    const utt = new SpeechSynthesisUtterance(speechText);
+    
+    // Choose natural British voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => v.lang.includes("en-GB") && !v.name.includes("Google")) 
+                        || voices.find(v => v.lang.includes("en-GB"))
+                        || voices.find(v => v.lang.includes("en-US"));
+    if (preferredVoice) utt.voice = preferredVoice;
+
     utt.rate = 1.08;
-    utt.pitch = 0.96;
+    utt.pitch = 0.98;
 
     utt.onend = () => {
         if (!isListening && !hasError) {
@@ -268,6 +284,12 @@ function speakVoice(text) {
         }
     };
     window.speechSynthesis.speak(utt);
+}
+
+if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
 }
 
 /* ================================================================
@@ -324,7 +346,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. FAST CONVERSATIONAL VAD PIPELINE (450ms Silence Gate)
+   4. FAST VOICE ACTIVITY DETECTION (450ms Silence Pause)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -368,7 +390,7 @@ async function setupAudioPipeline() {
                 hasError = false;
                 subErrorMessage = "";
                 pcmSamples = [];
-                systemStatus = "AUDIO INPUT DETECTED // STREAMING DIRECTIVE";
+                systemStatus = "LISTENING TO YOU...";
                 playCue(540, 0.04);
             }
             silenceFrames = 0;
@@ -380,7 +402,7 @@ async function setupAudioPipeline() {
             if (silenceFrames > SILENCE_LIMIT) {
                 isListening = false;
                 isProcessing = true;
-                systemStatus = "NEURAL PROCESSING // ANALYZING";
+                systemStatus = "THINKING...";
                 playCue(920, 0.05);
 
                 const recordedSnapshot = pcmSamples.slice();
@@ -392,7 +414,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. ADVANCED CHATBOT GEMINI TRANSMISSION (WITH MEMORY)
+   5. SPOKEN CONVERSATIONAL QUERY TRANSMISSION
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
@@ -402,7 +424,7 @@ async function transmitToGemini(samples) {
     }
 
     try {
-        systemStatus = "UPLINK SYNAPSE // GENERATING RESPONSE";
+        systemStatus = "CONNECTING SYNAPSE...";
 
         const wavBytes = downsampleAndEncodeWAV(samples, audioContext.sampleRate);
         let binary = '';
@@ -411,17 +433,14 @@ async function transmitToGemini(samples) {
         }
         const base64WAV = btoa(binary);
 
-        // Build conversational payload with persona instruction + recent history
-        const userContent = {
+        const userTurn = {
             role: "user",
-            parts: [
-                { inline_data: { mime_type: "audio/wav", data: base64WAV } }
-            ]
+            parts: [{ inline_data: { mime_type: "audio/wav", data: base64WAV } }]
         };
 
         const contentsPayload = [
-            ...conversationHistory.slice(-4), // Keep last 2 conversational turns
-            userContent
+            ...conversationHistory.slice(-4),
+            userTurn
         ];
 
         const cleanKey = cleanGeminiKey(apiKey);
@@ -434,7 +453,7 @@ async function transmitToGemini(samples) {
                 },
                 contents: contentsPayload,
                 generationConfig: {
-                    temperature: 0.65, // More creative and responsive conversational intelligence
+                    temperature: 0.7,
                     maxOutputTokens: 90
                 }
             })
@@ -455,20 +474,21 @@ async function transmitToGemini(samples) {
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
         if (!reply) throw new Error("EMPTY_DATA");
 
-        // Append to conversation history for contextual memory
-        conversationHistory.push(userContent);
+        const cleanReply = cleanSpokenText(reply);
+
+        conversationHistory.push(userTurn);
         conversationHistory.push({
             role: "model",
-            parts: [{ text: reply }]
+            parts: [{ text: cleanReply }]
         });
 
         hasError = false;
         subErrorMessage = "";
-        edithResponse = reply;
+        edithResponse = cleanReply;
         isProcessing = false;
 
         playCue(1200, 0.08);
-        speakVoice(reply);
+        speakVoice(cleanReply);
 
     } catch (err) {
         console.error("Gemini Failure:", err);
@@ -476,7 +496,7 @@ async function transmitToGemini(samples) {
         hasError = true;
 
         systemStatus = "UPLINK ERROR // DISCONNECTED";
-        edithResponse = "Neural uplink unavailable. Please retry.";
+        edithResponse = "I lost connection for a second. Try again?";
         subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
 
         playCue(300, 0.2);
@@ -485,7 +505,7 @@ async function transmitToGemini(samples) {
 }
 
 /* ================================================================
-   6. SUPER ZOOM (HAND PINCH / CONTROLLER TRIGGER)
+   6. SUPER ZOOM (HAND PINCH / TRIGGER)
 ================================================================ */
 function triggerSuperZoom() {
     zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
@@ -494,7 +514,7 @@ function triggerSuperZoom() {
 }
 
 /* ================================================================
-   7. STARK HUD CANVAS (COMPLEX OVERLAY & MYOPIA CLUSTER)
+   7. STARK HUD CANVAS (MYOPIA CENTRAL CLUSTER)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -537,7 +557,7 @@ function renderHUD(time) {
     currentZoom += (targetZoom - currentZoom) * 0.18;
     const isZoomed = currentZoom > 1.05;
 
-    /* 1. Spider-Eye Mask Outlines */
+    /* 1. Spider-Eye Mask */
     ctx.save();
     ctx.strokeStyle = isZoomed ? "rgba(0, 235, 255, 0.55)" : "rgba(255, 20, 40, 0.55)";
     ctx.lineWidth = 3;
@@ -547,7 +567,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 2. Top Heading Tape & Flight Pitch Ladder */
+    /* 2. Top Pitch Ladder */
     ctx.save();
     const ladderY = 85;
     ctx.strokeStyle = CYAN;
@@ -575,7 +595,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 4. Rotating Tactical Compass Ring */
+    /* 4. Rotating Compass Node */
     ctx.save();
     ctx.translate(CX, CY);
     ctx.rotate(time * 0.0004);
@@ -587,7 +607,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 5. Central Dynamic Reticle + Telescopic Super Zoom */
+    /* 5. Central Dynamic Reticle + Super Zoom */
     ctx.save();
     const zoomReticleRadius = (32 + (voiceLevel * 14)) * (isZoomed ? 1.4 : 1.0);
     const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (isZoomed ? "#00ff88" : CYAN);
@@ -618,7 +638,7 @@ function renderHUD(time) {
         drawLine(CX - sz, CY - sz, CX - sz + 25, CY - sz, "#00ff88", 2);
         drawLine(CX - sz, CY - sz, CX - sz, CY - sz + 25, "#00ff88", 2);
         drawLine(CX + sz, CY - sz, CX + sz - 25, CY - sz, "#00ff88", 2);
-        drawLine(CX + sz, CY - sz, CX + sz, CY - sz + 25, "#00ff88", 2);
+        drawLine(CX + sz, CY - sz, CX + sz - 25, CY - sz + 25, "#00ff88", 2);
         drawLine(CX - sz, CY + sz, CX - sz + 25, CY + sz, "#00ff88", 2);
         drawLine(CX - sz, CY + sz, CX - sz, CY + sz - 25, "#00ff88", 2);
         drawLine(CX + sz, CY + sz, CX + sz - 25, CY + sz, "#00ff88", 2);
@@ -630,17 +650,15 @@ function renderHUD(time) {
     }
     ctx.restore();
 
-    /* 6. Central Cluster (Myopia Corridor with Chatbot Dialogue) */
+    /* 6. Central Corridor (Myopia Focused Spoken Subtitles) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 52, barW, barH);
     ctx.fillStyle = isListening ? RED : GREEN;
     ctx.fillRect(CX - barW / 2, CY + 52, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
-    // Dynamic AI Status Line
     drawText(`● ${systemStatus}`, CX, CY + 74, 11, mainCol, "center");
 
-    // E.D.I.T.H. Chatbot Conversational Response
     ctx.save();
     ctx.font = "16px Consolas, monospace";
     ctx.fillStyle = WHITE;
@@ -730,7 +748,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   9. WEBXR SESSION // UNBOUNDED + HAND TRACKING PINCH
+   9. WEBXR SESSION // UNBOUNDED + HAND PINCH ZOOM
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
@@ -805,7 +823,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "CALIBRATING E.D.I.T.H. CHAT ENGINE...";
+    btnInit.textContent = "INITIALIZING E.D.I.T.H. VOICE COMM...";
 
     try {
         wakeAudioEngine();
