@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // NATURAL VOICE INTERFACE</title>
+<title>E.D.I.T.H. // STARK OPTICAL AR</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -178,13 +178,13 @@ let subErrorMessage = "";
 let conversationHistory = [];
 
 const EDITH_SYSTEM_PROMPT = 
-`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside a headset.
-CRITICAL SPOKEN VOICE INSTRUCTIONS:
-- You must speak strictly as if talking in an authentic conversation, NOT writing text.
+`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside an AR headset.
+CRITICAL INSTRUCTIONS:
+- Speak strictly as if talking out loud, never as written text.
 - Do NOT use markdown, bullet points, asterisks, citations, emojis, quotes, or numbered lists.
-- Keep responses short, natural, and conversational—usually 1 to 2 sentences.
+- Keep responses short, natural, and conversational—usually 1 to 2 brief sentences.
 - Speak with calm confidence, warmth, and light witty British efficiency.
-- Never say robotic phrases like 'Operational Complete', 'As an AI', or formal summaries. Just answer like a smart peer talking out loud.`;
+- Never say robotic phrases like 'Operational Complete', 'As an AI', or formal summaries.`;
 
 const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
 let zoomIndex = 0;
@@ -263,12 +263,11 @@ function speakVoice(text) {
     wakeAudioEngine();
     window.speechSynthesis.cancel();
 
-    systemStatus = "E.D.I.T.H. // SPEAKING";
+    systemStatus = "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
 
     const speechText = cleanSpokenText(text);
     const utt = new SpeechSynthesisUtterance(speechText);
     
-    // Choose natural British voice if available
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice = voices.find(v => v.lang.includes("en-GB") && !v.name.includes("Google")) 
                         || voices.find(v => v.lang.includes("en-GB"))
@@ -390,7 +389,7 @@ async function setupAudioPipeline() {
                 hasError = false;
                 subErrorMessage = "";
                 pcmSamples = [];
-                systemStatus = "LISTENING TO YOU...";
+                systemStatus = "AUDIO INPUT DETECTED // STREAMING DIRECTIVE";
                 playCue(540, 0.04);
             }
             silenceFrames = 0;
@@ -402,7 +401,7 @@ async function setupAudioPipeline() {
             if (silenceFrames > SILENCE_LIMIT) {
                 isListening = false;
                 isProcessing = true;
-                systemStatus = "THINKING...";
+                systemStatus = "NEURAL PROCESSING // ANALYZING";
                 playCue(920, 0.05);
 
                 const recordedSnapshot = pcmSamples.slice();
@@ -424,7 +423,7 @@ async function transmitToGemini(samples) {
     }
 
     try {
-        systemStatus = "CONNECTING SYNAPSE...";
+        systemStatus = "UPLINK SYNAPSE // GENERATING RESPONSE";
 
         const wavBytes = downsampleAndEncodeWAV(samples, audioContext.sampleRate);
         let binary = '';
@@ -514,7 +513,7 @@ function triggerSuperZoom() {
 }
 
 /* ================================================================
-   7. STARK HUD CANVAS (MYOPIA CENTRAL CLUSTER)
+   7. STARK HUD CANVAS (MYOPIA CENTRAL CLUSTER & SAFE CORRIDOR)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -650,17 +649,17 @@ function renderHUD(time) {
     }
     ctx.restore();
 
-    /* 6. Central Corridor (Myopia Focused Spoken Subtitles) */
+    /* 6. Central Corridor (Raised & Scaled to Prevent Lens Clipping) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
-    ctx.fillRect(CX - barW / 2, CY + 52, barW, barH);
+    ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
     ctx.fillStyle = isListening ? RED : GREEN;
-    ctx.fillRect(CX - barW / 2, CY + 52, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
+    ctx.fillRect(CX - barW / 2, CY + 48, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
-    drawText(`● ${systemStatus}`, CX, CY + 74, 11, mainCol, "center");
+    drawText(`● ${systemStatus}`, CX, CY + 68, 10.5, mainCol, "center");
 
     ctx.save();
-    ctx.font = "16px Consolas, monospace";
+    ctx.font = "15px Consolas, monospace";
     ctx.fillStyle = WHITE;
     ctx.textAlign = "center";
     ctx.shadowColor = hasError ? RED : CYAN;
@@ -668,13 +667,13 @@ function renderHUD(time) {
 
     const words = edithResponse.split(" ");
     let line = "";
-    let y = CY + 102;
+    let y = CY + 92;
 
     for (let i = 0; i < words.length; i++) {
         const test = line + words[i] + " ";
-        if (ctx.measureText(test).width > 480 && i > 0) {
+        if (ctx.measureText(test).width > 440 && i > 0) {
             ctx.fillText(line, CX, y);
-            y += 22;
+            y += 20;
             line = words[i] + " ";
         } else {
             line = test;
@@ -684,7 +683,7 @@ function renderHUD(time) {
     ctx.restore();
 
     if (hasError || subErrorMessage) {
-        drawText(subErrorMessage, CX, y + 26, 11, RED, "center");
+        drawText(subErrorMessage, CX, y + 22, 10.5, RED, "center");
     }
 }
 
