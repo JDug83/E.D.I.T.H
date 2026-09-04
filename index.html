@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK OPTICAL AR</title>
+<title>E.D.I.T.H. // STARK TACTICAL OVERLAY</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -73,7 +73,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK OPTICAL AR // NATURAL VOICE COMM</div>
+    <div class="subtitle">STARK DEFENCE OPTICS // TACTICAL TELEMETRY</div>
     <div class="setupBox">
         <span class="input-label">GEMINI AI STUDIO KEY</span>
         <div class="input-wrap">
@@ -92,7 +92,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY RECOVERY & NATURAL SPOKEN SYSTEM PROMPT
+   1. KEY RECOVERY & SYSTEM SETUP
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
@@ -141,9 +141,9 @@ btnVerify.onclick = async () => {
     updateKeyPreview();
     if (!apiKey) return;
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "CONNECTING TO STARK NEURAL UPLINK...";
+    keyStatus.textContent = "VERIFYING WITH GEMINI 1.5 FLASH...";
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
@@ -172,24 +172,34 @@ let isProcessing = false;
 let hasError = false;
 
 let systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
-let edithResponse = "I'm here. What do you need?";
+let edithResponse = "Systems operational. Tap to designate target lock.";
 let subErrorMessage = "";
 
 let conversationHistory = [];
 
 const EDITH_SYSTEM_PROMPT = 
-`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside an AR headset.
-CRITICAL INSTRUCTIONS:
-- Speak strictly as if talking out loud, never as written text.
-- Do NOT use markdown, bullet points, asterisks, citations, emojis, quotes, or numbered lists.
-- Keep responses short, natural, and conversational—usually 1 to 2 brief sentences.
+`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside an AR optical headset.
+CRITICAL SPOKEN INSTRUCTIONS:
+- You are speaking aloud, NOT typing text.
+- Do NOT output markdown, asterisks, bullet points, emojis, citations, or quotes.
+- Keep answers to 1 or 2 quick, conversational sentences.
 - Speak with calm confidence, warmth, and light witty British efficiency.
-- Never say robotic phrases like 'Operational Complete', 'As an AI', or formal summaries.`;
+- Never use robotic phrases like 'Operational Complete' or 'As an AI'.`;
 
 const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
 let zoomIndex = 0;
 let currentZoom = 1.0;
 let targetZoom = 1.0;
+
+// Optical Acquisition Targets
+let trackedTargets = [];
+const TARGET_CATALOGUE = [
+    { label: "CIVILIAN OBJECT // COFFEE MUG", threat: "NONE", dist: "0.8M" },
+    { label: "TACTICAL TERMINAL // COMPUTING RIG", threat: "SECURE", dist: "1.4M" },
+    { label: "BIOMETRIC ENTITY // HUMAN SUBJECT", threat: "FRIENDLY", dist: "2.1M" },
+    { label: "STRUCTURAL BOUNDARY // INTERIOR WALL", threat: "PASSIVE", dist: "3.5M" },
+    { label: "PERIMETER ACCESS // DOORWAY", threat: "CLEAR", dist: "4.2M" }
+];
 
 let audioContext = null;
 let micStream = null;
@@ -199,7 +209,7 @@ let voiceLevel = 0;
 let silenceFrames = 0;
 
 /* ================================================================
-   2. HARDWARE AUDIO & VOICE ENGINE
+   2. HARDWARE AUDIO & SYNTHESIS
 ================================================================ */
 function wakeAudioEngine() {
     if (!audioContext) {
@@ -250,6 +260,23 @@ function playZoomServo(zoomFactor) {
     } catch(e) {}
 }
 
+function playLockSound() {
+    try {
+        wakeAudioEngine();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1400, audioContext.currentTime);
+        osc.frequency.setValueAtTime(1750, audioContext.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.11);
+    } catch(e) {}
+}
+
 function cleanSpokenText(raw) {
     return raw
         .replace(/[*_#`~[\]()<>]/g, "")
@@ -283,12 +310,6 @@ function speakVoice(text) {
         }
     };
     window.speechSynthesis.speak(utt);
-}
-
-if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-    };
 }
 
 /* ================================================================
@@ -345,7 +366,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. FAST VOICE ACTIVITY DETECTION (450ms Silence Pause)
+   4. VOICE ACTIVITY DETECTION (450ms Silence Pause)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -369,7 +390,7 @@ async function setupAudioPipeline() {
     scriptProcessor.connect(audioContext.destination);
 
     const freqData = new Uint8Array(analyser.frequencyBinCount);
-    const SPEECH_GATE = 11;
+    const SPEECH_GATE = 16;
     const SILENCE_LIMIT = Math.round((audioContext.sampleRate / 2048) * 0.45);
 
     scriptProcessor.onaudioprocess = (e) => {
@@ -413,7 +434,7 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. SPOKEN CONVERSATIONAL QUERY TRANSMISSION
+   5. GEMINI 1.5 FLASH TRANSMISSION (1,500 FREE RPD)
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
@@ -443,7 +464,7 @@ async function transmitToGemini(samples) {
         ];
 
         const cleanKey = cleanGeminiKey(apiKey);
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -504,16 +525,41 @@ async function transmitToGemini(samples) {
 }
 
 /* ================================================================
-   6. SUPER ZOOM (HAND PINCH / TRIGGER)
+   6. OPTICAL ACQUISITION & OBJECT LOCKING
 ================================================================ */
-function triggerSuperZoom() {
-    zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
-    targetZoom = ZOOM_LEVELS[zoomIndex];
-    playZoomServo(targetZoom);
+function triggerObjectLock() {
+    playLockSound();
+    
+    // Pick random target telemetry from Stark database
+    const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
+    
+    // Position target randomly around the reticle field
+    const offsetX = (Math.random() - 0.5) * 380;
+    const offsetY = (Math.random() - 0.5) * 220;
+
+    trackedTargets.push({
+        x: CX + offsetX,
+        y: CY + offsetY,
+        label: template.label,
+        threat: template.threat,
+        dist: template.dist,
+        bearing: (Math.random() * 360).toFixed(0) + "° M",
+        timestamp: Date.now(),
+        pulse: 0
+    });
+
+    if (trackedTargets.length > 3) trackedTargets.shift();
+
+    // Alternate action: cycle super zoom every 2 taps
+    if (Math.random() > 0.5) {
+        zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
+        targetZoom = ZOOM_LEVELS[zoomIndex];
+        playZoomServo(targetZoom);
+    }
 }
 
 /* ================================================================
-   7. STARK HUD CANVAS (MYOPIA CENTRAL CLUSTER & SAFE CORRIDOR)
+   7. STARK HUD CANVAS (UK TIME, TELEMETRY, & ACQUISITION BRACKETS)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -556,15 +602,34 @@ function renderHUD(time) {
     currentZoom += (targetZoom - currentZoom) * 0.18;
     const isZoomed = currentZoom > 1.05;
 
-    /* 1. Spider-Eye Mask */
-    ctx.save();
-    ctx.strokeStyle = isZoomed ? "rgba(0, 235, 255, 0.55)" : "rgba(255, 20, 40, 0.55)";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(70, 70); ctx.bezierCurveTo(25, 280, 25, 800, 70, 1010);
-    ctx.moveTo(W - 70, 70); ctx.bezierCurveTo(W - 25, 280, W - 25, 800, W - 70, 1010);
-    ctx.stroke();
-    ctx.restore();
+    /* 1. Peripheral Telemetry Corners & UK Local Time */
+    const ukTimeStr = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour12: false });
+    const ukDateStr = new Date().toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+
+    // Top-Left: Time (UK / BST / GMT) & Satcom Lock
+    drawText(`LOC // UNITED KINGDOM`, 110, 80, 11, CYAN, "left");
+    drawText(`TIME // ${ukTimeStr} BST`, 110, 102, 17, WHITE, "left");
+    drawText(`DATE // ${ukDateStr}`, 110, 122, 10, CYAN_DIM, "left");
+    drawLine(105, 65, 105, 132, CYAN, 1.5);
+
+    // Top-Right: Power Core & Stark Orbital Link
+    drawText(`STARK-NET // 128.02.5.4`, W - 110, 80, 10, CYAN_DIM, "right");
+    drawText(`BATT // 98.4% NOMINAL`, W - 110, 102, 15, GREEN, "right");
+    drawText(`OPTIC FPS // 90.0 HZ`, W - 110, 122, 10, CYAN_DIM, "right");
+    drawLine(W - 105, 65, W - 105, 132, CYAN, 1.5);
+
+    // Bottom-Left: Audio Decibel Telemetry & Atmospheric Barometer
+    const dbReading = (voiceLevel * 42.5 + 28).toFixed(1);
+    drawText(`AUDIO SENSOR // ${dbReading} DB`, 110, H - 115, 10, CYAN, "left");
+    drawText(`MAGNIFICATION // ${currentZoom.toFixed(1)}X`, 110, H - 95, 13, isZoomed ? "#00ff88" : CYAN, "left");
+    drawText(`BARO // 1013.25 HPA`, 110, H - 78, 9, CYAN_DIM, "left");
+    drawLine(105, H - 130, 105, H - 65, CYAN_DIM, 1.5);
+
+    // Bottom-Right: Tactical Mode Status
+    drawText(`DIRECTIVE // E.D.I.T.H. V2.5`, W - 110, H - 115, 10, CYAN_DIM, "right");
+    drawText(`PASSTHROUGH // COMPOSITED`, W - 110, H - 95, 13, CYAN, "right");
+    drawText(`TAP // LOCK TARGET`, W - 110, H - 78, 9, GREEN, "right");
+    drawLine(W - 105, H - 130, W - 105, H - 65, CYAN_DIM, 1.5);
 
     /* 2. Top Pitch Ladder */
     ctx.save();
@@ -594,7 +659,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 4. Rotating Compass Node */
+    /* 4. Rotating Tactical Compass Ring */
     ctx.save();
     ctx.translate(CX, CY);
     ctx.rotate(time * 0.0004);
@@ -606,7 +671,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 5. Central Dynamic Reticle + Super Zoom */
+    /* 5. Central Dynamic Reticle */
     ctx.save();
     const zoomReticleRadius = (32 + (voiceLevel * 14)) * (isZoomed ? 1.4 : 1.0);
     const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (isZoomed ? "#00ff88" : CYAN);
@@ -637,19 +702,55 @@ function renderHUD(time) {
         drawLine(CX - sz, CY - sz, CX - sz + 25, CY - sz, "#00ff88", 2);
         drawLine(CX - sz, CY - sz, CX - sz, CY - sz + 25, "#00ff88", 2);
         drawLine(CX + sz, CY - sz, CX + sz - 25, CY - sz, "#00ff88", 2);
-        drawLine(CX + sz, CY - sz, CX + sz - 25, CY - sz + 25, "#00ff88", 2);
+        drawLine(CX + sz, CY - sz, CX + sz, CY - sz + 25, "#00ff88", 2);
         drawLine(CX - sz, CY + sz, CX - sz + 25, CY + sz, "#00ff88", 2);
         drawLine(CX - sz, CY + sz, CX - sz, CY + sz - 25, "#00ff88", 2);
         drawLine(CX + sz, CY + sz, CX + sz - 25, CY + sz, "#00ff88", 2);
         drawLine(CX + sz, CY + sz, CX + sz, CY + sz - 25, "#00ff88", 2);
-
-        drawText(`[ MAG: ${currentZoom.toFixed(1)}X // PINCH TO CYCLE ]`, CX, CY - zoomReticleRadius - 20, 11, "#00ff88", "center");
-    } else {
-        drawText(`[ 1.0X // PINCH FINGERS TO ZOOM ]`, CX, CY - zoomReticleRadius - 16, 9, CYAN_DIM, "center");
+        drawText(`[ MAG: ${currentZoom.toFixed(1)}X // OPTICAL PINCH ]`, CX, CY - zoomReticleRadius - 20, 11, "#00ff88", "center");
     }
     ctx.restore();
 
-    /* 6. Central Corridor (Raised & Scaled to Prevent Lens Clipping) */
+    /* 6. DYNAMIC TARGET ACQUISITION BRACKETS (OBJECT LOCKING) */
+    const now = Date.now();
+    for (let i = 0; i < trackedTargets.length; i++) {
+        const tgt = trackedTargets[i];
+        const age = now - tgt.timestamp;
+        tgt.pulse = Math.sin(age * 0.005) * 4;
+
+        const bx = tgt.x;
+        const by = tgt.y;
+        const bSize = 42 + tgt.pulse;
+
+        ctx.save();
+        ctx.strokeStyle = GREEN;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = GREEN;
+        ctx.shadowBlur = 8;
+
+        // Stark Corner Brackets around Object
+        drawLine(bx - bSize, by - bSize, bx - bSize + 14, by - bSize, GREEN, 2);
+        drawLine(bx - bSize, by - bSize, bx - bSize, by - bSize + 14, GREEN, 2);
+        drawLine(bx + bSize, by - bSize, bx + bSize - 14, by - bSize, GREEN, 2);
+        drawLine(bx + bSize, by - bSize, bx + bSize, by - bSize + 14, GREEN, 2);
+        drawLine(bx - bSize, by + bSize, bx - bSize + 14, by + bSize, GREEN, 2);
+        drawLine(bx - bSize, by + bSize, bx - bSize, by + bSize - 14, GREEN, 2);
+        drawLine(bx + bSize, by + bSize, bx + bSize - 14, by + bSize, GREEN, 2);
+        drawLine(bx + bSize, by + bSize, bx + bSize, by + bSize - 14, GREEN, 2);
+
+        // Leader line to reticle center
+        ctx.setLineDash([2, 5]);
+        drawLine(bx, by, CX, CY, "rgba(0, 255, 145, 0.25)", 1);
+        ctx.setLineDash([]);
+
+        // Tactical Target Readout Box
+        drawText(tgt.label, bx + bSize + 10, by - 10, 10, WHITE, "left");
+        drawText(`DIST: ${tgt.dist} // BRG: ${tgt.bearing}`, bx + bSize + 10, by + 4, 9, GREEN, "left");
+        drawText(`THREAT: ${tgt.threat}`, bx + bSize + 10, by + 18, 9, CYAN_DIM, "left");
+        ctx.restore();
+    }
+
+    /* 7. Central Corridor (Chatbot Audio Subtitles & Status) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
@@ -747,7 +848,7 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   9. WEBXR SESSION // UNBOUNDED + HAND PINCH ZOOM
+   9. WEBXR SESSION // PINCH FINGERS / TAP FOR OBJECT LOCK
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
@@ -767,7 +868,7 @@ async function launchAR() {
     }
 
     session.addEventListener("select", () => {
-        triggerSuperZoom();
+        triggerObjectLock();
     });
 
     session.requestAnimationFrame(renderFrame);
@@ -822,7 +923,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING E.D.I.T.H. VOICE COMM...";
+    btnInit.textContent = "INITIALIZING E.D.I.T.H. OPTICAL AR...";
 
     try {
         wakeAudioEngine();
