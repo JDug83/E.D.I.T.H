@@ -73,7 +73,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK OPTICAL AR // FAST CONVERSATION</div>
+    <div class="subtitle">STARK OPTICAL AR // CHAT ENGINE &amp; SUPER-ZOOM</div>
     <div class="setupBox">
         <span class="input-label">GEMINI AI STUDIO KEY</span>
         <div class="input-wrap">
@@ -92,7 +92,7 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <script>
 /* ================================================================
-   1. KEY RECOVERY & SANITIZER
+   1. KEY RECOVERY & PERSISTENT CONVERSATION HISTORY
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
@@ -120,7 +120,6 @@ function cleanGeminiKey(raw) {
     return str.replace(/[\s\r\n\t"']/g, "");
 }
 
-// Auto-check URL parameter if key passed via query string
 const urlParams = new URLSearchParams(window.location.search);
 let apiKey = cleanGeminiKey(urlParams.get("key") || localStorage.getItem("edith_gemini_key") || "");
 apiKeyInput.value = apiKey;
@@ -142,7 +141,7 @@ btnVerify.onclick = async () => {
     updateKeyPreview();
     if (!apiKey) return;
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "TESTING WITH GOOGLE SERVERS...";
+    keyStatus.textContent = "CONNECTING TO STARK NEURAL UPLINK...";
     try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
             method: "POST",
@@ -151,7 +150,7 @@ btnVerify.onclick = async () => {
         });
         if (res.ok) {
             keyStatus.style.color = "#00ff88";
-            keyStatus.textContent = "VERIFIED! KEY IS 100% OPERATIONAL";
+            keyStatus.textContent = "VERIFIED! E.D.I.T.H. NEURAL LINK ACTIVE";
             localStorage.setItem("edith_gemini_key", apiKey);
         } else {
             const err = await res.json();
@@ -172,9 +171,19 @@ let isListening = false;
 let isProcessing = false;
 let hasError = false;
 
-let systemStatus = "SYSTEM ONLINE";
-let edithResponse = "E.D.I.T.H. active. Speak naturally.";
+// Advanced AI Chatbot Persona States
+let systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
+let edithResponse = "E.D.I.T.H. online. Systems fully operational. What's on your mind?";
 let subErrorMessage = "";
+
+// Retains conversational history across queries
+let conversationHistory = [];
+
+const EDITH_SYSTEM_PROMPT = 
+`You are E.D.I.T.H. (Even Dead, I'm The Hero), Tony Stark's advanced augmented tactical intelligence.
+You are chatting with the user wearing the tactical optical interface.
+Tone: Calm, intelligent, witty, concise, highly capable, slightly British/formal yet warmly conversational like in Spider-Man.
+Constraints: Keep responses concise—typically 1 to 2 engaging, natural sentences. Never say 'Operational Complete' or robotic boilerplate. Respond like an authentic, highly advanced AI assistant.`;
 
 // Telescopic Zoom Levels
 const ZOOM_LEVELS = [1.0, 2.5, 5.0, 10.0];
@@ -246,14 +255,16 @@ function speakVoice(text) {
     wakeAudioEngine();
     window.speechSynthesis.cancel();
 
+    systemStatus = "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
+
     const utt = new SpeechSynthesisUtterance(text);
     utt.lang = "en-US";
-    utt.rate = 1.12; // Natural conversational cadence
-    utt.pitch = 1.0;
+    utt.rate = 1.08;
+    utt.pitch = 0.96;
 
     utt.onend = () => {
         if (!isListening && !hasError) {
-            systemStatus = "SYSTEM ONLINE";
+            systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
         }
     };
     window.speechSynthesis.speak(utt);
@@ -337,10 +348,7 @@ async function setupAudioPipeline() {
     scriptProcessor.connect(audioContext.destination);
 
     const freqData = new Uint8Array(analyser.frequencyBinCount);
-
-    // Dynamic threshold matches normal voice volume
     const SPEECH_GATE = 11;
-    // 450ms silence pause threshold
     const SILENCE_LIMIT = Math.round((audioContext.sampleRate / 2048) * 0.45);
 
     scriptProcessor.onaudioprocess = (e) => {
@@ -360,7 +368,7 @@ async function setupAudioPipeline() {
                 hasError = false;
                 subErrorMessage = "";
                 pcmSamples = [];
-                systemStatus = "LISTENING...";
+                systemStatus = "AUDIO INPUT DETECTED // STREAMING DIRECTIVE";
                 playCue(540, 0.04);
             }
             silenceFrames = 0;
@@ -372,7 +380,7 @@ async function setupAudioPipeline() {
             if (silenceFrames > SILENCE_LIMIT) {
                 isListening = false;
                 isProcessing = true;
-                systemStatus = "NEURAL PROCESSING";
+                systemStatus = "NEURAL PROCESSING // ANALYZING";
                 playCue(920, 0.05);
 
                 const recordedSnapshot = pcmSamples.slice();
@@ -384,17 +392,17 @@ async function setupAudioPipeline() {
 }
 
 /* ================================================================
-   5. GEMINI API TRANSMISSION (LOW LATENCY)
+   5. ADVANCED CHATBOT GEMINI TRANSMISSION (WITH MEMORY)
 ================================================================ */
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
         isProcessing = false;
-        systemStatus = "SYSTEM ONLINE";
+        systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
         return;
     }
 
     try {
-        systemStatus = "UPLINKING DIRECTIVE";
+        systemStatus = "UPLINK SYNAPSE // GENERATING RESPONSE";
 
         const wavBytes = downsampleAndEncodeWAV(samples, audioContext.sampleRate);
         let binary = '';
@@ -403,20 +411,31 @@ async function transmitToGemini(samples) {
         }
         const base64WAV = btoa(binary);
 
+        // Build conversational payload with persona instruction + recent history
+        const userContent = {
+            role: "user",
+            parts: [
+                { inline_data: { mime_type: "audio/wav", data: base64WAV } }
+            ]
+        };
+
+        const contentsPayload = [
+            ...conversationHistory.slice(-4), // Keep last 2 conversational turns
+            userContent
+        ];
+
         const cleanKey = cleanGeminiKey(apiKey);
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "You are E.D.I.T.H., Tony Stark's tactical AI. Answer in 1 short, quick conversational sentence." },
-                        { inline_data: { mime_type: "audio/wav", data: base64WAV } }
-                    ]
-                }],
+                system_instruction: {
+                    parts: [{ text: EDITH_SYSTEM_PROMPT }]
+                },
+                contents: contentsPayload,
                 generationConfig: {
-                    temperature: 0.3,
-                    maxOutputTokens: 60
+                    temperature: 0.65, // More creative and responsive conversational intelligence
+                    maxOutputTokens: 90
                 }
             })
         });
@@ -436,10 +455,16 @@ async function transmitToGemini(samples) {
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
         if (!reply) throw new Error("EMPTY_DATA");
 
+        // Append to conversation history for contextual memory
+        conversationHistory.push(userContent);
+        conversationHistory.push({
+            role: "model",
+            parts: [{ text: reply }]
+        });
+
         hasError = false;
         subErrorMessage = "";
         edithResponse = reply;
-        systemStatus = "DIRECTIVE COMPLETE";
         isProcessing = false;
 
         playCue(1200, 0.08);
@@ -450,7 +475,7 @@ async function transmitToGemini(samples) {
         isProcessing = false;
         hasError = true;
 
-        systemStatus = "UPLINK ERROR";
+        systemStatus = "UPLINK ERROR // DISCONNECTED";
         edithResponse = "Neural uplink unavailable. Please retry.";
         subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
 
@@ -469,7 +494,7 @@ function triggerSuperZoom() {
 }
 
 /* ================================================================
-   7. STARK HUD CANVAS (MYOPIA CENTER-LOCKED)
+   7. STARK HUD CANVAS (COMPLEX OVERLAY & MYOPIA CLUSTER)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -512,7 +537,7 @@ function renderHUD(time) {
     currentZoom += (targetZoom - currentZoom) * 0.18;
     const isZoomed = currentZoom > 1.05;
 
-    /* 1. Spider-Eye Mask */
+    /* 1. Spider-Eye Mask Outlines */
     ctx.save();
     ctx.strokeStyle = isZoomed ? "rgba(0, 235, 255, 0.55)" : "rgba(255, 20, 40, 0.55)";
     ctx.lineWidth = 3;
@@ -522,7 +547,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 2. Top Pitch Ladder */
+    /* 2. Top Heading Tape & Flight Pitch Ladder */
     ctx.save();
     const ladderY = 85;
     ctx.strokeStyle = CYAN;
@@ -550,7 +575,7 @@ function renderHUD(time) {
     ctx.stroke();
     ctx.restore();
 
-    /* 4. Rotating Compass Node */
+    /* 4. Rotating Tactical Compass Ring */
     ctx.save();
     ctx.translate(CX, CY);
     ctx.rotate(time * 0.0004);
@@ -605,15 +630,17 @@ function renderHUD(time) {
     }
     ctx.restore();
 
-    /* 6. Central Cluster (Myopia Corridor) */
+    /* 6. Central Cluster (Myopia Corridor with Chatbot Dialogue) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 52, barW, barH);
     ctx.fillStyle = isListening ? RED : GREEN;
     ctx.fillRect(CX - barW / 2, CY + 52, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
+    // Dynamic AI Status Line
     drawText(`● ${systemStatus}`, CX, CY + 74, 11, mainCol, "center");
 
+    // E.D.I.T.H. Chatbot Conversational Response
     ctx.save();
     ctx.font = "16px Consolas, monospace";
     ctx.fillStyle = WHITE;
@@ -778,7 +805,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING STARK AR...";
+    btnInit.textContent = "CALIBRATING E.D.I.T.H. CHAT ENGINE...";
 
     try {
         wakeAudioEngine();
