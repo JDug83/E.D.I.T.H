@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK TACTICAL OPTICS</title>
+<title>E.D.I.T.H. // STARK TACTICAL AR</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -73,9 +73,9 @@ button:hover { background: rgba(0,235,255,.3); }
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // REAL HIT-TESTING &amp; VOICE</div>
+    <div class="subtitle">STARK DEFENCE OPTICS // NEAR-FIELD TACTICAL HUD</div>
     <div class="setupBox">
-        <span class="input-label">GEMINI AI STUDIO KEY (SAVED IN HEADSET ONLY)</span>
+        <span class="input-label">GEMINI AI STUDIO KEY (HEADSET STORAGE ONLY)</span>
         <div class="input-wrap">
             <input id="apiKeyInput" type="password" placeholder="Paste AIzaSy... key here">
             <button id="btnToggleShow" type="button">SHOW</button>
@@ -173,8 +173,8 @@ let isListening = false;
 let isProcessing = false;
 let hasError = false;
 
-let systemStatus = "E.D.I.T.H. // SCANNING SPATIAL GEOMETRY";
-let edithResponse = "Spatial tracking calibrated. Look at real objects to designate target lock.";
+let systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
+let edithResponse = "Tactical optics aligned. Speak normally or pinch to engage zoom & target locks.";
 let subErrorMessage = "";
 
 let conversationHistory = [];
@@ -188,6 +188,12 @@ CRITICAL SPOKEN INSTRUCTIONS:
 - Speak with calm confidence, warmth, and light witty British efficiency.
 - Never use robotic phrases like 'Operational Complete' or 'As an AI'.`;
 
+// Optical Super-Zoom States
+const ZOOM_LEVELS = [1.0, 2.0, 4.0, 8.0];
+let zoomIndex = 0;
+let currentZoom = 1.0;
+let targetZoom = 1.0;
+
 // Real Surface Hit Tracking (WebXR Depth Ray)
 let realHitDetected = false;
 let realSurfaceDist = 0;
@@ -195,10 +201,10 @@ let realHit3D = [0, 0, -1];
 let lockedTargets = [];
 
 const TARGET_CATALOGUE = [
-    { label: "SURFACE INTERCEPT // STRUCTURAL", threat: "SECURE" },
-    { label: "TERRAIN MESH // ELEVATED WORKSPACE", threat: "NOMINAL" },
-    { label: "PHYSICAL BOUNDARY // REAR APERTURE", threat: "CLEAR" },
-    { label: "BIOMETRIC ZONE // OCCUPIED VECTOR", threat: "MONITORED" }
+    { label: "SURFACE // STRUCTURAL INTERCEPT", threat: "SECURE" },
+    { label: "OBJECT // TACTICAL PERIMETER", threat: "NOMINAL" },
+    { label: "BIOMETRIC // ENTITY VECTOR", threat: "MONITORED" },
+    { label: "ACCESS // APERTURE BOUNDARY", threat: "CLEAR" }
 ];
 
 let audioContext = null;
@@ -241,20 +247,22 @@ function playCue(freq = 880, dur = 0.05) {
     } catch(e) {}
 }
 
-function playLockSound() {
+function playServoSound(zoom) {
     try {
         wakeAudioEngine();
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(1400, audioContext.currentTime);
-        osc.frequency.setValueAtTime(1850, audioContext.currentTime + 0.04);
-        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.1);
+        osc.type = "sawtooth";
+        const start = 300 + (zoom * 80);
+        const end = 650 + (zoom * 110);
+        osc.frequency.setValueAtTime(start, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(end, audioContext.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.14, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.14);
         osc.connect(gain);
         gain.connect(audioContext.destination);
         osc.start();
-        osc.stop(audioContext.currentTime + 0.11);
+        osc.stop(audioContext.currentTime + 0.15);
     } catch(e) {}
 }
 
@@ -287,7 +295,7 @@ function speakVoice(text) {
 
     utt.onend = () => {
         if (!isListening && !hasError) {
-            systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
+            systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
         }
     };
     window.speechSynthesis.speak(utt);
@@ -347,7 +355,7 @@ function downsampleAndEncodeWAV(samples, inputSampleRate) {
 }
 
 /* ================================================================
-   4. VOICE ACTIVITY DETECTION (FAST 450ms GATE)
+   4. VOICE ACTIVITY DETECTION (450ms SILENCE GATE)
 ================================================================ */
 async function setupAudioPipeline() {
     wakeAudioEngine();
@@ -420,7 +428,7 @@ async function setupAudioPipeline() {
 async function transmitToGemini(samples) {
     if (samples.length < audioContext.sampleRate * 0.25) {
         isProcessing = false;
-        systemStatus = "E.D.I.T.H. // STANDBY // SCANNING";
+        systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
         return;
     }
 
@@ -506,27 +514,30 @@ async function transmitToGemini(samples) {
 }
 
 /* ================================================================
-   6. REAL 3D SURFACE HIT-LOCKING
+   6. USER INTERACTION: ZOOM & REAL TARGET ACQUISITION
 ================================================================ */
-function triggerRealObjectLock() {
-    playLockSound();
+function handlePinchTap() {
+    // Cycle super-zoom magnification
+    zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
+    targetZoom = ZOOM_LEVELS[zoomIndex];
+    playServoSound(targetZoom);
 
-    const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
-
-    // Target anchored to true 3D spatial vector detected by Quest depth cameras
-    lockedTargets.push({
-        worldPos: [realHit3D[0], realHit3D[1], realHit3D[2]],
-        dist: realSurfaceDist > 0 ? realSurfaceDist.toFixed(2) + "M" : "1.20M",
-        label: template.label,
-        threat: template.threat,
-        timestamp: Date.now()
-    });
-
-    if (lockedTargets.length > 4) lockedTargets.shift();
+    // If aiming at real physical geometry, lock a persistent 3D bracket
+    if (realHitDetected) {
+        const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
+        lockedTargets.push({
+            worldPos: [realHit3D[0], realHit3D[1], realHit3D[2]],
+            dist: realSurfaceDist.toFixed(2) + "M",
+            label: template.label,
+            threat: template.threat,
+            timestamp: Date.now()
+        });
+        if (lockedTargets.length > 3) lockedTargets.shift();
+    }
 }
 
 /* ================================================================
-   7. STARK HUD CANVAS WITH REAL SPATIAL HITBOX RENDERING
+   7. NEAR-FIELD STARK HUD CANVAS (OPTIMIZED FOR OCULAR FOV)
 ================================================================ */
 const hud = document.createElement("canvas");
 hud.width = 1920;
@@ -544,7 +555,7 @@ const WHITE = "rgba(240, 255, 255, 0.98)";
 
 function drawText(val, x, y, size, col = CYAN, align = "left") {
     ctx.save();
-    ctx.font = `${size}px Consolas, monospace`;
+    ctx.font = `${size}px "Consolas", monospace`;
     ctx.fillStyle = col;
     ctx.textAlign = align;
     ctx.shadowColor = col;
@@ -563,133 +574,98 @@ function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
     ctx.restore();
 }
 
-function renderHUD(time, viewPose) {
+function renderHUD(time) {
     ctx.clearRect(0, 0, W, H);
 
-    /* 1. Peripheral Telemetry Corners & UK Local Time */
+    // Smooth lerp zoom interpolation
+    currentZoom += (targetZoom - currentZoom) * 0.2;
+    const isZoomed = currentZoom > 1.05;
+
+    /* 1. Curved Holographic Edge Vignette */
+    ctx.save();
+    ctx.strokeStyle = isZoomed ? "rgba(0, 255, 145, 0.6)" : "rgba(0, 235, 255, 0.35)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(140, 100); ctx.bezierCurveTo(80, 320, 80, 760, 140, 980);
+    ctx.moveTo(W - 140, 100); ctx.bezierCurveTo(W - 80, 320, W - 80, 760, W - 140, 980);
+    ctx.stroke();
+    ctx.restore();
+
+    /* 2. Top Banner: UK Time & Systems */
     const ukTimeStr = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour12: false });
     const ukDateStr = new Date().toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
 
-    // Top-Left: Time (UK / BST / GMT) & Satcom Lock
-    drawText(`LOC // UNITED KINGDOM`, 110, 80, 11, CYAN, "left");
-    drawText(`TIME // ${ukTimeStr} BST`, 110, 102, 17, WHITE, "left");
-    drawText(`DATE // ${ukDateStr}`, 110, 122, 10, CYAN_DIM, "left");
-    drawLine(105, 65, 105, 132, CYAN, 1.5);
+    drawText(`UK // ${ukTimeStr} BST`, CX - 320, 90, 14, WHITE, "left");
+    drawText(`DATE // ${ukDateStr}`, CX - 320, 110, 10, CYAN_DIM, "left");
 
-    // Top-Right: Power Core & Stark Orbital Link
-    drawText(`STARK-NET // 128.02.5.4`, W - 110, 80, 10, CYAN_DIM, "right");
-    drawText(`BATT // 98.4% NOMINAL`, W - 110, 102, 15, GREEN, "right");
-    drawText(`OPTIC FPS // 90.0 HZ`, W - 110, 122, 10, CYAN_DIM, "right");
-    drawLine(W - 105, 65, W - 105, 132, CYAN, 1.5);
+    drawText(`STARK-NET // SECURE`, CX + 320, 90, 11, GREEN, "right");
+    drawText(`MAG // ${currentZoom.toFixed(1)}X TELESCOPIC`, CX + 320, 110, 12, isZoomed ? GREEN : CYAN, "right");
 
-    // Bottom-Left: Audio Decibel Telemetry & Real Physical Range
-    const dbReading = (voiceLevel * 42.5 + 28).toFixed(1);
-    drawText(`AUDIO SENSOR // ${dbReading} DB`, 110, H - 115, 10, CYAN, "left");
-    drawText(`SURFACE RANGE // ${realHitDetected ? realSurfaceDist.toFixed(2) + "M" : "SEARCHING..."}`, 110, H - 95, 13, realHitDetected ? GREEN : CYAN_DIM, "left");
-    drawText(`BARO // 1013.25 HPA`, 110, H - 78, 9, CYAN_DIM, "left");
-    drawLine(105, H - 130, 105, H - 65, CYAN_DIM, 1.5);
+    drawLine(CX - 325, 75, CX + 325, 75, CYAN_DIM, 1);
 
-    // Bottom-Right: Tactical Mode Status
-    drawText(`DIRECTIVE // E.D.I.T.H. V2.5`, W - 110, H - 115, 10, CYAN_DIM, "right");
-    drawText(`DEPTH SCAN // ${realHitDetected ? "SURFACE LOCK" : "UNBOUNDED"}`, W - 110, H - 95, 13, realHitDetected ? GREEN : CYAN, "right");
-    drawText(`TAP/PINCH // DESIGNATE 3D TARGET`, W - 110, H - 78, 9, GREEN, "right");
-    drawLine(W - 105, H - 130, W - 105, H - 65, CYAN_DIM, 1.5);
-
-    /* 2. Top Pitch Ladder */
-    ctx.save();
-    const ladderY = 85;
-    ctx.strokeStyle = CYAN;
-    ctx.lineWidth = 1.5;
-    drawLine(CX, ladderY - 45, CX, ladderY + 45, CYAN_DIM, 1);
-
-    for (let i = -4; i <= 4; i++) {
-        const y = ladderY + (i * 12);
-        const w = (i === 0) ? 36 : 18 - Math.abs(i * 2);
-        drawLine(CX - w, y, CX + w, y, i === 0 ? CYAN : CYAN_DIM, i === 0 ? 2 : 1);
-        if (i !== 0) {
-            drawText(`${Math.abs(i * 5)}`, CX + w + 14, y + 3, 7, CYAN_DIM, "left");
-            drawText(`${Math.abs(i * 5)}`, CX - w - 14, y + 3, 7, CYAN_DIM, "right");
-        }
-    }
-    ctx.restore();
-
-    /* 3. Dotted Guidance Arc */
-    ctx.save();
-    ctx.strokeStyle = CYAN_DIM;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 8]);
-    ctx.beginPath();
-    ctx.arc(CX, CY - 240, 310, Math.PI * 1.18, Math.PI * 1.82);
-    ctx.stroke();
-    ctx.restore();
-
-    /* 4. Rotating Tactical Compass Ring */
-    ctx.save();
-    ctx.translate(CX, CY);
-    ctx.rotate(time * 0.0004);
-    ctx.strokeStyle = "rgba(0, 235, 255, 0.25)";
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 14]);
-    ctx.beginPath();
-    ctx.arc(0, 0, 75, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    /* 5. CENTRAL DYNAMIC RETICLE (RESPONDS TO REAL SURFACES) */
-    ctx.save();
+    /* 3. Central Tactical Scope & Optical Magnifier Frame */
     const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (realHitDetected ? GREEN : CYAN);
+
+    ctx.save();
+    const scopeRadius = (55 + (voiceLevel * 14)) * (isZoomed ? 1.35 : 1.0);
 
     ctx.strokeStyle = mainCol;
     ctx.shadowColor = mainCol;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 10;
     ctx.lineWidth = 2;
 
-    const r = 28 + (voiceLevel * 14);
+    // Optical Lens Reticle
     ctx.beginPath();
-    ctx.arc(CX, CY, r, 0, Math.PI * 2);
+    ctx.arc(CX, CY, scopeRadius, 0, Math.PI * 2);
     ctx.stroke();
 
+    // Center Aim Point
     ctx.fillStyle = mainCol;
     ctx.beginPath();
     ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    drawLine(CX - 50, CY, CX - 16, CY, mainCol, 1.5);
-    drawLine(CX + 16, CY, CX + 50, CY, mainCol, 1.5);
-    drawLine(CX, CY - 50, CX, CY - 16, mainCol, 1.5);
-    drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
+    // Crosshairs
+    drawLine(CX - scopeRadius - 35, CY, CX - scopeRadius + 12, CY, mainCol, 1.5);
+    drawLine(CX + scopeRadius - 12, CY, CX + scopeRadius + 35, CY, mainCol, 1.5);
+    drawLine(CX, CY - scopeRadius - 35, CX, CY - scopeRadius + 12, mainCol, 1.5);
+    drawLine(CX, CY + scopeRadius - 12, CX, CY + scopeRadius + 35, mainCol, 1.5);
 
-    // Live Real-Surface Target Acquisition Brackets in Crosshairs
-    if (realHitDetected) {
+    // If Zoom Active: Optical Magnification Brackets
+    if (isZoomed) {
         ctx.strokeStyle = GREEN;
-        ctx.lineWidth = 1.5;
-        const b = 55;
-        drawLine(CX - b, CY - b, CX - b + 12, CY - b, GREEN, 2);
-        drawLine(CX - b, CY - b, CX - b, CY - b + 12, GREEN, 2);
-        drawLine(CX + b, CY - b, CX + b - 12, CY - b, GREEN, 2);
-        drawLine(CX + b, CY - b, CX + b, CY - b + 12, GREEN, 2);
-        drawLine(CX - b, CY + b, CX - b + 12, CY + b, GREEN, 2);
-        drawLine(CX - b, CY + b, CX - b, CY - b + 12, GREEN, 2);
-        drawLine(CX + b, CY + b, CX + b - 12, CY + b, GREEN, 2);
-        drawLine(CX + b, CY + b, CX + b, CY + b - 12, GREEN, 2);
+        ctx.lineWidth = 2;
+        const b = 130;
+        drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
+        drawLine(CX - b, CY - b, CX - b, CY - b + 24, GREEN, 2);
+        drawLine(CX + b, CY - b, CX + b - 24, CY - b, GREEN, 2);
+        drawLine(CX + b, CY - b, CX + b, CY - b + 24, GREEN, 2);
+        drawLine(CX - b, CY + b, CX - b + 24, CY + b, GREEN, 2);
+        drawLine(CX - b, CY + b, CX - b, CY + b - 24, GREEN, 2);
+        drawLine(CX + b, CY + b, CX + b - 24, CY + b, GREEN, 2);
+        drawLine(CX + b, CY + b, CX + b, CY + b - 24, GREEN, 2);
 
-        drawText(`[ REAL DEPTH INTERCEPT: ${realSurfaceDist.toFixed(2)}M ]`, CX, CY - r - 16, 10, GREEN, "center");
+        drawText(`[ TELESCOPIC ZOOM: ${currentZoom.toFixed(1)}X ]`, CX, CY - scopeRadius - 22, 11, GREEN, "center");
+    }
+
+    // Live Physical Hit-Test Range Reading
+    if (realHitDetected) {
+        drawText(`[ REAL SURFACE RANGE: ${realSurfaceDist.toFixed(2)}M ]`, CX, CY + scopeRadius + 22, 10.5, GREEN, "center");
     } else {
-        drawText(`[ AIM AT OBJECT // TAP TO LOCK ]`, CX, CY - r - 16, 9, CYAN_DIM, "center");
+        drawText(`[ PINCH TO CYCLE ZOOM & ACQUIRE LOCK ]`, CX, CY + scopeRadius + 22, 9.5, CYAN_DIM, "center");
     }
     ctx.restore();
 
-    /* 6. REAL PERSISTENT 3D ANCHORS LOCKS */
+    /* 4. Real 3D Physical Object Anchors */
     const now = Date.now();
     for (let i = 0; i < lockedTargets.length; i++) {
         const tgt = lockedTargets[i];
         const age = now - tgt.timestamp;
-        const pulse = Math.sin(age * 0.005) * 4;
+        const pulse = Math.sin(age * 0.006) * 3;
 
-        // Project relative offset based on orientation
         const targetX = CX + (tgt.worldPos[0] * 320);
         const targetY = CY - (tgt.worldPos[1] * 320);
-        const bSize = 36 + pulse;
+        const sz = 32 + pulse;
 
         ctx.save();
         ctx.strokeStyle = GREEN;
@@ -697,34 +673,32 @@ function renderHUD(time, viewPose) {
         ctx.shadowColor = GREEN;
         ctx.shadowBlur = 8;
 
-        drawLine(targetX - bSize, targetY - bSize, targetX - bSize + 12, targetY - bSize, GREEN, 2);
-        drawLine(targetX - bSize, targetY - bSize, targetX - bSize, targetY - bSize + 12, GREEN, 2);
-        drawLine(targetX + bSize, targetY - bSize, targetX + bSize - 12, targetY - bSize, GREEN, 2);
-        drawLine(targetX + bSize, targetY - bSize, targetX + bSize, targetY - bSize + 12, GREEN, 2);
-        drawLine(targetX - bSize, targetY + bSize, targetX - bSize + 12, targetY + bSize, GREEN, 2);
-        drawLine(targetX - bSize, targetY + bSize, targetX - bSize, targetY + bSize - 12, GREEN, 2);
-        drawLine(targetX + bSize, targetY + bSize, targetX + bSize - 12, targetY + bSize, GREEN, 2);
-        drawLine(targetX + bSize, targetY + bSize, targetX + bSize, targetY + bSize - 12, GREEN, 2);
+        drawLine(targetX - sz, targetY - sz, targetX - sz + 10, targetY - sz, GREEN, 2);
+        drawLine(targetX - sz, targetY - sz, targetX - sz, targetY - sz + 10, GREEN, 2);
+        drawLine(targetX + sz, targetY - sz, targetX + sz - 10, targetY - sz, GREEN, 2);
+        drawLine(targetX + sz, targetY - sz, targetX + sz, targetY - sz + 10, GREEN, 2);
+        drawLine(targetX - sz, targetY + sz, targetX - sz + 10, targetY + sz, GREEN, 2);
+        drawLine(targetX - sz, targetY + sz, targetX - sz, targetY + sz - 10, GREEN, 2);
+        drawLine(targetX + sz, targetY + sz, targetX + sz - 10, targetY + sz, GREEN, 2);
+        drawLine(targetX + sz, targetY + sz, targetX + sz, targetY + sz - 10, GREEN, 2);
 
-        // Leader line connecting to center reticle
         ctx.setLineDash([2, 5]);
-        drawLine(targetX, targetY, CX, CY, "rgba(0, 255, 145, 0.3)", 1);
+        drawLine(targetX, targetY, CX, CY, "rgba(0, 255, 145, 0.25)", 1);
         ctx.setLineDash([]);
 
-        drawText(tgt.label, targetX + bSize + 8, targetY - 8, 10, WHITE, "left");
-        drawText(`TRUE DIST: ${tgt.dist}`, targetX + bSize + 8, targetY + 6, 9, GREEN, "left");
-        drawText(`STATUS: ${tgt.threat}`, targetX + bSize + 8, targetY + 20, 9, CYAN_DIM, "left");
+        drawText(tgt.label, targetX + sz + 8, targetY - 6, 9.5, WHITE, "left");
+        drawText(`RANGE: ${tgt.dist} // ${tgt.threat}`, targetX + sz + 8, targetY + 8, 8.5, GREEN, "left");
         ctx.restore();
     }
 
-    /* 7. Central Corridor (Chatbot Audio Subtitles & Status) */
-    const barW = 140, barH = 4;
+    /* 5. Central Corridor: Natural Voice Subtitles & Status */
+    const barW = 150, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
-    ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
+    ctx.fillRect(CX - barW / 2, CY + 54, barW, barH);
     ctx.fillStyle = isListening ? RED : GREEN;
-    ctx.fillRect(CX - barW / 2, CY + 48, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
+    ctx.fillRect(CX - barW / 2, CY + 54, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
-    drawText(`● ${systemStatus}`, CX, CY + 68, 10.5, mainCol, "center");
+    drawText(`● ${systemStatus}`, CX, CY + 76, 11, mainCol, "center");
 
     ctx.save();
     ctx.font = "15px Consolas, monospace";
@@ -735,11 +709,11 @@ function renderHUD(time, viewPose) {
 
     const words = edithResponse.split(" ");
     let line = "";
-    let y = CY + 92;
+    let y = CY + 100;
 
     for (let i = 0; i < words.length; i++) {
         const test = line + words[i] + " ";
-        if (ctx.measureText(test).width > 440 && i > 0) {
+        if (ctx.measureText(test).width > 460 && i > 0) {
             ctx.fillText(line, CX, y);
             y += 20;
             line = words[i] + " ";
@@ -756,16 +730,18 @@ function renderHUD(time, viewPose) {
 }
 
 /* ================================================================
-   8. WEBGL SCREEN COMPOSITION
+   8. WEBGL SCREEN COMPOSITION & NEAR-FIELD PROJECTION
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
 const vs = `
 attribute vec2 aPos;
 attribute vec2 aUV;
+uniform float uNearScale;
 varying vec2 vUV;
 void main() {
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    // Positions the HUD in comfortable near-field reading distance
+    gl_Position = vec4(aPos * uNearScale, 0.0, 1.0);
     vUV = aUV;
 }`;
 
@@ -804,6 +780,7 @@ gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
 
 const posLoc = gl.getAttribLocation(prog, "aPos");
 const uvLoc = gl.getAttribLocation(prog, "aUV");
+const nearScaleLoc = gl.getUniformLocation(prog, "uNearScale");
 
 const tex = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -813,12 +790,11 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   9. WEBXR SESSION WITH HARDWARE HIT-TESTING PIPELINE
+   9. WEBXR IMMERSIVE-AR SESSION (NEAR-FIELD + HIT-TESTING)
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
 
-    // Request official hardware hit-test feature for real surfaces
     session = await navigator.xr.requestSession("immersive-ar", {
         requiredFeatures: ["hit-test"],
         optionalFeatures: ["local-floor", "unbounded", "local", "hand-tracking"]
@@ -833,12 +809,12 @@ async function launchAR() {
         referenceSpace = await session.requestReferenceSpace("local");
     }
 
-    // Set up raycaster from viewer's camera position into the room
     const viewerSpace = await session.requestReferenceSpace("viewer");
     hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
 
+    // Tap/Pinch handles zoom + object lock
     session.addEventListener("select", () => {
-        triggerRealObjectLock();
+        handlePinchTap();
     });
 
     session.requestAnimationFrame(renderFrame);
@@ -851,16 +827,15 @@ function renderFrame(time, frame) {
     const pose = frame.getViewerPose(referenceSpace);
     if (!pose) return;
 
-    // Run real-time physical raycasting against the room
+    // Continuous real-world depth raycast
     if (hitTestSource) {
-        const hitTestResults = frame.getHitTestResults(hitTestSource);
-        if (hitTestResults.length > 0) {
-            const hitPose = hitTestResults[0].getPose(referenceSpace);
+        const hits = frame.getHitTestResults(hitTestSource);
+        if (hits.length > 0) {
+            const hitPose = hits[0].getPose(referenceSpace);
             if (hitPose) {
                 realHitDetected = true;
                 const pos = hitPose.transform.position;
                 realHit3D = [pos.x, pos.y, pos.z];
-                // Calculate true physical Euclidean distance in meters
                 realSurfaceDist = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
             }
         } else {
@@ -875,7 +850,7 @@ function renderFrame(time, frame) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    renderHUD(time, pose);
+    renderHUD(time);
 
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
@@ -888,6 +863,10 @@ function renderFrame(time, frame) {
     gl.enableVertexAttribArray(uvLoc);
     gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
 
+    // Near-field comfortable ocular projection factor (0.65m in front of eyes)
+    const ocularScale = 0.95 + ((currentZoom - 1.0) * 0.05);
+    gl.uniform1f(nearScaleLoc, ocularScale);
+
     for (const view of pose.views) {
         const vp = xrLayer.getViewport(view);
         gl.viewport(vp.x, vp.y, vp.width, vp.height);
@@ -896,7 +875,7 @@ function renderFrame(time, frame) {
 }
 
 /* ================================================================
-   10. INITIALIZATION
+   10. BOOTSTRAP INITIALIZATION
 ================================================================ */
 btnInit.onclick = async () => {
     apiKey = cleanGeminiKey(apiKeyInput.value);
@@ -907,7 +886,7 @@ btnInit.onclick = async () => {
     localStorage.setItem("edith_gemini_key", apiKey);
 
     btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING REAL HIT-TEST AR...";
+    btnInit.textContent = "INITIALIZING STARK AR...";
 
     try {
         wakeAudioEngine();
@@ -928,7 +907,7 @@ window.addEventListener("beforeunload", () => {
     if (session) session.end();
 });
 
-renderHUD(0, null);
+renderHUD(0);
 </script>
 </body>
 </html>
