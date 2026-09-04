@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // UNBOUNDED AI</title>
+<title>E.D.I.T.H. // HANDS-FREE UNBOUNDED AR</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -51,7 +51,7 @@ html, body {
 
 <div id="setupScreen">
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">UNBOUNDED TACTICAL AI // MYOPIA CORE</div>
+    <div class="subtitle">UNBOUNDED HANDS-FREE AI // MYOPIA CLUSTER</div>
     <div class="setupBox">
         <input id="apiKeyInput" type="password" placeholder="PASTE GEMINI API KEY">
         <button id="btnInit">INITIALIZE SYSTEM</button>
@@ -62,7 +62,7 @@ html, body {
 
 <script>
 /* ================================================================
-   STATE & PERSISTENCE
+   SYSTEM STATE & LOCAL PERSISTENCE
 ================================================================ */
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnInit = document.getElementById("btnInit");
@@ -86,18 +86,17 @@ let subErrorMessage = "";
 
 let audioContext = null;
 let micStream = null;
-let analyserNode = null;
-let scriptProcessor = null;
-let pcmData = [];
-let liveLevel = 0;
-let silenceCount = 0;
+let mediaRecorder = null;
+let audioChunks = [];
+let voiceLevel = 0;
+let silenceTimer = null;
 
 /* ================================================================
    AUDIO HARDWARE KEEP-ALIVE & TTS
 ================================================================ */
 function unlockAudio() {
     if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     if (audioContext.state === "suspended") {
         audioContext.resume();
@@ -138,49 +137,12 @@ function speakText(text) {
 }
 
 /* ================================================================
-   VALID 16kHz WAV ENCODER (Guarantees Gemini Compatibility)
+   HANDS-FREE AMBIENT VAD (NO BUTTONS, NO TOUCH)
 ================================================================ */
-function encodeWAV(samples, sampleRate = 16000) {
-    const buffer = new ArrayBuffer(44 + samples.length * 2);
-    const view = new DataView(buffer);
-
-    function writeString(offset, string) {
-        for (let i = 0; i < string.length; i++) {
-            view.setUint8(offset + i, string.charCodeAt(i));
-        }
-    }
-
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + samples.length * 2, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true); // Linear PCM
-    view.setUint16(22, 1, true); // Mono
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, samples.length * 2, true);
-
-    let offset = 44;
-    for (let i = 0; i < samples.length; i++) {
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-        offset += 2;
-    }
-    return new Uint8Array(buffer);
-}
-
-/* ================================================================
-   MIC & CONTINUOUS VOICE DETECTION
-================================================================ */
-async function setupMicVAD() {
+async function setupHandsFreeMic() {
     micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
             channelCount: 1,
-            sampleRate: 16000,
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true
@@ -189,118 +151,121 @@ async function setupMicVAD() {
 
     unlockAudio();
     const source = audioContext.createMediaStreamSource(micStream);
-    analyserNode = audioContext.createAnalyser();
-    analyserNode.fftSize = 256;
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
 
-    scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-    source.connect(analyserNode);
-    source.connect(scriptProcessor);
-    scriptProcessor.connect(audioContext.destination);
+    // Use Quest's native media recorder
+    let mimeType = 'audio/webm;codecs=opus';
+    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/webm';
+    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
 
-    const freqData = new Uint8Array(analyserNode.frequencyBinCount);
+    mediaRecorder = mimeType ? new MediaRecorder(micStream, { mimeType }) : new MediaRecorder(micStream);
 
-    scriptProcessor.onaudioprocess = (e) => {
-        if (isProcessing) return;
+    mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
 
-        analyserNode.getByteFrequencyData(freqData);
+    mediaRecorder.onstop = async () => {
+        if (audioChunks.length === 0) {
+            isProcessing = false;
+            return;
+        }
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+        audioChunks = [];
+        await sendAudioToGemini(blob);
+    };
+
+    const freqData = new Uint8Array(analyser.frequencyBinCount);
+
+    function checkAudioEnergy() {
+        analyser.getByteFrequencyData(freqData);
         let sum = 0;
         for (let i = 0; i < freqData.length; i++) sum += freqData[i];
         const avg = sum / freqData.length;
-        liveLevel = avg / 50.0;
+        voiceLevel = avg / 60.0;
 
-        const input = e.inputBuffer.getChannelData(0);
-
-        // Voice detected threshold
-        if (avg > 15) {
-            if (!isListening) {
+        // Ambient voice activity trigger
+        if (avg > 14 && !isProcessing) {
+            if (!isListening && mediaRecorder.state === "inactive") {
+                audioChunks = [];
+                mediaRecorder.start();
                 isListening = true;
                 hasError = false;
                 subErrorMessage = "";
-                pcmData = [];
                 systemStatus = "LISTENING...";
                 playBeep(540, 0.05);
             }
-            silenceCount = 0;
-            for (let i = 0; i < input.length; i++) pcmData.push(input[i]);
-        } else if (isListening) {
-            for (let i = 0; i < input.length; i++) pcmData.push(input[i]);
-            silenceCount++;
-
-            // ~1.1s of silence triggers transmission
-            if (silenceCount > 9) {
-                isListening = false;
-                isProcessing = true;
-                systemStatus = "NEURAL UPLINK";
-                playBeep(920, 0.07);
-
-                const recorded = pcmData.slice();
-                pcmData = [];
-                sendToGemini(recorded);
-            }
+            clearTimeout(silenceTimer);
+            silenceTimer = setTimeout(() => {
+                if (isListening && mediaRecorder.state === "recording") {
+                    isListening = false;
+                    isProcessing = true;
+                    systemStatus = "NEURAL UPLINK";
+                    playBeep(920, 0.07);
+                    mediaRecorder.stop();
+                }
+            }, 1000); // 1.0s silence terminates capture and sends
         }
-    };
+        requestAnimationFrame(checkAudioEnergy);
+    }
+    checkAudioEnergy();
 }
 
 /* ================================================================
-   GEMINI AI DIRECTIVE
+   ROBUST GEMINI AI PIPELINE
 ================================================================ */
-async function sendToGemini(samples) {
-    if (samples.length < 4000) {
-        isProcessing = false;
-        systemStatus = "SYSTEM READY";
-        return;
-    }
-
+async function sendAudioToGemini(blob) {
     try {
         systemStatus = "PROCESSING DIRECTIVE";
 
-        const wavBytes = encodeWAV(samples, 16000);
-        let binary = '';
-        for (let i = 0; i < wavBytes.byteLength; i++) {
-            binary += String.fromCharCode(wavBytes[i]);
-        }
-        const base64Audio = btoa(binary);
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+            const base64Audio = reader.result.split(',')[1];
+            const rawMime = mediaRecorder.mimeType.split(';')[0] || "audio/webm";
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "You are E.D.I.T.H., Tony Stark's optical tactical AI. Respond concisely in maximum 1 to 2 short sentences." },
-                        { inline_data: { mime_type: "audio/wav", data: base64Audio } }
-                    ]
-                }],
-                generationConfig: {
-                    temperature: 0.3,
-                    maxOutputTokens: 90
-                }
-            })
-        });
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: "You are E.D.I.T.H., Tony Stark's optical tactical AI. Answer the user's vocal query concisely in maximum 1 to 2 short sentences." },
+                            { inline_data: { mime_type: rawMime, data: base64Audio } }
+                        ]
+                    }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 100
+                    }
+                })
+            });
 
-        if (!res.ok) {
-            const errBody = await res.json();
-            throw new Error(errBody.error?.message || `HTTP ${res.status}`);
-        }
+            if (!res.ok) {
+                const errBody = await res.json();
+                throw new Error(errBody.error?.message || `HTTP ${res.status}`);
+            }
 
-        const data = await res.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (!reply) throw new Error("EMPTY_DATA");
+            const data = await res.json();
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (!reply) throw new Error("EMPTY_DATA");
 
-        hasError = false;
-        subErrorMessage = "";
-        edithResponse = reply;
-        systemStatus = "DIRECTIVE COMPLETE";
-        isProcessing = false;
+            hasError = false;
+            subErrorMessage = "";
+            edithResponse = reply;
+            systemStatus = "DIRECTIVE COMPLETE";
+            isProcessing = false;
 
-        playBeep(1200, 0.1);
-        speakText(reply);
-
+            playBeep(1200, 0.1);
+            speakText(reply);
+        };
     } catch (err) {
-        console.error(err);
+        console.error("Gemini Failure:", err);
         isProcessing = false;
         hasError = true;
 
+        // Specified error requirements
         systemStatus = "UPLINK ERROR";
         edithResponse = "Neural uplink unavailable. Please retry.";
         subErrorMessage = "AI ERROR";
@@ -367,7 +332,7 @@ function renderHUD(time) {
     ctx.shadowBlur = 10;
     ctx.lineWidth = 2;
 
-    const r = 28 + (liveLevel * 14);
+    const r = 28 + (voiceLevel * 14);
     ctx.beginPath();
     ctx.arc(CX, CY, r, 0, Math.PI * 2);
     ctx.stroke();
@@ -383,12 +348,12 @@ function renderHUD(time) {
     drawLine(CX, CY + 16, CX, CY + 50, mainCol, 1.5);
     ctx.restore();
 
-    /* 3. Central Stack (Tight 480px focal area for myopia lenses) */
+    /* 3. Central Stack (Tight 480px focal corridor for myopia lenses) */
     const barW = 140, barH = 4;
     ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
     ctx.fillRect(CX - barW / 2, CY + 48, barW, barH);
     ctx.fillStyle = isListening ? RED : GREEN;
-    ctx.fillRect(CX - barW / 2, CY + 48, Math.min(barW, barW * Math.max(liveLevel * 2, 0.05)), barH);
+    ctx.fillRect(CX - barW / 2, CY + 48, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
     drawText(`● ${systemStatus}`, CX, CY + 70, 11, mainCol, "center");
 
@@ -416,14 +381,14 @@ function renderHUD(time) {
     ctx.fillText(line, CX, y);
     ctx.restore();
 
-    // Red error indicator rendered directly underneath
+    // Red AI Error indicator rendered directly underneath
     if (hasError || subErrorMessage) {
         drawText(subErrorMessage || "AI ERROR", CX, y + 26, 13, RED, "center");
     }
 }
 
 /* ================================================================
-   WEBGL PASSTHROUGH (PRESERVES CLEAN STEREO PASS)
+   WEBGL PASSTHROUGH
 ================================================================ */
 const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
 
@@ -480,12 +445,12 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 /* ================================================================
-   WEBXR SESSION // UNBOUNDED (BOUNDARY-FREE LOCOMOTION)
+   WEBXR SESSION // UNBOUNDED (GUARDIAN BOUNDARY REMOVED)
 ================================================================ */
 async function launchAR() {
     await gl.makeXRCompatible();
 
-    // Removes guardian and boundaries completely
+    // Requesting unbounded removes room guardian boundaries completely
     session = await navigator.xr.requestSession("immersive-ar", {
         requiredFeatures: [],
         optionalFeatures: ["unbounded", "local"]
@@ -511,7 +476,7 @@ function renderFrame(time, frame) {
     if (!pose) return;
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-    gl.clearColor(0, 0, 0, 0); // Transparent pass
+    gl.clearColor(0, 0, 0, 0); // 0.0 Alpha required for Quest passthrough
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.enable(gl.BLEND);
@@ -553,7 +518,7 @@ btnInit.onclick = async () => {
 
     try {
         unlockAudio();
-        await setupMicVAD();
+        await setupHandsFreeMic();
         await launchAR();
 
         setupScreen.style.display = "none";
