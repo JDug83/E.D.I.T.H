@@ -2,88 +2,250 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E.D.I.T.H. // STARK TACTICAL AR</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>E.D.I.T.H. // SPIDER TACTICAL AR</title>
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-    width: 100%; height: 100%; overflow: hidden;
-    background: #000; font-family: "Consolas", "Courier New", monospace;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
 #canvasXR {
-    position: fixed; inset: 0; width: 100%; height: 100%;
-    display: block; background: transparent;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: transparent;
 }
+
+/* ================================================================
+   BOOT SCREEN
+================================================================ */
+
 #setupScreen {
-    position: fixed; inset: 0; z-index: 100;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle at center, rgba(0,70,100,.35), #000 75%);
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(circle at center,
+            rgba(15, 45, 85, .42),
+            rgba(0, 0, 0, .98) 72%);
+
     color: #00eaff;
 }
+
 .logo {
-    color: white; font-size: clamp(36px, 7vw, 64px);
-    font-weight: 900; letter-spacing: 12px;
-    text-shadow: 0 0 10px #00eaff, 0 0 25px #00eaff;
+    color: white;
+    font-size: clamp(36px, 7vw, 64px);
+    font-weight: 900;
+    letter-spacing: 12px;
+
+    text-shadow:
+        0 0 10px #00eaff,
+        0 0 25px #008cff,
+        0 0 55px #00eaff;
 }
+
 .subtitle {
-    margin-top: 8px; margin-bottom: 22px;
-    color: rgba(0,235,255,.6); font-size: 10px; letter-spacing: 3px;
+    margin-top: 8px;
+    margin-bottom: 22px;
+
+    color: rgba(0, 225, 255, .65);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-align: center;
 }
+
 .setupBox {
-    width: min(480px, 92vw); padding: 22px;
-    background: rgba(0,10,15,.94); border: 1px solid rgba(0,235,255,.45);
-    box-shadow: 0 0 35px rgba(0,235,255,.12);
+    width: min(480px, 92vw);
+    padding: 22px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(8, 20, 35, .96),
+            rgba(0, 5, 12, .96)
+        );
+
+    border: 1px solid rgba(0, 225, 255, .5);
+
+    box-shadow:
+        0 0 25px rgba(0, 170, 255, .15),
+        inset 0 0 30px rgba(0, 130, 255, .05);
 }
+
 .input-label {
-    font-size: 10px; color: rgba(0,235,255,0.7); letter-spacing: 2px;
-    margin-bottom: 8px; display: block;
+    display: block;
+    margin-bottom: 8px;
+
+    font-size: 10px;
+    color: rgba(0, 225, 255, .7);
+    letter-spacing: 2px;
 }
+
 .input-wrap {
-    display: flex; gap: 6px; margin-bottom: 10px;
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
 }
+
 #apiKeyInput {
-    flex: 1; height: 48px; border: 1px solid rgba(0,235,255,.55);
-    outline: none; background: rgba(0,5,8,.95); color: white;
-    text-align: left; padding: 0 14px; font-family: inherit; font-size: 13px;
+    flex: 1;
+    height: 48px;
+
+    border: 1px solid rgba(0, 225, 255, .55);
+    outline: none;
+
+    background: rgba(0, 5, 10, .95);
+    color: white;
+
+    padding: 0 14px;
+
+    font-family: inherit;
+    font-size: 13px;
 }
+
 #btnToggleShow {
-    width: 70px; height: 48px; border: 1px solid rgba(0,235,255,.4);
-    background: rgba(0,235,255,.08); color: #00eaff;
-    font-family: inherit; font-size: 11px; cursor: pointer;
+    width: 70px;
+    height: 48px;
+
+    border: 1px solid rgba(0, 225, 255, .4);
+    background: rgba(0, 225, 255, .08);
+
+    color: #00eaff;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
 }
+
 .key-status {
-    font-size: 10px; margin-bottom: 15px; letter-spacing: 1px;
-    min-height: 28px; line-height: 14px; text-align: center;
+    min-height: 28px;
+    margin-bottom: 15px;
+
+    font-size: 10px;
+    letter-spacing: 1px;
+    line-height: 14px;
+    text-align: center;
 }
+
 .btn-row {
-    display: flex; gap: 10px;
+    display: flex;
+    gap: 10px;
 }
+
 button {
-    height: 50px; border: 1px solid #00eaff;
-    background: rgba(0,235,255,.12); color: #00eaff;
-    font-family: inherit; font-weight: bold; letter-spacing: 2px; cursor: pointer;
-    transition: all 0.2s;
+    height: 50px;
+
+    border: 1px solid #00eaff;
+    background: rgba(0, 225, 255, .12);
+
+    color: #00eaff;
+    font-family: inherit;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+
+    transition:
+        background .2s,
+        box-shadow .2s,
+        transform .15s;
 }
-#btnVerify { width: 35%; font-size: 11px; }
-#btnInit { width: 65%; font-size: 13px; }
-button:hover { background: rgba(0,235,255,.3); }
+
+button:hover {
+    background: rgba(0, 225, 255, .3);
+    box-shadow: 0 0 15px rgba(0, 225, 255, .25);
+}
+
+button:active {
+    transform: scale(.98);
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: wait;
+}
+
+#btnVerify {
+    width: 35%;
+    font-size: 11px;
+}
+
+#btnInit {
+    width: 65%;
+    font-size: 13px;
+}
 </style>
 </head>
+
 <body>
 
 <div id="setupScreen">
+
     <div class="logo">E.D.I.T.H.</div>
-    <div class="subtitle">STARK DEFENCE OPTICS // STANDARD GEMINI PIPELINE</div>
+
+    <div class="subtitle">
+        SPIDER TACTICAL OPTICS // NEAR-FIELD AR SYSTEM
+    </div>
+
     <div class="setupBox">
-        <span class="input-label">GEMINI AI STUDIO KEY</span>
+
+        <span class="input-label">
+            GEMINI AI STUDIO KEY
+        </span>
+
         <div class="input-wrap">
-            <input id="apiKeyInput" type="password" placeholder="Paste AIzaSy... key here">
-            <button id="btnToggleShow" type="button">SHOW</button>
+            <input
+                id="apiKeyInput"
+                type="password"
+                placeholder="Paste AIzaSy... key here"
+                autocomplete="off"
+            >
+
+            <button
+                id="btnToggleShow"
+                type="button">
+                SHOW
+            </button>
         </div>
-        <div class="key-status" id="keyStatus">ENTER KEY TO VALIDATE</div>
+
+        <div
+            class="key-status"
+            id="keyStatus">
+            ENTER KEY TO VALIDATE
+        </div>
+
         <div class="btn-row">
-            <button id="btnVerify" type="button">VERIFY</button>
-            <button id="btnInit" type="button">INITIALIZE AR</button>
+
+            <button
+                id="btnVerify"
+                type="button">
+                VERIFY
+            </button>
+
+            <button
+                id="btnInit"
+                type="button">
+                INITIALIZE AR
+            </button>
+
         </div>
     </div>
 </div>
@@ -91,9 +253,11 @@ button:hover { background: rgba(0,235,255,.3); }
 <canvas id="canvasXR"></canvas>
 
 <script>
+
 /* ================================================================
-   1. KEY RECOVERY & STANDARD GEMINI ENDPOINT (gemini-flash)
+   1. DOM
 ================================================================ */
+
 const apiKeyInput = document.getElementById("apiKeyInput");
 const btnToggleShow = document.getElementById("btnToggleShow");
 const btnInit = document.getElementById("btnInit");
@@ -102,7 +266,13 @@ const keyStatus = document.getElementById("keyStatus");
 const setupScreen = document.getElementById("setupScreen");
 const canvas = document.getElementById("canvasXR");
 
+
+/* ================================================================
+   2. GEMINI KEY
+================================================================ */
+
 btnToggleShow.onclick = () => {
+
     if (apiKeyInput.type === "password") {
         apiKeyInput.type = "text";
         btnToggleShow.textContent = "HIDE";
@@ -110,59 +280,149 @@ btnToggleShow.onclick = () => {
         apiKeyInput.type = "password";
         btnToggleShow.textContent = "SHOW";
     }
+
 };
 
+
 function cleanGeminiKey(raw) {
+
     if (!raw) return "";
+
     let str = raw.trim();
-    const match = str.match(/AIzaSy[A-Za-z0-9_-]{33}/);
-    if (match) return match[0];
+
+    const match =
+        str.match(/AIzaSy[A-Za-z0-9_-]{33}/);
+
+    if (match) {
+        return match[0];
+    }
+
     return str.replace(/[\s\r\n\t"']/g, "");
 }
 
-const urlHash = new URLSearchParams(window.location.hash.substring(1));
-const urlParams = new URLSearchParams(window.location.search);
-let apiKey = cleanGeminiKey(urlHash.get("key") || urlParams.get("key") || localStorage.getItem("edith_gemini_key") || "");
+
+const urlHash =
+    new URLSearchParams(
+        window.location.hash.substring(1)
+    );
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+let apiKey = cleanGeminiKey(
+    urlHash.get("key") ||
+    urlParams.get("key") ||
+    localStorage.getItem("edith_gemini_key") ||
+    ""
+);
+
+
 apiKeyInput.value = apiKey;
 
+
 function updateKeyPreview() {
-    apiKey = cleanGeminiKey(apiKeyInput.value);
+
+    apiKey =
+        cleanGeminiKey(apiKeyInput.value);
+
     if (!apiKey) {
-        keyStatus.style.color = "#ff4444";
+
+        keyStatus.style.color = "#ff334f";
         keyStatus.textContent = "KEY IS EMPTY";
+
     } else {
-        keyStatus.style.color = "#00ff88";
-        keyStatus.textContent = `KEY LOADED (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
+
+        keyStatus.style.color = "#00ff9a";
+
+        keyStatus.textContent =
+            `KEY LOADED (${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)})`;
     }
 }
-apiKeyInput.addEventListener("input", updateKeyPreview);
+
+
+apiKeyInput.addEventListener(
+    "input",
+    updateKeyPreview
+);
+
 updateKeyPreview();
 
+
 btnVerify.onclick = async () => {
+
     updateKeyPreview();
+
     if (!apiKey) return;
+
     keyStatus.style.color = "#00eaff";
-    keyStatus.textContent = "CONNECTING TO DEFAULT GEMINI UPLINK...";
+    keyStatus.textContent =
+        "CONNECTING TO GEMINI UPLINK...";
+
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${apiKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
-        });
+
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${apiKey}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: "ping"
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        );
+
         if (res.ok) {
-            keyStatus.style.color = "#00ff88";
-            keyStatus.textContent = "VERIFIED! STANDARD GEMINI NEURAL LINK ACTIVE";
-            localStorage.setItem("edith_gemini_key", apiKey);
+
+            keyStatus.style.color =
+                "#00ff88";
+
+            keyStatus.textContent =
+                "VERIFIED // NEURAL LINK ACTIVE";
+
+            localStorage.setItem(
+                "edith_gemini_key",
+                apiKey
+            );
+
         } else {
-            const err = await res.json();
-            keyStatus.style.color = "#ff4444";
-            keyStatus.textContent = `REJECTED: ${err.error?.message || res.status}`;
+
+            const err =
+                await res.json();
+
+            keyStatus.style.color =
+                "#ff334f";
+
+            keyStatus.textContent =
+                `REJECTED: ${err.error?.message || res.status}`;
         }
+
     } catch (e) {
-        keyStatus.style.color = "#ff4444";
-        keyStatus.textContent = `NETWORK ERROR: ${e.message}`;
+
+        keyStatus.style.color =
+            "#ff334f";
+
+        keyStatus.textContent =
+            `NETWORK ERROR: ${e.message}`;
     }
 };
+
+
+/* ================================================================
+   3. AR STATE
+================================================================ */
 
 let session = null;
 let referenceSpace = null;
@@ -173,100 +433,246 @@ let isListening = false;
 let isProcessing = false;
 let hasError = false;
 
-let systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
-let edithResponse = "Tactical optics aligned. Speak normally or pinch to engage zoom & target locks.";
+let systemStatus =
+    "E.D.I.T.H. // OCULAR LINK ACTIVE";
+
+let edithResponse =
+    "Tactical optics aligned. Pinch to cycle optical magnification.";
+
 let subErrorMessage = "";
 
 let conversationHistory = [];
 
-const EDITH_SYSTEM_PROMPT = 
-`You are E.D.I.T.H., Tony Stark's tactical AI. You are conversing through real-time voice synthesis inside an AR optical headset.
-CRITICAL SPOKEN INSTRUCTIONS:
-- You are speaking aloud, NOT typing text.
-- Do NOT output markdown, asterisks, bullet points, emojis, citations, or quotes.
-- Keep answers to 1 or 2 quick, conversational sentences.
-- Speak with calm confidence, warmth, and light witty British efficiency.
-- Never use robotic phrases like 'Operational Complete' or 'As an AI'.`;
 
-// Optical Super-Zoom States
-const ZOOM_LEVELS = [1.0, 2.0, 4.0, 8.0];
+/* ================================================================
+   4. E.D.I.T.H. PERSONALITY
+================================================================ */
+
+const EDITH_SYSTEM_PROMPT =
+
+`You are E.D.I.T.H., Tony Stark's tactical AI.
+You are speaking aloud through an advanced AR optical headset.
+
+CRITICAL:
+You are speaking, not typing.
+Do not use markdown.
+Do not use bullet points.
+Do not use emojis.
+Do not use citations.
+Keep answers to one or two quick conversational sentences.
+Speak with calm confidence, warmth and light witty British efficiency.
+Never say "As an AI".
+Never sound robotic.`;
+
+
+/* ================================================================
+   5. OPTICAL SYSTEM
+================================================================ */
+
+const ZOOM_LEVELS = [
+    1.0,
+    2.0,
+    4.0,
+    8.0
+];
+
 let zoomIndex = 0;
 let currentZoom = 1.0;
 let targetZoom = 1.0;
 
-// Real Surface Hit Tracking (WebXR Hardware Raycast)
+
+/* ================================================================
+   6. REAL WORLD TARGET TRACKING
+================================================================ */
+
 let realHitDetected = false;
 let realSurfaceDist = 0;
-let realHit3D = [0, 0, -1];
+
+let realHit3D = [
+    0,
+    0,
+    -1
+];
+
 let lockedTargets = [];
 
+
 const TARGET_CATALOGUE = [
-    { label: "STRUCTURAL // SURFACE BOUNDARY", threat: "SECURE" },
-    { label: "TACTICAL // WORKSPACE INTERCEPT", threat: "NOMINAL" },
-    { label: "BIOMETRIC // ENTITY VECTOR", threat: "MONITORED" },
-    { label: "PERIMETER // APERTURE AXIS", threat: "CLEAR" }
+
+    {
+        label: "STRUCTURAL // SURFACE BOUNDARY",
+        threat: "SECURE"
+    },
+
+    {
+        label: "TACTICAL // WORKSPACE INTERCEPT",
+        threat: "NOMINAL"
+    },
+
+    {
+        label: "BIOMETRIC // ENTITY VECTOR",
+        threat: "MONITORED"
+    },
+
+    {
+        label: "PERIMETER // APERTURE AXIS",
+        threat: "CLEAR"
+    }
+
 ];
+
+
+/* ================================================================
+   7. AUDIO
+================================================================ */
 
 let audioContext = null;
 let micStream = null;
 let scriptProcessor = null;
+
 let pcmSamples = [];
+
 let voiceLevel = 0;
 let silenceFrames = 0;
 
+
 /* ================================================================
-   2. HARDWARE AUDIO KEEP-ALIVE & SPEECH SYNTHESIS
+   8. AUDIO ENGINE
 ================================================================ */
+
 function wakeAudioEngine() {
+
     if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
     }
+
     if (audioContext.state === "suspended") {
         audioContext.resume();
     }
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
+
+    const osc =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
     gain.gain.value = 0.0001;
+
     osc.connect(gain);
     gain.connect(audioContext.destination);
+
     osc.start();
+    osc.stop(
+        audioContext.currentTime + .01
+    );
 }
 
-function playCue(freq = 880, dur = 0.05) {
+
+function playCue(
+    freq = 880,
+    dur = 0.05
+) {
+
     try {
+
         wakeAudioEngine();
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.frequency.setValueAtTime(freq, audioContext.currentTime);
-        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + dur);
+
+        const osc =
+            audioContext.createOscillator();
+
+        const gain =
+            audioContext.createGain();
+
+        osc.frequency.setValueAtTime(
+            freq,
+            audioContext.currentTime
+        );
+
+        gain.gain.setValueAtTime(
+            .1,
+            audioContext.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .0001,
+            audioContext.currentTime + dur
+        );
+
         osc.connect(gain);
         gain.connect(audioContext.destination);
+
         osc.start();
-        osc.stop(audioContext.currentTime + dur + 0.01);
-    } catch(e) {}
+
+        osc.stop(
+            audioContext.currentTime +
+            dur +
+            .01
+        );
+
+    } catch (e) {}
 }
+
 
 function playServoSound(zoom) {
+
     try {
+
         wakeAudioEngine();
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
+
+        const osc =
+            audioContext.createOscillator();
+
+        const gain =
+            audioContext.createGain();
+
         osc.type = "sawtooth";
-        const start = 300 + (zoom * 80);
-        const end = 650 + (zoom * 110);
-        osc.frequency.setValueAtTime(start, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(end, audioContext.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.14, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.14);
+
+        const start =
+            300 + zoom * 80;
+
+        const end =
+            650 + zoom * 110;
+
+        osc.frequency.setValueAtTime(
+            start,
+            audioContext.currentTime
+        );
+
+        osc.frequency.exponentialRampToValueAtTime(
+            end,
+            audioContext.currentTime + .12
+        );
+
+        gain.gain.setValueAtTime(
+            .14,
+            audioContext.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            audioContext.currentTime + .14
+        );
+
         osc.connect(gain);
         gain.connect(audioContext.destination);
+
         osc.start();
-        osc.stop(audioContext.currentTime + 0.15);
-    } catch(e) {}
+
+        osc.stop(
+            audioContext.currentTime + .15
+        );
+
+    } catch (e) {}
 }
 
+
 function cleanSpokenText(raw) {
+
     return raw
         .replace(/[*_#`~[\]()<>]/g, "")
         .replace(/https?:\/\/\S+/g, "")
@@ -274,628 +680,3207 @@ function cleanSpokenText(raw) {
         .trim();
 }
 
+
 function speakVoice(text) {
+
     if (!window.speechSynthesis) return;
+
     wakeAudioEngine();
+
     window.speechSynthesis.cancel();
 
-    systemStatus = "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
+    systemStatus =
+        "E.D.I.T.H. // VOCAL ADVISORY ACTIVE";
 
-    const speechText = cleanSpokenText(text);
-    const utt = new SpeechSynthesisUtterance(speechText);
-    
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => v.lang.includes("en-GB") && !v.name.includes("Google")) 
-                        || voices.find(v => v.lang.includes("en-GB"))
-                        || voices.find(v => v.lang.includes("en-US"));
-    if (preferredVoice) utt.voice = preferredVoice;
+    const speechText =
+        cleanSpokenText(text);
+
+    const utt =
+        new SpeechSynthesisUtterance(
+            speechText
+        );
+
+    const voices =
+        window.speechSynthesis.getVoices();
+
+    const preferredVoice =
+        voices.find(
+            v =>
+                v.lang.includes("en-GB") &&
+                !v.name.includes("Google")
+        ) ||
+        voices.find(
+            v => v.lang.includes("en-GB")
+        ) ||
+        voices.find(
+            v => v.lang.includes("en-US")
+        );
+
+    if (preferredVoice) {
+        utt.voice = preferredVoice;
+    }
 
     utt.rate = 1.08;
-    utt.pitch = 0.98;
+    utt.pitch = .98;
 
     utt.onend = () => {
+
         if (!isListening && !hasError) {
-            systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
+
+            systemStatus =
+                "E.D.I.T.H. // OCULAR LINK ACTIVE";
         }
     };
+
     window.speechSynthesis.speak(utt);
 }
 
+
 /* ================================================================
-   3. RESAMPLED 16kHz WAV ENCODER
+   9. WAV ENCODING
 ================================================================ */
-function downsampleAndEncodeWAV(samples, inputSampleRate) {
+
+function downsampleAndEncodeWAV(
+    samples,
+    inputSampleRate
+) {
+
     const targetSampleRate = 16000;
-    const compression = inputSampleRate / targetSampleRate;
-    const length = Math.floor(samples.length / compression);
-    const result = new Float32Array(length);
+
+    const compression =
+        inputSampleRate /
+        targetSampleRate;
+
+    const length =
+        Math.floor(
+            samples.length /
+            compression
+        );
+
+    const result =
+        new Float32Array(length);
 
     let offsetResult = 0;
     let offsetBuffer = 0;
-    while (offsetResult < result.length) {
-        const nextOffsetBuffer = Math.round((offsetResult + 1) * compression);
-        let accum = 0, count = 0;
-        for (let i = offsetBuffer; i < nextOffsetBuffer && i < samples.length; i++) {
+
+    while (
+        offsetResult <
+        result.length
+    ) {
+
+        const nextOffsetBuffer =
+            Math.round(
+                (offsetResult + 1) *
+                compression
+            );
+
+        let accum = 0;
+        let count = 0;
+
+        for (
+            let i = offsetBuffer;
+            i < nextOffsetBuffer &&
+            i < samples.length;
+            i++
+        ) {
+
             accum += samples[i];
             count++;
         }
-        result[offsetResult] = count > 0 ? accum / count : 0;
+
+        result[offsetResult] =
+            count > 0
+                ? accum / count
+                : 0;
+
         offsetResult++;
-        offsetBuffer = nextOffsetBuffer;
+
+        offsetBuffer =
+            nextOffsetBuffer;
     }
 
-    const buffer = new ArrayBuffer(44 + result.length * 2);
-    const view = new DataView(buffer);
 
-    function writeStr(offset, str) {
-        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    const buffer =
+        new ArrayBuffer(
+            44 + result.length * 2
+        );
+
+    const view =
+        new DataView(buffer);
+
+
+    function writeStr(
+        offset,
+        str
+    ) {
+
+        for (
+            let i = 0;
+            i < str.length;
+            i++
+        ) {
+
+            view.setUint8(
+                offset + i,
+                str.charCodeAt(i)
+            );
+        }
     }
 
-    writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + result.length * 2, true);
-    writeStr(8, 'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, 16000, true);
-    view.setUint32(28, 16000 * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeStr(36, 'data');
-    view.setUint32(40, result.length * 2, true);
+
+    writeStr(0, "RIFF");
+
+    view.setUint32(
+        4,
+        36 + result.length * 2,
+        true
+    );
+
+    writeStr(8, "WAVE");
+    writeStr(12, "fmt ");
+
+    view.setUint32(
+        16,
+        16,
+        true
+    );
+
+    view.setUint16(
+        20,
+        1,
+        true
+    );
+
+    view.setUint16(
+        22,
+        1,
+        true
+    );
+
+    view.setUint32(
+        24,
+        16000,
+        true
+    );
+
+    view.setUint32(
+        28,
+        32000,
+        true
+    );
+
+    view.setUint16(
+        32,
+        2,
+        true
+    );
+
+    view.setUint16(
+        34,
+        16,
+        true
+    );
+
+    writeStr(36, "data");
+
+    view.setUint32(
+        40,
+        result.length * 2,
+        true
+    );
+
 
     let offset = 44;
-    for (let i = 0; i < result.length; i++) {
-        const s = Math.max(-1, Math.min(1, result[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+
+    for (
+        let i = 0;
+        i < result.length;
+        i++
+    ) {
+
+        const s =
+            Math.max(
+                -1,
+                Math.min(
+                    1,
+                    result[i]
+                )
+            );
+
+        view.setInt16(
+            offset,
+            s < 0
+                ? s * 0x8000
+                : s * 0x7FFF,
+            true
+        );
+
         offset += 2;
     }
+
     return new Uint8Array(buffer);
 }
 
+
 /* ================================================================
-   4. VOICE ACTIVITY DETECTION (450ms SILENCE PAUSE)
+   10. MICROPHONE / VAD
 ================================================================ */
+
 async function setupAudioPipeline() {
+
     wakeAudioEngine();
 
-    micStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-            channelCount: 1,
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-        }
-    });
+    micStream =
+        await navigator.mediaDevices.getUserMedia({
 
-    const source = audioContext.createMediaStreamSource(micStream);
-    const analyser = audioContext.createAnalyser();
+            audio: {
+                channelCount: 1,
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            }
+
+        });
+
+
+    const source =
+        audioContext.createMediaStreamSource(
+            micStream
+        );
+
+    const analyser =
+        audioContext.createAnalyser();
+
     analyser.fftSize = 256;
 
-    scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+
+    scriptProcessor =
+        audioContext.createScriptProcessor(
+            2048,
+            1,
+            1
+        );
+
+
     source.connect(analyser);
     source.connect(scriptProcessor);
-    scriptProcessor.connect(audioContext.destination);
 
-    const freqData = new Uint8Array(analyser.frequencyBinCount);
+    scriptProcessor.connect(
+        audioContext.destination
+    );
+
+
+    const freqData =
+        new Uint8Array(
+            analyser.frequencyBinCount
+        );
+
+
     const SPEECH_GATE = 16;
-    const SILENCE_LIMIT = Math.round((audioContext.sampleRate / 2048) * 0.45);
 
-    scriptProcessor.onaudioprocess = (e) => {
-        if (isProcessing) return;
+    const SILENCE_LIMIT =
+        Math.round(
+            (
+                audioContext.sampleRate /
+                2048
+            ) * .45
+        );
 
-        analyser.getByteFrequencyData(freqData);
-        let sum = 0;
-        for (let i = 0; i < freqData.length; i++) sum += freqData[i];
-        const avg = sum / freqData.length;
-        voiceLevel = avg / 35.0;
 
-        const input = e.inputBuffer.getChannelData(0);
+    scriptProcessor.onaudioprocess =
+        e => {
 
-        if (avg > SPEECH_GATE) {
-            if (!isListening) {
-                isListening = true;
-                hasError = false;
-                subErrorMessage = "";
-                pcmSamples = [];
-                systemStatus = "AUDIO INPUT DETECTED // STREAMING DIRECTIVE";
-                playCue(540, 0.04);
+            if (isProcessing) return;
+
+            analyser.getByteFrequencyData(
+                freqData
+            );
+
+            let sum = 0;
+
+            for (
+                let i = 0;
+                i < freqData.length;
+                i++
+            ) {
+
+                sum += freqData[i];
             }
-            silenceFrames = 0;
-            for (let i = 0; i < input.length; i++) pcmSamples.push(input[i]);
-        } else if (isListening) {
-            for (let i = 0; i < input.length; i++) pcmSamples.push(input[i]);
-            silenceFrames++;
 
-            if (silenceFrames > SILENCE_LIMIT) {
-                isListening = false;
-                isProcessing = true;
-                systemStatus = "NEURAL PROCESSING // ANALYZING";
-                playCue(920, 0.05);
+            const avg =
+                sum / freqData.length;
 
-                const recordedSnapshot = pcmSamples.slice();
-                pcmSamples = [];
-                transmitToGemini(recordedSnapshot);
+            voiceLevel =
+                avg / 35;
+
+
+            const input =
+                e.inputBuffer
+                    .getChannelData(0);
+
+
+            if (avg > SPEECH_GATE) {
+
+                if (!isListening) {
+
+                    isListening = true;
+
+                    hasError = false;
+                    subErrorMessage = "";
+
+                    pcmSamples = [];
+
+                    systemStatus =
+                        "AUDIO INPUT DETECTED // DIRECTIVE";
+
+                    playCue(
+                        540,
+                        .04
+                    );
+                }
+
+                silenceFrames = 0;
+
+                for (
+                    let i = 0;
+                    i < input.length;
+                    i++
+                ) {
+
+                    pcmSamples.push(
+                        input[i]
+                    );
+                }
+
+            } else if (isListening) {
+
+                for (
+                    let i = 0;
+                    i < input.length;
+                    i++
+                ) {
+
+                    pcmSamples.push(
+                        input[i]
+                    );
+                }
+
+                silenceFrames++;
+
+                if (
+                    silenceFrames >
+                    SILENCE_LIMIT
+                ) {
+
+                    isListening = false;
+                    isProcessing = true;
+
+                    systemStatus =
+                        "NEURAL PROCESSING // ANALYZING";
+
+                    playCue(
+                        920,
+                        .05
+                    );
+
+
+                    const recordedSnapshot =
+                        pcmSamples.slice();
+
+                    pcmSamples = [];
+
+                    transmitToGemini(
+                        recordedSnapshot
+                    );
+                }
             }
-        }
-    };
+        };
 }
 
+
 /* ================================================================
-   5. STANDARD GEMINI TRANSMISSION (gemini-flash)
+   11. GEMINI
 ================================================================ */
-async function transmitToGemini(samples) {
-    if (samples.length < audioContext.sampleRate * 0.25) {
+
+async function transmitToGemini(
+    samples
+) {
+
+    if (
+        samples.length <
+        audioContext.sampleRate * .25
+    ) {
+
         isProcessing = false;
-        systemStatus = "E.D.I.T.H. // OCULAR LINK ACTIVE";
+
+        systemStatus =
+            "E.D.I.T.H. // OCULAR LINK ACTIVE";
+
         return;
     }
 
-    try {
-        systemStatus = "UPLINK SYNAPSE // GENERATING RESPONSE";
 
-        const wavBytes = downsampleAndEncodeWAV(samples, audioContext.sampleRate);
-        let binary = '';
-        for (let i = 0; i < wavBytes.byteLength; i++) {
-            binary += String.fromCharCode(wavBytes[i]);
+    try {
+
+        systemStatus =
+            "UPLINK SYNAPSE // GENERATING RESPONSE";
+
+
+        const wavBytes =
+            downsampleAndEncodeWAV(
+                samples,
+                audioContext.sampleRate
+            );
+
+
+        let binary = "";
+
+        for (
+            let i = 0;
+            i < wavBytes.byteLength;
+            i++
+        ) {
+
+            binary += String.fromCharCode(
+                wavBytes[i]
+            );
         }
-        const base64WAV = btoa(binary);
+
+
+        const base64WAV =
+            btoa(binary);
+
 
         const userTurn = {
+
             role: "user",
-            parts: [{ inline_data: { mime_type: "audio/wav", data: base64WAV } }]
+
+            parts: [
+
+                {
+                    inline_data: {
+                        mime_type: "audio/wav",
+                        data: base64WAV
+                    }
+                }
+
+            ]
         };
 
+
         const contentsPayload = [
+
             ...conversationHistory.slice(-4),
+
             userTurn
+
         ];
 
-        const cleanKey = cleanGeminiKey(apiKey);
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${cleanKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                system_instruction: {
-                    parts: [{ text: EDITH_SYSTEM_PROMPT }]
-                },
-                contents: contentsPayload,
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 90
+
+        const cleanKey =
+            cleanGeminiKey(apiKey);
+
+
+        const res =
+            await fetch(
+
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=${cleanKey}`,
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        system_instruction: {
+
+                            parts: [
+                                {
+                                    text:
+                                        EDITH_SYSTEM_PROMPT
+                                }
+                            ]
+
+                        },
+
+                        contents:
+                            contentsPayload,
+
+                        generationConfig: {
+
+                            temperature: .7,
+
+                            maxOutputTokens: 90
+
+                        }
+
+                    })
+
                 }
-            })
-        });
+            );
+
 
         if (!res.ok) {
-            let errDetail = `HTTP ${res.status}`;
+
+            let errDetail =
+                `HTTP ${res.status}`;
+
             try {
-                const errBody = await res.json();
-                if (errBody.error && errBody.error.message) {
-                    errDetail = errBody.error.message;
+
+                const errBody =
+                    await res.json();
+
+                if (
+                    errBody.error &&
+                    errBody.error.message
+                ) {
+
+                    errDetail =
+                        errBody.error.message;
                 }
-            } catch(e) {}
-            throw new Error(errDetail);
+
+            } catch (e) {}
+
+            throw new Error(
+                errDetail
+            );
         }
 
-        const data = await res.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (!reply) throw new Error("EMPTY_DATA");
 
-        const cleanReply = cleanSpokenText(reply);
+        const data =
+            await res.json();
 
-        conversationHistory.push(userTurn);
+
+        const reply =
+            data.candidates?.[0]
+                ?.content
+                ?.parts?.[0]
+                ?.text
+                ?.trim();
+
+
+        if (!reply) {
+            throw new Error(
+                "EMPTY_DATA"
+            );
+        }
+
+
+        const cleanReply =
+            cleanSpokenText(reply);
+
+
+        conversationHistory.push(
+            userTurn
+        );
+
         conversationHistory.push({
+
             role: "model",
-            parts: [{ text: cleanReply }]
+
+            parts: [
+                {
+                    text: cleanReply
+                }
+            ]
+
         });
+
 
         hasError = false;
         subErrorMessage = "";
-        edithResponse = cleanReply;
+
+        edithResponse =
+            cleanReply;
+
         isProcessing = false;
 
-        playCue(1200, 0.08);
-        speakVoice(cleanReply);
+        playCue(
+            1200,
+            .08
+        );
+
+        speakVoice(
+            cleanReply
+        );
+
 
     } catch (err) {
-        console.error("Gemini Failure:", err);
+
+        console.error(
+            "Gemini Failure:",
+            err
+        );
+
         isProcessing = false;
         hasError = true;
 
-        systemStatus = "UPLINK ERROR // DISCONNECTED";
-        edithResponse = "I lost connection for a second. Try again?";
-        subErrorMessage = "AI ERROR: " + (err.message || "UNKNOWN").toUpperCase();
+        systemStatus =
+            "UPLINK ERROR // DISCONNECTED";
 
-        playCue(300, 0.2);
-        speakVoice(edithResponse);
+        edithResponse =
+            "I lost connection for a second. Try again?";
+
+        subErrorMessage =
+            "AI ERROR: " +
+            (err.message || "UNKNOWN")
+                .toUpperCase();
+
+        playCue(
+            300,
+            .2
+        );
+
+        speakVoice(
+            edithResponse
+        );
     }
 }
 
+
 /* ================================================================
-   6. USER INTERACTION: OPTICAL ZOOM & REAL TARGET LOCK
+   12. PINCH / TARGET LOCK
 ================================================================ */
+
 function handlePinchTap() {
-    zoomIndex = (zoomIndex + 1) % ZOOM_LEVELS.length;
-    targetZoom = ZOOM_LEVELS[zoomIndex];
-    playServoSound(targetZoom);
+
+    zoomIndex =
+        (zoomIndex + 1) %
+        ZOOM_LEVELS.length;
+
+    targetZoom =
+        ZOOM_LEVELS[zoomIndex];
+
+
+    playServoSound(
+        targetZoom
+    );
+
 
     if (realHitDetected) {
-        const template = TARGET_CATALOGUE[Math.floor(Math.random() * TARGET_CATALOGUE.length)];
+
+        const template =
+            TARGET_CATALOGUE[
+                Math.floor(
+                    Math.random() *
+                    TARGET_CATALOGUE.length
+                )
+            ];
+
+
         lockedTargets.push({
-            worldPos: [realHit3D[0], realHit3D[1], realHit3D[2]],
-            dist: realSurfaceDist.toFixed(2) + "M",
-            label: template.label,
-            threat: template.threat,
-            timestamp: Date.now()
+
+            worldPos: [
+                realHit3D[0],
+                realHit3D[1],
+                realHit3D[2]
+            ],
+
+            dist:
+                realSurfaceDist.toFixed(2) +
+                "M",
+
+            label:
+                template.label,
+
+            threat:
+                template.threat,
+
+            timestamp:
+                Date.now()
+
         });
-        if (lockedTargets.length > 3) lockedTargets.shift();
+
+
+        if (
+            lockedTargets.length > 4
+        ) {
+
+            lockedTargets.shift();
+        }
     }
 }
 
+
 /* ================================================================
-   7. NEAR-FIELD STARK HUD CANVAS (OPTIMIZED OCULAR FOV)
+   13. HUD CANVAS
 ================================================================ */
-const hud = document.createElement("canvas");
+
+const hud =
+    document.createElement(
+        "canvas"
+    );
+
 hud.width = 1920;
 hud.height = 1080;
-const ctx = hud.getContext("2d");
 
-const W = 1920, H = 1080;
-const CX = W / 2, CY = H / 2;
+const ctx =
+    hud.getContext("2d");
 
-const CYAN = "rgba(0, 235, 255, 0.95)";
-const CYAN_DIM = "rgba(0, 235, 255, 0.35)";
-const RED = "rgba(255, 25, 45, 0.95)";
-const GREEN = "rgba(0, 255, 145, 0.95)";
-const WHITE = "rgba(240, 255, 255, 0.98)";
 
-function drawText(val, x, y, size, col = CYAN, align = "left") {
+const W = 1920;
+const H = 1080;
+
+const CX = W / 2;
+const CY = H / 2;
+
+
+/* ================================================================
+   14. SPIDER COLORS
+================================================================ */
+
+const SPIDER_RED =
+    "rgba(255,35,55,0.96)";
+
+const SPIDER_RED_DIM =
+    "rgba(255,35,55,0.28)";
+
+const SPIDER_BLUE =
+    "rgba(25,145,255,0.96)";
+
+const SPIDER_BLUE_DIM =
+    "rgba(25,145,255,0.28)";
+
+const SPIDER_WHITE =
+    "rgba(235,248,255,0.98)";
+
+const SPIDER_CYAN =
+    "rgba(0,225,255,0.95)";
+
+const SPIDER_GREEN =
+    "rgba(40,255,160,0.95)";
+
+const SPIDER_ORANGE =
+    "rgba(255,170,40,0.95)";
+
+
+/* ================================================================
+   15. HUD HELPERS
+================================================================ */
+
+function glowStroke(
+    color,
+    width = 1.5,
+    blur = 8
+) {
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+}
+
+
+function glowFill(
+    color,
+    blur = 8
+) {
+
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = blur;
+}
+
+
+function spiderLine(
+    x1,
+    y1,
+    x2,
+    y2,
+    color = SPIDER_CYAN,
+    width = 1
+) {
+
     ctx.save();
-    ctx.font = `${size}px "Consolas", monospace`;
-    ctx.fillStyle = col;
+
+    glowStroke(
+        color,
+        width,
+        6
+    );
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x1,
+        y1
+    );
+
+    ctx.lineTo(
+        x2,
+        y2
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+function spiderArc(
+    x,
+    y,
+    r,
+    start,
+    end,
+    color,
+    width = 1.5
+) {
+
+    ctx.save();
+
+    glowStroke(
+        color,
+        width,
+        8
+    );
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        r,
+        start,
+        end
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+function spiderText(
+    text,
+    x,
+    y,
+    size,
+    color = SPIDER_CYAN,
+    align = "left"
+) {
+
+    ctx.save();
+
+    ctx.font =
+        `${size}px "Consolas", "Courier New", monospace`;
+
+    ctx.fillStyle = color;
+
     ctx.textAlign = align;
-    ctx.shadowColor = col;
-    ctx.shadowBlur = 6;
-    ctx.fillText(val, x, y);
+
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 7;
+
+    ctx.fillText(
+        text,
+        x,
+        y
+    );
+
     ctx.restore();
 }
 
-function drawLine(x1, y1, x2, y2, col = CYAN_DIM, w = 1) {
+
+function hexPoint(
+    cx,
+    cy,
+    r,
+    i
+) {
+
+    const a =
+        -Math.PI / 2 +
+        i * Math.PI / 3;
+
+    return [
+
+        cx +
+        Math.cos(a) * r,
+
+        cy +
+        Math.sin(a) * r
+
+    ];
+}
+
+
+function drawHex(
+    cx,
+    cy,
+    r,
+    color,
+    width = 1
+) {
+
     ctx.save();
-    ctx.strokeStyle = col;
-    ctx.lineWidth = w;
+
+    glowStroke(
+        color,
+        width,
+        8
+    );
+
     ctx.beginPath();
-    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+
+    for (
+        let i = 0;
+        i < 6;
+        i++
+    ) {
+
+        const p =
+            hexPoint(
+                cx,
+                cy,
+                r,
+                i
+            );
+
+        if (i === 0) {
+
+            ctx.moveTo(
+                p[0],
+                p[1]
+            );
+
+        } else {
+
+            ctx.lineTo(
+                p[0],
+                p[1]
+            );
+        }
+    }
+
+    ctx.closePath();
     ctx.stroke();
+
     ctx.restore();
 }
 
-function renderHUD(time) {
-    ctx.clearRect(0, 0, W, H);
 
-    currentZoom += (targetZoom - currentZoom) * 0.2;
-    const isZoomed = currentZoom > 1.05;
+/* ================================================================
+   16. SPIDER WEB
+================================================================ */
 
-    /* 1. Curved Peripheral Guides */
+function drawSpiderWeb(
+    cx,
+    cy,
+    radius,
+    color,
+    alpha = .35
+) {
+
     ctx.save();
-    ctx.strokeStyle = isZoomed ? "rgba(0, 255, 145, 0.6)" : "rgba(0, 235, 255, 0.35)";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(140, 100); ctx.bezierCurveTo(80, 320, 80, 760, 140, 980);
-    ctx.moveTo(W - 140, 100); ctx.bezierCurveTo(W - 80, 320, W - 80, 760, W - 140, 980);
-    ctx.stroke();
+
+    ctx.strokeStyle =
+        color.replace(
+            /[\d.]+\)$/,
+            `${alpha})`
+        );
+
+    ctx.lineWidth = .75;
+
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 5;
+
+
+    const strands = 16;
+
+    for (
+        let i = 0;
+        i < strands;
+        i++
+    ) {
+
+        const a =
+            Math.PI * 2 /
+            strands *
+            i;
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            cx,
+            cy
+        );
+
+        ctx.lineTo(
+
+            cx +
+            Math.cos(a) *
+            radius,
+
+            cy +
+            Math.sin(a) *
+            radius
+
+        );
+
+        ctx.stroke();
+    }
+
+
+    for (
+        let ring = .15;
+        ring <= 1;
+        ring += .12
+    ) {
+
+        const r =
+            radius * ring;
+
+        ctx.beginPath();
+
+        for (
+            let i = 0;
+            i <= strands;
+            i++
+        ) {
+
+            const a =
+                Math.PI * 2 /
+                strands *
+                i;
+
+            const p = [
+
+                cx +
+                Math.cos(a) * r,
+
+                cy +
+                Math.sin(a) * r
+
+            ];
+
+            if (i === 0) {
+
+                ctx.moveTo(
+                    p[0],
+                    p[1]
+                );
+
+            } else {
+
+                ctx.lineTo(
+                    p[0],
+                    p[1]
+                );
+            }
+        }
+
+        ctx.stroke();
+    }
+
     ctx.restore();
+}
 
-    /* 2. Top Banner: UK Clock & Telemetry */
-    const ukTimeStr = new Date().toLocaleTimeString("en-GB", { timeZone: "Europe/London", hour12: false });
-    const ukDateStr = new Date().toLocaleDateString("en-GB", { timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
 
-    drawText(`UK // ${ukTimeStr} BST`, CX - 320, 90, 14, WHITE, "left");
-    drawText(`DATE // ${ukDateStr}`, CX - 320, 110, 10, CYAN_DIM, "left");
+/* ================================================================
+   17. CORNER BRACKETS
+================================================================ */
 
-    drawText(`STARK-NET // SECURE`, CX + 320, 90, 11, GREEN, "right");
-    drawText(`MAG // ${currentZoom.toFixed(1)}X TELESCOPIC`, CX + 320, 110, 12, isZoomed ? GREEN : CYAN, "right");
+function drawCornerBrackets(
+    cx,
+    cy,
+    size,
+    color
+) {
 
-    drawLine(CX - 325, 75, CX + 325, 75, CYAN_DIM, 1);
+    const len = 32;
 
-    /* 3. Central Tactical Reticle & Scope Frame */
-    const mainCol = isListening ? RED : isProcessing ? "#ffaa00" : hasError ? RED : (realHitDetected ? GREEN : CYAN);
+    spiderLine(
+        cx - size,
+        cy - size,
+        cx - size + len,
+        cy - size,
+        color,
+        2
+    );
+
+    spiderLine(
+        cx - size,
+        cy - size,
+        cx - size,
+        cy - size + len,
+        color,
+        2
+    );
+
+
+    spiderLine(
+        cx + size,
+        cy - size,
+        cx + size - len,
+        cy - size,
+        color,
+        2
+    );
+
+    spiderLine(
+        cx + size,
+        cy - size,
+        cx + size,
+        cy - size + len,
+        color,
+        2
+    );
+
+
+    spiderLine(
+        cx - size,
+        cy + size,
+        cx - size + len,
+        cy + size,
+        color,
+        2
+    );
+
+    spiderLine(
+        cx - size,
+        cy + size,
+        cx - size,
+        cy + size - len,
+        color,
+        2
+    );
+
+
+    spiderLine(
+        cx + size,
+        cy + size,
+        cx + size - len,
+        cy + size,
+        color,
+        2
+    );
+
+    spiderLine(
+        cx + size,
+        cy + size,
+        cx + size,
+        cy + size - len,
+        color,
+        2
+    );
+}
+
+
+/* ================================================================
+   18. SCAN SWEEP
+================================================================ */
+
+function drawScanSweep(
+    cx,
+    cy,
+    radius,
+    time,
+    color
+) {
+
+    const angle =
+        (time * .0011) %
+        (Math.PI * 2);
+
 
     ctx.save();
-    const scopeRadius = (55 + (voiceLevel * 14)) * (isZoomed ? 1.35 : 1.0);
 
-    ctx.strokeStyle = mainCol;
-    ctx.shadowColor = mainCol;
-    ctx.shadowBlur = 10;
-    ctx.lineWidth = 2;
+    const grad =
+        ctx.createRadialGradient(
+            cx,
+            cy,
+            0,
+            cx,
+            cy,
+            radius
+        );
+
+    grad.addColorStop(
+        0,
+        "rgba(0,225,255,.14)"
+    );
+
+    grad.addColorStop(
+        .65,
+        "rgba(0,225,255,.025)"
+    );
+
+    grad.addColorStop(
+        1,
+        "rgba(0,225,255,0)"
+    );
+
+    ctx.fillStyle = grad;
 
     ctx.beginPath();
-    ctx.arc(CX, CY, scopeRadius, 0, Math.PI * 2);
-    ctx.stroke();
 
-    ctx.fillStyle = mainCol;
-    ctx.beginPath();
-    ctx.arc(CX, CY, 3.5, 0, Math.PI * 2);
+    ctx.moveTo(
+        cx,
+        cy
+    );
+
+    ctx.arc(
+        cx,
+        cy,
+        radius,
+        angle - .1,
+        angle + .1
+    );
+
+    ctx.closePath();
+
     ctx.fill();
 
-    drawLine(CX - scopeRadius - 35, CY, CX - scopeRadius + 12, CY, mainCol, 1.5);
-    drawLine(CX + scopeRadius - 12, CY, CX + scopeRadius + 35, CY, mainCol, 1.5);
-    drawLine(CX, CY - scopeRadius - 35, CX, CY - scopeRadius + 12, mainCol, 1.5);
-    drawLine(CX, CY + scopeRadius - 12, CX, CY + scopeRadius + 35, mainCol, 1.5);
 
-    if (isZoomed) {
-        ctx.strokeStyle = GREEN;
-        ctx.lineWidth = 2;
-        const b = 130;
-        drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
-        drawLine(CX - b, CY - b, CX - b + 24, CY - b, GREEN, 2);
-        drawLine(CX + b, CY - b, CX + b - 24, CY - b, GREEN, 2);
-        drawLine(CX + b, CY - b, CX + b, CY - b + 24, GREEN, 2);
-        drawLine(CX - b, CY + b, CX - b + 24, CY + b, GREEN, 2);
-        drawLine(CX - b, CY + b, CX - b, CY + b - 24, GREEN, 2);
-        drawLine(CX + b, CY + b, CX + b - 24, CY + b, GREEN, 2);
-        drawLine(CX + b, CY + b, CX + b, CY + b - 24, GREEN, 2);
+    spiderLine(
 
-        drawText(`[ TELESCOPIC ZOOM: ${currentZoom.toFixed(1)}X ]`, CX, CY - scopeRadius - 22, 11, GREEN, "center");
-    }
+        cx,
+        cy,
 
-    if (realHitDetected) {
-        drawText(`[ REAL SURFACE RANGE: ${realSurfaceDist.toFixed(2)}M ]`, CX, CY + scopeRadius + 22, 10.5, GREEN, "center");
-    } else {
-        drawText(`[ PINCH TO CYCLE ZOOM & ACQUIRE LOCK ]`, CX, CY + scopeRadius + 22, 9.5, CYAN_DIM, "center");
-    }
+        cx +
+        Math.cos(angle) *
+        radius,
+
+        cy +
+        Math.sin(angle) *
+        radius,
+
+        color,
+        1
+    );
+
     ctx.restore();
+}
 
-    /* 4. Real 3D Physical Object Anchors */
-    const now = Date.now();
-    for (let i = 0; i < lockedTargets.length; i++) {
-        const tgt = lockedTargets[i];
-        const age = now - tgt.timestamp;
-        const pulse = Math.sin(age * 0.006) * 3;
 
-        const targetX = CX + (tgt.worldPos[0] * 320);
-        const targetY = CY - (tgt.worldPos[1] * 320);
-        const sz = 32 + pulse;
+/* ================================================================
+   19. HUD PANEL
+================================================================ */
+
+function drawHUDPanel(
+    x,
+    y,
+    w,
+    h,
+    color,
+    title,
+    value
+) {
+
+    ctx.save();
+
+    ctx.fillStyle =
+        "rgba(0,8,18,.52)";
+
+    ctx.fillRect(
+        x,
+        y,
+        w,
+        h
+    );
+
+
+    ctx.strokeStyle =
+        color;
+
+    ctx.lineWidth = 1;
+
+    ctx.shadowColor =
+        color;
+
+    ctx.shadowBlur = 8;
+
+    ctx.strokeRect(
+        x,
+        y,
+        w,
+        h
+    );
+
+
+    spiderText(
+        title,
+        x + 10,
+        y + 15,
+        7.5,
+        color
+    );
+
+    spiderText(
+        value,
+        x + 10,
+        y + 35,
+        11,
+        SPIDER_WHITE
+    );
+
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   20. VOICE WAVE
+================================================================ */
+
+function drawVoiceWave(
+    cx,
+    cy,
+    time,
+    active
+) {
+
+    const bars = 32;
+    const width = 210;
+    const gap = width / bars;
+
+
+    for (
+        let i = 0;
+        i < bars;
+        i++
+    ) {
+
+        const wave =
+            Math.sin(
+                time * .015 +
+                i * .7
+            ) *
+            Math.sin(
+                time * .004 +
+                i
+            );
+
+
+        const energy =
+            active
+                ? Math.max(
+                    3,
+                    Math.abs(wave) *
+                    25 *
+                    Math.max(
+                        voiceLevel,
+                        .2
+                    )
+                )
+                : 2;
+
+
+        const x =
+            cx -
+            width / 2 +
+            i * gap;
+
 
         ctx.save();
-        ctx.strokeStyle = GREEN;
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = GREEN;
-        ctx.shadowBlur = 8;
 
-        drawLine(targetX - sz, targetY - sz, targetX - sz + 10, targetY - sz, GREEN, 2);
-        drawLine(targetX - sz, targetY - sz, targetX - sz, targetY - sz + 10, GREEN, 2);
-        drawLine(targetX + sz, targetY - sz, targetX + sz - 10, targetY - sz, GREEN, 2);
-        drawLine(targetX + sz, targetY - sz, targetX + sz, targetY - sz + 10, GREEN, 2);
-        drawLine(targetX - sz, targetY + sz, targetX - sz + 10, targetY + sz, GREEN, 2);
-        drawLine(targetX - sz, targetY + sz, targetX - sz, targetY + sz - 10, GREEN, 2);
-        drawLine(targetX + sz, targetY + sz, targetX + sz - 10, targetY + sz, GREEN, 2);
-        drawLine(targetX + sz, targetY + sz, targetX + sz, targetY + sz - 10, GREEN, 2);
+        ctx.fillStyle =
+            active
+                ? SPIDER_RED
+                : SPIDER_CYAN;
 
-        ctx.setLineDash([2, 5]);
-        drawLine(targetX, targetY, CX, CY, "rgba(0, 255, 145, 0.25)", 1);
-        ctx.setLineDash([]);
+        ctx.shadowColor =
+            active
+                ? SPIDER_RED
+                : SPIDER_CYAN;
 
-        drawText(tgt.label, targetX + sz + 8, targetY - 6, 9.5, WHITE, "left");
-        drawText(`RANGE: ${tgt.dist} // ${tgt.threat}`, targetX + sz + 8, targetY + 8, 8.5, GREEN, "left");
+        ctx.shadowBlur = 5;
+
+
+        ctx.fillRect(
+            x,
+            cy - energy / 2,
+            2,
+            energy
+        );
+
+        ctx.restore();
+    }
+}
+
+
+/* ================================================================
+   21. SPIDER SENSE
+================================================================ */
+
+function drawThreatPulse(
+    cx,
+    cy,
+    radius,
+    time,
+    active
+) {
+
+    if (!active) return;
+
+    const pulse =
+        (
+            Math.sin(
+                time * .008
+            ) + 1
+        ) / 2;
+
+
+    ctx.save();
+
+    ctx.globalAlpha =
+        .2 + pulse * .4;
+
+    spiderArc(
+        cx,
+        cy,
+        radius + pulse * 20,
+        0,
+        Math.PI * 2,
+        SPIDER_RED,
+        2
+    );
+
+    ctx.restore();
+}
+
+
+/* ================================================================
+   22. MAIN HUD RENDER
+================================================================ */
+
+function renderHUD(time) {
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    currentZoom +=
+        (
+            targetZoom -
+            currentZoom
+        ) * .16;
+
+
+    const isZoomed =
+        currentZoom > 1.05;
+
+
+    const pulse =
+        (
+            Math.sin(
+                time * .004
+            ) + 1
+        ) / 2;
+
+
+    const mainCol =
+
+        isListening
+            ? SPIDER_RED
+
+        : hasError
+            ? SPIDER_RED
+
+        : isProcessing
+            ? SPIDER_ORANGE
+
+        : realHitDetected
+            ? SPIDER_GREEN
+
+        : SPIDER_CYAN;
+
+
+    /* ============================================================
+       BACKGROUND GRID
+    ============================================================ */
+
+    ctx.save();
+
+    ctx.globalAlpha = .08;
+
+    const grid = 80;
+
+    for (
+        let x = 0;
+        x < W;
+        x += grid
+    ) {
+
+        spiderLine(
+            x,
+            0,
+            x,
+            H,
+            SPIDER_BLUE_DIM,
+            .5
+        );
+    }
+
+    for (
+        let y = 0;
+        y < H;
+        y += grid
+    ) {
+
+        spiderLine(
+            0,
+            y,
+            W,
+            y,
+            SPIDER_BLUE_DIM,
+            .5
+        );
+    }
+
+    ctx.restore();
+
+
+    /* ============================================================
+       HUGE SUBTLE WEB
+    ============================================================ */
+
+    drawSpiderWeb(
+        CX,
+        CY,
+        500,
+        SPIDER_CYAN,
+        .09
+    );
+
+
+    /* ============================================================
+       PERIPHERAL WEBS
+    ============================================================ */
+
+    ctx.save();
+
+    ctx.translate(
+        CX - 480,
+        CY
+    );
+
+    ctx.scale(
+        .62,
+        1
+    );
+
+    drawSpiderWeb(
+        0,
+        0,
+        330,
+        SPIDER_BLUE,
+        .12
+    );
+
+    ctx.restore();
+
+
+    ctx.save();
+
+    ctx.translate(
+        CX + 480,
+        CY
+    );
+
+    ctx.scale(
+        .62,
+        1
+    );
+
+    drawSpiderWeb(
+        0,
+        0,
+        330,
+        SPIDER_BLUE,
+        .12
+    );
+
+    ctx.restore();
+
+
+    /* ============================================================
+       PERIPHERAL RINGS
+    ============================================================ */
+
+    const sideColor =
+        isZoomed
+            ? SPIDER_GREEN
+            : SPIDER_BLUE;
+
+
+    spiderArc(
+        CX,
+        CY,
+        435,
+        Math.PI * .66,
+        Math.PI * 1.34,
+        sideColor,
+        2
+    );
+
+    spiderArc(
+        CX,
+        CY,
+        435,
+        -Math.PI * .34,
+        Math.PI * .34,
+        sideColor,
+        2
+    );
+
+
+    spiderArc(
+        CX,
+        CY,
+        458,
+        Math.PI * .75,
+        Math.PI * 1.25,
+        SPIDER_BLUE_DIM,
+        1
+    );
+
+    spiderArc(
+        CX,
+        CY,
+        458,
+        -Math.PI * .25,
+        Math.PI * .25,
+        SPIDER_BLUE_DIM,
+        1
+    );
+
+
+    /* ============================================================
+       SCANNER
+    ============================================================ */
+
+    drawScanSweep(
+        CX,
+        CY,
+        isZoomed ? 310 : 260,
+        time,
+        mainCol
+    );
+
+
+    /* ============================================================
+       TOP TELEMETRY
+    ============================================================ */
+
+    const ukTime =
+        new Date().toLocaleTimeString(
+            "en-GB",
+            {
+                timeZone:
+                    "Europe/London",
+                hour12: false
+            }
+        );
+
+
+    const ukDate =
+        new Date().toLocaleDateString(
+            "en-GB",
+            {
+                timeZone:
+                    "Europe/London",
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        ).toUpperCase();
+
+
+    drawHUDPanel(
+        CX - 270,
+        35,
+        150,
+        46,
+        SPIDER_CYAN,
+        "SYSTEM TIME",
+        ukTime
+    );
+
+
+    drawHUDPanel(
+        CX + 120,
+        35,
+        150,
+        46,
+        SPIDER_GREEN,
+        "NETWORK",
+        "SECURE"
+    );
+
+
+    spiderText(
+        `// ${ukDate}`,
+        CX,
+        102,
+        8,
+        SPIDER_BLUE,
+        "center"
+    );
+
+
+    /* ============================================================
+       CENTRAL RETICLE
+    ============================================================ */
+
+    const radius =
+        (
+            56 +
+            voiceLevel * 12
+        ) *
+        (
+            isZoomed
+                ? 1.24
+                : 1
+        );
+
+
+    /* outer rings */
+
+    spiderArc(
+        CX,
+        CY,
+        radius + 32,
+        0,
+        Math.PI * 2,
+        mainCol,
+        1
+    );
+
+
+    spiderArc(
+        CX,
+        CY,
+        radius + 17,
+        -.8,
+        .8,
+        mainCol,
+        2
+    );
+
+
+    spiderArc(
+        CX,
+        CY,
+        radius + 17,
+        Math.PI - .8,
+        Math.PI + .8,
+        mainCol,
+        2
+    );
+
+
+    /* central spider web */
+
+    drawSpiderWeb(
+        CX,
+        CY,
+        radius,
+        mainCol,
+        .4
+    );
+
+
+    /* central hex */
+
+    drawHex(
+        CX,
+        CY,
+        radius * .56,
+        mainCol,
+        1.5
+    );
+
+
+    /* centre eye */
+
+    ctx.save();
+
+    glowFill(
+        mainCol,
+        14
+    );
+
+    ctx.beginPath();
+
+    ctx.arc(
+        CX,
+        CY,
+        isListening ? 7 : 4,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+
+    /* crosshair */
+
+    spiderLine(
+        CX - radius - 48,
+        CY,
+        CX - radius - 8,
+        CY,
+        mainCol,
+        2
+    );
+
+    spiderLine(
+        CX + radius + 8,
+        CY,
+        CX + radius + 48,
+        CY,
+        mainCol,
+        2
+    );
+
+    spiderLine(
+        CX,
+        CY - radius - 48,
+        CX,
+        CY - radius - 8,
+        mainCol,
+        2
+    );
+
+    spiderLine(
+        CX,
+        CY + radius + 8,
+        CX,
+        CY + radius + 48,
+        mainCol,
+        2
+    );
+
+
+    /* ============================================================
+       TARGET BRACKETS
+    ============================================================ */
+
+    const bracketSize =
+        isZoomed
+            ? 160
+            : 128;
+
+
+    drawCornerBrackets(
+        CX,
+        CY,
+        bracketSize,
+        isZoomed
+            ? SPIDER_GREEN
+            : mainCol
+    );
+
+
+    /* ============================================================
+       SPIDER SENSE
+    ============================================================ */
+
+    drawThreatPulse(
+        CX,
+        CY,
+        bracketSize + 30,
+        time,
+        isListening || hasError
+    );
+
+
+    if (
+        isListening ||
+        hasError
+    ) {
+
+        spiderText(
+            "!! SPIDER-SENSE // ATTENTION !!",
+            CX,
+            CY - bracketSize - 25,
+            10,
+            SPIDER_RED,
+            "center"
+        );
+    }
+
+
+    /* ============================================================
+       REAL SURFACE LOCK
+    ============================================================ */
+
+    if (realHitDetected) {
+
+        const lockPulse =
+            1 +
+            Math.sin(
+                time * .006
+            ) * .12;
+
+
+        const lockSize =
+            43 * lockPulse;
+
+
+        spiderArc(
+            CX,
+            CY,
+            lockSize,
+            0,
+            Math.PI * 2,
+            SPIDER_GREEN,
+            2
+        );
+
+
+        spiderText(
+            "SURFACE ACQUIRED",
+            CX,
+            CY - 82,
+            9,
+            SPIDER_GREEN,
+            "center"
+        );
+
+
+        spiderText(
+            `RANGE // ${realSurfaceDist.toFixed(2)}M`,
+            CX,
+            CY + 106,
+            9,
+            SPIDER_GREEN,
+            "center"
+        );
+    }
+
+
+    /* ============================================================
+       ZOOM
+    ============================================================ */
+
+    if (isZoomed) {
+
+        drawHex(
+            CX,
+            CY,
+            bracketSize + 22,
+            SPIDER_GREEN,
+            1
+        );
+
+
+        spiderText(
+            `OPTICAL MAG // ${currentZoom.toFixed(1)}X`,
+            CX,
+            CY + bracketSize + 25,
+            10,
+            SPIDER_GREEN,
+            "center"
+        );
+
+
+        spiderText(
+            "TELESCOPIC MODE",
+            CX,
+            CY + bracketSize + 41,
+            7.5,
+            SPIDER_GREEN,
+            "center"
+        );
+
+    } else {
+
+        spiderText(
+            "PINCH // OPTICAL MAGNIFICATION",
+            CX,
+            CY + bracketSize + 25,
+            8,
+            SPIDER_CYAN,
+            "center"
+        );
+    }
+
+
+    /* ============================================================
+       LOCKED TARGETS
+    ============================================================ */
+
+    const now =
+        Date.now();
+
+
+    for (
+        let i = 0;
+        i < lockedTargets.length;
+        i++
+    ) {
+
+        const tgt =
+            lockedTargets[i];
+
+
+        const age =
+            now -
+            tgt.timestamp;
+
+
+        const fade =
+            Math.max(
+                .35,
+                1 -
+                age / 30000
+            );
+
+
+        const targetPulse =
+            Math.sin(
+                age * .006
+            ) * 4;
+
+
+        /*
+         * Intentionally compressed toward
+         * the centre of the field of view.
+         */
+
+        const targetX =
+            CX +
+            tgt.worldPos[0] *
+            235;
+
+
+        const targetY =
+            CY -
+            tgt.worldPos[1] *
+            235;
+
+
+        const size =
+            34 +
+            targetPulse;
+
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            fade;
+
+
+        drawCornerBrackets(
+            targetX,
+            targetY,
+            size,
+            SPIDER_GREEN
+        );
+
+
+        spiderLine(
+            targetX,
+            targetY,
+            CX,
+            CY,
+            SPIDER_GREEN,
+            .7
+        );
+
+
+        spiderText(
+            `LOCK ${String(i + 1).padStart(2, "0")}`,
+            targetX + size + 9,
+            targetY - 5,
+            8,
+            SPIDER_WHITE
+        );
+
+
+        spiderText(
+            `${tgt.dist} // ${tgt.threat}`,
+            targetX + size + 9,
+            targetY + 10,
+            7.5,
+            SPIDER_GREEN
+        );
+
+
         ctx.restore();
     }
 
-    /* 5. Central Corridor: Voice Subtitles & Status */
-    const barW = 150, barH = 4;
-    ctx.fillStyle = "rgba(0, 235, 255, 0.15)";
-    ctx.fillRect(CX - barW / 2, CY + 54, barW, barH);
-    ctx.fillStyle = isListening ? RED : GREEN;
-    ctx.fillRect(CX - barW / 2, CY + 54, Math.min(barW, barW * Math.max(voiceLevel * 2, 0.05)), barH);
 
-    drawText(`● ${systemStatus}`, CX, CY + 76, 11, mainCol, "center");
+    /* ============================================================
+       LEFT COMPACT DATA
+    ============================================================ */
+
+    drawHUDPanel(
+        CX - 390,
+        CY - 120,
+        120,
+        55,
+        SPIDER_BLUE,
+        "VISUAL",
+        realHitDetected
+            ? "LOCKED"
+            : "SCANNING"
+    );
+
+
+    drawHUDPanel(
+        CX - 390,
+        CY - 55,
+        120,
+        55,
+        SPIDER_CYAN,
+        "MAG",
+        `${currentZoom.toFixed(1)}X`
+    );
+
+
+    /* ============================================================
+       RIGHT COMPACT DATA
+    ============================================================ */
+
+    drawHUDPanel(
+        CX + 270,
+        CY - 120,
+        120,
+        55,
+        SPIDER_GREEN,
+        "TARGETS",
+        String(
+            lockedTargets.length
+        ).padStart(2, "0")
+    );
+
+
+    drawHUDPanel(
+        CX + 270,
+        CY - 55,
+        120,
+        55,
+        isListening
+            ? SPIDER_RED
+            : SPIDER_CYAN,
+        "AUDIO",
+        isListening
+            ? "LIVE"
+            : "READY"
+    );
+
+
+    /* ============================================================
+       VOICE WAVE
+    ============================================================ */
+
+    drawVoiceWave(
+        CX,
+        CY + 158,
+        time,
+        isListening ||
+        isProcessing
+    );
+
+
+    /* ============================================================
+       STATUS
+    ============================================================ */
+
+    spiderText(
+        `● ${systemStatus}`,
+        CX,
+        CY + 190,
+        9.5,
+        mainCol,
+        "center"
+    );
+
+
+    /* ============================================================
+       RESPONSE
+    ============================================================ */
 
     ctx.save();
-    ctx.font = "15px Consolas, monospace";
-    ctx.fillStyle = WHITE;
-    ctx.textAlign = "center";
-    ctx.shadowColor = hasError ? RED : CYAN;
-    ctx.shadowBlur = 5;
 
-    const words = edithResponse.split(" ");
+    ctx.font =
+        "14px Consolas, monospace";
+
+    ctx.fillStyle =
+        SPIDER_WHITE;
+
+    ctx.textAlign =
+        "center";
+
+    ctx.shadowColor =
+        hasError
+            ? SPIDER_RED
+            : SPIDER_CYAN;
+
+    ctx.shadowBlur = 7;
+
+
+    const maxWidth = 520;
+
+    const words =
+        edithResponse.split(" ");
+
+
     let line = "";
-    let y = CY + 100;
 
-    for (let i = 0; i < words.length; i++) {
-        const test = line + words[i] + " ";
-        if (ctx.measureText(test).width > 460 && i > 0) {
-            ctx.fillText(line, CX, y);
-            y += 20;
-            line = words[i] + " ";
+    let y =
+        CY + 216;
+
+
+    for (
+        let i = 0;
+        i < words.length;
+        i++
+    ) {
+
+        const test =
+            line +
+            words[i] +
+            " ";
+
+
+        if (
+            ctx.measureText(
+                test
+            ).width >
+            maxWidth &&
+            i > 0
+        ) {
+
+            ctx.fillText(
+                line,
+                CX,
+                y
+            );
+
+            y += 19;
+
+            line =
+                words[i] +
+                " ";
+
         } else {
+
             line = test;
         }
     }
-    ctx.fillText(line, CX, y);
+
+
+    ctx.fillText(
+        line,
+        CX,
+        y
+    );
+
+
     ctx.restore();
 
-    if (hasError || subErrorMessage) {
-        drawText(subErrorMessage, CX, y + 22, 10.5, RED, "center");
+
+    /* ============================================================
+       ERROR
+    ============================================================ */
+
+    if (
+        hasError ||
+        subErrorMessage
+    ) {
+
+        spiderText(
+            subErrorMessage ||
+            "NEURAL UPLINK FAILURE",
+            CX,
+            y + 24,
+            8.5,
+            SPIDER_RED,
+            "center"
+        );
     }
+
+
+    /* ============================================================
+       OUTER CORNER TECHNOLOGY
+    ============================================================ */
+
+    const edge = 45;
+    const corner = 38;
+
+
+    // top left
+    spiderLine(
+        edge,
+        edge,
+        edge + corner,
+        edge,
+        SPIDER_BLUE,
+        2
+    );
+
+    spiderLine(
+        edge,
+        edge,
+        edge,
+        edge + corner,
+        SPIDER_BLUE,
+        2
+    );
+
+
+    // top right
+    spiderLine(
+        W - edge,
+        edge,
+        W - edge - corner,
+        edge,
+        SPIDER_BLUE,
+        2
+    );
+
+    spiderLine(
+        W - edge,
+        edge,
+        W - edge,
+        edge + corner,
+        SPIDER_BLUE,
+        2
+    );
+
+
+    // bottom left
+    spiderLine(
+        edge,
+        H - edge,
+        edge + corner,
+        H - edge,
+        SPIDER_BLUE,
+        2
+    );
+
+    spiderLine(
+        edge,
+        H - edge,
+        edge,
+        H - edge - corner,
+        SPIDER_BLUE,
+        2
+    );
+
+
+    // bottom right
+    spiderLine(
+        W - edge,
+        H - edge,
+        W - edge - corner,
+        H - edge,
+        SPIDER_BLUE,
+        2
+    );
+
+    spiderLine(
+        W - edge,
+        H - edge,
+        W - edge,
+        H - edge - corner,
+        SPIDER_BLUE,
+        2
+    );
+
+
+    /* ============================================================
+       BOTTOM SYSTEM BAR
+    ============================================================ */
+
+    const stripY =
+        H - 66;
+
+
+    spiderLine(
+        CX - 350,
+        stripY,
+        CX + 350,
+        stripY,
+        SPIDER_BLUE_DIM,
+        1
+    );
+
+
+    spiderText(
+        "E.D.I.T.H.",
+        CX - 330,
+        stripY + 20,
+        8,
+        SPIDER_RED
+    );
+
+
+    spiderText(
+        "SPIDER-TACTICAL OPTICAL SYSTEM",
+        CX,
+        stripY + 20,
+        7.5,
+        SPIDER_BLUE,
+        "center"
+    );
+
+
+    spiderText(
+        "AR // ONLINE",
+        CX + 330,
+        stripY + 20,
+        8,
+        SPIDER_GREEN,
+        "right"
+    );
+
+
+    /* ============================================================
+       ANIMATED DATA NODES
+    ============================================================ */
+
+    for (
+        let i = 0;
+        i < 16;
+        i++
+    ) {
+
+        const a =
+            time * .0003 +
+            i *
+            (
+                Math.PI * 2 /
+                16
+            );
+
+
+        const r =
+            425;
+
+
+        const x =
+            CX +
+            Math.cos(a) *
+            r;
+
+
+        const yDot =
+            CY +
+            Math.sin(a) *
+            r;
+
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            .25 +
+            pulse * .45;
+
+
+        glowFill(
+            SPIDER_CYAN,
+            5
+        );
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            yDot,
+            2,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+
+    /* ============================================================
+       FINAL EYE CROSS
+    ============================================================ */
+
+    spiderLine(
+        CX - 9,
+        CY,
+        CX + 9,
+        CY,
+        SPIDER_WHITE,
+        1
+    );
+
+    spiderLine(
+        CX,
+        CY - 9,
+        CX,
+        CY + 9,
+        SPIDER_WHITE,
+        1
+    );
 }
 
+
 /* ================================================================
-   8. WEBGL SCREEN COMPOSITION & NEAR-FIELD PROJECTION
+   23. WEBGL
 ================================================================ */
-const gl = canvas.getContext("webgl", { alpha: true, depth: false, antialias: false });
+
+const gl =
+    canvas.getContext(
+        "webgl",
+        {
+            alpha: true,
+            depth: false,
+            antialias: false
+        }
+    );
+
+
+if (!gl) {
+
+    alert(
+        "WebGL is required for this AR HUD."
+    );
+}
+
 
 const vs = `
+
 attribute vec2 aPos;
 attribute vec2 aUV;
+
 uniform float uNearScale;
+
 varying vec2 vUV;
+
 void main() {
-    gl_Position = vec4(aPos * uNearScale, 0.0, 1.0);
+
+    gl_Position =
+        vec4(
+            aPos * uNearScale,
+            0.0,
+            1.0
+        );
+
     vUV = aUV;
-}`;
+}
+
+`;
+
 
 const fs = `
-precision mediump float;
-uniform sampler2D uTex;
-varying vec2 vUV;
-void main() {
-    gl_FragColor = texture2D(uTex, vUV);
-}`;
 
-function createShader(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src);
-    gl.compileShader(s);
-    return s;
+precision mediump float;
+
+uniform sampler2D uTex;
+
+varying vec2 vUV;
+
+void main() {
+
+    gl_FragColor =
+        texture2D(
+            uTex,
+            vUV
+        );
 }
 
-const prog = gl.createProgram();
-gl.attachShader(prog, createShader(gl.VERTEX_SHADER, vs));
-gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, fs));
-gl.linkProgram(prog);
+`;
 
-const quad = new Float32Array([
-    -1, -1, 0, 1,
-     1, -1, 1, 1,
-    -1,  1, 0, 0,
-    -1,  1, 0, 0,
-     1, -1, 1, 1,
-     1,  1, 1, 0
-]);
 
-const buf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+function createShader(
+    type,
+    src
+) {
 
-const posLoc = gl.getAttribLocation(prog, "aPos");
-const uvLoc = gl.getAttribLocation(prog, "aUV");
-const nearScaleLoc = gl.getUniformLocation(prog, "uNearScale");
+    const shader =
+        gl.createShader(type);
 
-const tex = gl.createTexture();
-gl.bindTexture(gl.TEXTURE_2D, tex);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.shaderSource(
+        shader,
+        src
+    );
+
+    gl.compileShader(
+        shader
+    );
+
+    return shader;
+}
+
+
+const prog =
+    gl.createProgram();
+
+
+gl.attachShader(
+    prog,
+    createShader(
+        gl.VERTEX_SHADER,
+        vs
+    )
+);
+
+gl.attachShader(
+    prog,
+    createShader(
+        gl.FRAGMENT_SHADER,
+        fs
+    )
+);
+
+
+gl.linkProgram(
+    prog
+);
+
+
+const quad =
+    new Float32Array([
+
+        -1, -1, 0, 1,
+         1, -1, 1, 1,
+
+        -1,  1, 0, 0,
+        -1,  1, 0, 0,
+
+         1, -1, 1, 1,
+         1,  1, 1, 0
+
+    ]);
+
+
+const buf =
+    gl.createBuffer();
+
+
+gl.bindBuffer(
+    gl.ARRAY_BUFFER,
+    buf
+);
+
+
+gl.bufferData(
+    gl.ARRAY_BUFFER,
+    quad,
+    gl.STATIC_DRAW
+);
+
+
+const posLoc =
+    gl.getAttribLocation(
+        prog,
+        "aPos"
+    );
+
+
+const uvLoc =
+    gl.getAttribLocation(
+        prog,
+        "aUV"
+    );
+
+
+const nearScaleLoc =
+    gl.getUniformLocation(
+        prog,
+        "uNearScale"
+    );
+
+
+const tex =
+    gl.createTexture();
+
+
+gl.bindTexture(
+    gl.TEXTURE_2D,
+    tex
+);
+
+
+gl.texParameteri(
+    gl.TEXTURE_2D,
+    gl.TEXTURE_MIN_FILTER,
+    gl.LINEAR
+);
+
+gl.texParameteri(
+    gl.TEXTURE_2D,
+    gl.TEXTURE_MAG_FILTER,
+    gl.LINEAR
+);
+
+gl.texParameteri(
+    gl.TEXTURE_2D,
+    gl.TEXTURE_WRAP_S,
+    gl.CLAMP_TO_EDGE
+);
+
+gl.texParameteri(
+    gl.TEXTURE_2D,
+    gl.TEXTURE_WRAP_T,
+    gl.CLAMP_TO_EDGE
+);
+
 
 /* ================================================================
-   9. WEBXR IMMERSIVE-AR SESSION (NEAR-FIELD + HIT-TESTING)
+   24. WEBXR
 ================================================================ */
+
 async function launchAR() {
-    await gl.makeXRCompatible();
 
-    session = await navigator.xr.requestSession("immersive-ar", {
-        requiredFeatures: ["hit-test"],
-        optionalFeatures: ["local-floor", "unbounded", "local", "hand-tracking"]
-    });
+    if (
+        !navigator.xr
+    ) {
 
-    xrLayer = new XRWebGLLayer(session, gl, { alpha: true, depth: false });
-    session.updateRenderState({ baseLayer: xrLayer });
-
-    try {
-        referenceSpace = await session.requestReferenceSpace("local-floor");
-    } catch(e) {
-        referenceSpace = await session.requestReferenceSpace("local");
+        throw new Error(
+            "WebXR is not supported on this device."
+        );
     }
 
-    const viewerSpace = await session.requestReferenceSpace("viewer");
-    hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
 
-    session.addEventListener("select", () => {
-        handlePinchTap();
+    await gl.makeXRCompatible();
+
+
+    session =
+        await navigator.xr.requestSession(
+            "immersive-ar",
+            {
+
+                requiredFeatures: [
+                    "hit-test"
+                ],
+
+                optionalFeatures: [
+                    "local-floor",
+                    "unbounded",
+                    "local",
+                    "hand-tracking"
+                ]
+
+            }
+        );
+
+
+    xrLayer =
+        new XRWebGLLayer(
+            session,
+            gl,
+            {
+                alpha: true,
+                depth: false
+            }
+        );
+
+
+    session.updateRenderState({
+        baseLayer: xrLayer
     });
 
-    session.requestAnimationFrame(renderFrame);
+
+    try {
+
+        referenceSpace =
+            await session.requestReferenceSpace(
+                "local-floor"
+            );
+
+    } catch (e) {
+
+        referenceSpace =
+            await session.requestReferenceSpace(
+                "local"
+            );
+    }
+
+
+    const viewerSpace =
+        await session.requestReferenceSpace(
+            "viewer"
+        );
+
+
+    hitTestSource =
+        await session.requestHitTestSource({
+            space: viewerSpace
+        });
+
+
+    session.addEventListener(
+        "select",
+        () => {
+            handlePinchTap();
+        }
+    );
+
+
+    session.addEventListener(
+        "end",
+        () => {
+
+            session = null;
+            hitTestSource = null;
+        }
+    );
+
+
+    session.requestAnimationFrame(
+        renderFrame
+    );
 }
 
-function renderFrame(time, frame) {
-    if (!session) return;
-    session.requestAnimationFrame(renderFrame);
 
-    const pose = frame.getViewerPose(referenceSpace);
+/* ================================================================
+   25. AR FRAME
+================================================================ */
+
+function renderFrame(
+    time,
+    frame
+) {
+
+    if (!session) return;
+
+    session.requestAnimationFrame(
+        renderFrame
+    );
+
+
+    const pose =
+        frame.getViewerPose(
+            referenceSpace
+        );
+
+
     if (!pose) return;
 
+
+    /* ============================================================
+       HIT TEST
+    ============================================================ */
+
     if (hitTestSource) {
-        const hits = frame.getHitTestResults(hitTestSource);
+
+        const hits =
+            frame.getHitTestResults(
+                hitTestSource
+            );
+
+
         if (hits.length > 0) {
-            const hitPose = hits[0].getPose(referenceSpace);
+
+            const hitPose =
+                hits[0].getPose(
+                    referenceSpace
+                );
+
+
             if (hitPose) {
-                realHitDetected = true;
-                const pos = hitPose.transform.position;
-                realHit3D = [pos.x, pos.y, pos.z];
-                realSurfaceDist = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
+
+                realHitDetected =
+                    true;
+
+
+                const pos =
+                    hitPose.transform.position;
+
+
+                realHit3D = [
+                    pos.x,
+                    pos.y,
+                    pos.z
+                ];
+
+
+                realSurfaceDist =
+                    Math.sqrt(
+                        pos.x * pos.x +
+                        pos.y * pos.y +
+                        pos.z * pos.z
+                    );
             }
+
         } else {
-            realHitDetected = false;
+
+            realHitDetected =
+                false;
         }
     }
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, xrLayer.framebuffer);
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    /* ============================================================
+       RENDER HUD
+    ============================================================ */
+
+    gl.bindFramebuffer(
+        gl.FRAMEBUFFER,
+        xrLayer.framebuffer
+    );
+
+
+    gl.clearColor(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    gl.clear(
+        gl.COLOR_BUFFER_BIT
+    );
+
+
+    gl.enable(
+        gl.BLEND
+    );
+
+
+    gl.blendFunc(
+        gl.SRC_ALPHA,
+        gl.ONE_MINUS_SRC_ALPHA
+    );
+
 
     renderHUD(time);
 
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, hud);
 
-    gl.useProgram(prog);
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 16, 0);
-    gl.enableVertexAttribArray(uvLoc);
-    gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
+    /* ============================================================
+       HUD TEXTURE
+    ============================================================ */
 
-    const ocularScale = 0.95 + ((currentZoom - 1.0) * 0.05);
-    gl.uniform1f(nearScaleLoc, ocularScale);
+    gl.bindTexture(
+        gl.TEXTURE_2D,
+        tex
+    );
 
-    for (const view of pose.views) {
-        const vp = xrLayer.getViewport(view);
-        gl.viewport(vp.x, vp.y, vp.width, vp.height);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.pixelStorei(
+        gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+        true
+    );
+
+
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        hud
+    );
+
+
+    gl.useProgram(
+        prog
+    );
+
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        buf
+    );
+
+
+    gl.enableVertexAttribArray(
+        posLoc
+    );
+
+
+    gl.vertexAttribPointer(
+        posLoc,
+        2,
+        gl.FLOAT,
+        false,
+        16,
+        0
+    );
+
+
+    gl.enableVertexAttribArray(
+        uvLoc
+    );
+
+
+    gl.vertexAttribPointer(
+        uvLoc,
+        2,
+        gl.FLOAT,
+        false,
+        16,
+        8
+    );
+
+
+    /*
+     * Slightly larger near-field composition.
+     * The actual HUD elements are already compressed
+     * toward the centre, so this provides additional
+     * perceived proximity without simply stretching
+     * the entire interface excessively.
+     */
+
+    const ocularScale =
+        .98 +
+        (
+            currentZoom - 1
+        ) * .035;
+
+
+    gl.uniform1f(
+        nearScaleLoc,
+        ocularScale
+    );
+
+
+    for (
+        const view of pose.views
+    ) {
+
+        const vp =
+            xrLayer.getViewport(
+                view
+            );
+
+
+        gl.viewport(
+            vp.x,
+            vp.y,
+            vp.width,
+            vp.height
+        );
+
+
+        gl.drawArrays(
+            gl.TRIANGLES,
+            0,
+            6
+        );
     }
 }
 
+
 /* ================================================================
-   10. BOOTSTRAP INITIALIZATION
+   26. BOOT
 ================================================================ */
-btnInit.onclick = async () => {
-    apiKey = cleanGeminiKey(apiKeyInput.value);
-    if (!apiKey) {
-        alert("Enter your Gemini API key.");
-        return;
+
+btnInit.onclick =
+    async () => {
+
+        apiKey =
+            cleanGeminiKey(
+                apiKeyInput.value
+            );
+
+
+        if (!apiKey) {
+
+            alert(
+                "Enter your Gemini API key."
+            );
+
+            return;
+        }
+
+
+        localStorage.setItem(
+            "edith_gemini_key",
+            apiKey
+        );
+
+
+        btnInit.disabled =
+            true;
+
+        btnInit.textContent =
+            "INITIALIZING SPIDER AR...";
+
+
+        try {
+
+            wakeAudioEngine();
+
+            await setupAudioPipeline();
+
+            await launchAR();
+
+
+            setupScreen.style.display =
+                "none";
+
+
+            playCue(
+                880,
+                .1
+            );
+
+
+        } catch (err) {
+
+            console.error(
+                "AR startup failure:",
+                err
+            );
+
+
+            btnInit.disabled =
+                false;
+
+            btnInit.textContent =
+                "INITIALIZE AR";
+
+
+            alert(
+                "Startup failed: " +
+                err.message
+            );
+        }
+    };
+
+
+/* ================================================================
+   27. CLEANUP
+================================================================ */
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        if (micStream) {
+
+            micStream
+                .getTracks()
+                .forEach(
+                    track =>
+                        track.stop()
+                );
+        }
+
+
+        if (session) {
+
+            session.end();
+        }
     }
-    localStorage.setItem("edith_gemini_key", apiKey);
+);
 
-    btnInit.disabled = true;
-    btnInit.textContent = "INITIALIZING STARK AR...";
 
-    try {
-        wakeAudioEngine();
-        await setupAudioPipeline();
-        await launchAR();
-
-        setupScreen.style.display = "none";
-        playCue(880, 0.1);
-    } catch (err) {
-        btnInit.disabled = false;
-        btnInit.textContent = "INITIALIZE AR";
-        alert("Startup failed: " + err.message);
-    }
-};
-
-window.addEventListener("beforeunload", () => {
-    if (micStream) micStream.getTracks().forEach(t => t.stop());
-    if (session) session.end();
-});
+/* ================================================================
+   28. INITIAL HUD FRAME
+================================================================ */
 
 renderHUD(0);
+
 </script>
+
 </body>
 </html>
